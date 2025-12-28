@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Depo İşlem Paneli</title>
+
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#f3f4f6;
+      --panel:#ffffff;
+      --panel2:#f9fafb;
+      --border:#e5e7eb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --green:#00c853;
+      --green2:#00b84c;
+      --danger:#ef4444;
+      --danger2:#dc2626;
+      --input:#ffffff;
+      --shadow:0 18px 50px rgba(2,6,23,.12);
+      --shadow2:0 10px 30px rgba(2,6,23,.10);
+      --amber:#f59e0b;
+    }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    /* LOGIN */
+    .center{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .loginCard{
+      width:min(520px,96vw);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:28px;
+    }
+    .title{
+      text-align:center;
+      font-weight:900;
+      font-size:42px;
+      letter-spacing:.5px;
+      margin:0 0 8px;
+      color:var(--text);
+    }
+    .subtitle{
+      text-align:center;
+      font-weight:900;
+      font-size:22px;
+      margin:0 0 18px;
+      color:var(--text);
+    }
+
+    .fieldLabel{
+      font-weight:900;
+      letter-spacing:.8px;
+      color:var(--muted);
+      margin:0 0 6px;
+      text-transform:uppercase;
+      font-size:13px;
+    }
+    .input{
+      width:100%;
+      padding:14px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--input);
+      color:var(--text);
+      font-size:18px;
+      outline:none;
+      box-shadow:0 1px 0 rgba(2,6,23,.03) inset;
+    }
+    .input:focus{
+      border-color:rgba(0,200,83,.55);
+      box-shadow:0 0 0 3px rgba(0,200,83,.15);
+    }
+
+    .btn{
+      width:100%;
+      padding:16px 16px;
+      border:0;
+      border-radius:12px;
+      background:var(--green);
+      color:#07210f;
+      font-weight:900;
+      letter-spacing:1px;
+      font-size:22px;
+      cursor:pointer;
+      margin-top:14px;
+      box-shadow:0 10px 20px rgba(0,200,83,.18);
+    }
+    .btn:hover{ background:var(--green2); }
+    .btn:active{ transform:translateY(1px); }
+
+    .note{
+      margin-top:14px;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:16px;
+      text-align:center;
+    }
+    .note.error{
+      background:rgba(239,68,68,.08);
+      border-color:rgba(239,68,68,.25);
+      color:#7f1d1d;
+    }
+    .note.ok{
+      background:rgba(0,200,83,.10);
+      border-color:rgba(0,200,83,.22);
+      color:#065f46;
+    }
+    .note.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.25);
+      color:#7c2d12;
+    }
+
+    /* APP */
+    .appWrap{ padding:18px; display:none; }
+    .appPanel{
+      width:min(1200px,98vw);
+      margin:0 auto;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .appHeader{
+      text-align:center;
+      font-weight:1000;
+      font-size:44px;
+      letter-spacing:.5px;
+      padding:22px 14px 8px;
+      margin:0;
+      color:var(--text);
+    }
+    .roleLine{
+      text-align:center;
+      margin:0 0 12px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.6px;
+    }
+
+    .tabbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr 170px; /* admin: 3 tab + logout */
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      background:var(--panel2);
+    }
+    @media (max-width: 900px){
+      .tabbar{ grid-template-columns: 1fr 1fr; }
+      .tabbar .logoutBtn{ grid-column:1 / -1; }
+      .tabbar .tab.adminOnly{ grid-column:1 / -1; }
+    }
+    .tab{
+      padding:16px 10px;
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:1px;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-size:18px;
+      border-right:1px solid var(--border);
+    }
+    .tab:last-child{ border-right:0; }
+    .tab.active{
+      background:rgba(0,200,83,.14);
+      color:#064e3b;
+      box-shadow: inset 0 -3px 0 rgba(0,200,83,.55);
+    }
+    .logoutBtn{
+      padding:16px 10px;
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:1px;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-size:18px;
+    }
+    .logoutBtn:hover{ background:rgba(2,6,23,.03); color:var(--text); }
+
+    .content{ padding:18px; background:var(--bg); }
+    .sectionTitle{
+      text-align:center;
+      font-weight:1000;
+      font-size:26px;
+      margin:8px 0 14px;
+      color:var(--text);
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:var(--shadow2);
+      height:100%;
+    }
+    .card h3{
+      margin:0 0 12px;
+      text-align:center;
+      font-weight:1000;
+      font-size:22px;
+      color:var(--text);
+    }
+
+    .actionBtn{
+      width:100%;
+      padding:16px 14px;
+      border:0;
+      border-radius:14px;
+      background:var(--green);
+      color:#07210f;
+      font-weight:1000;
+      letter-spacing:1px;
+      font-size:20px;
+      cursor:pointer;
+      margin-top:10px;
+      box-shadow:0 10px 18px rgba(0,200,83,.14);
+    }
+    .actionBtn:hover{ background:var(--green2); }
+    .actionBtn.red{
+      background:var(--danger);
+      color:#1b0707;
+      box-shadow:0 10px 18px rgba(239,68,68,.14);
+    }
+    .actionBtn.red:hover{ background:var(--danger2); }
+
+    .statusBox{
+      margin-top:12px;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      font-size:16px;
+      font-weight:900;
+      color:var(--muted);
+      min-height:56px;
+      display:flex;
+      align-items:center;
+    }
+    .statusBox.ok{
+      background:rgba(0,200,83,.10);
+      border-color:rgba(0,200,83,.22);
+      color:#065f46;
+    }
+    .statusBox.error{
+      background:rgba(239,68,68,.08);
+      border-color:rgba(239,68,68,.22);
+      color:#7f1d1d;
+    }
+    .statusBox.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.25);
+      color:#7c2d12;
+    }
+
+    .searchRow{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .searchRow{ grid-template-columns: 1fr; }
+    }
+    .searchBtn{
+      width:100%;
+      padding:14px 14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:var(--panel2);
+      color:var(--text);
+      font-weight:1000;
+      font-size:18px;
+      cursor:pointer;
+    }
+    .searchBtn:hover{ background:#eef2f7; }
+
+    .hintLine{
+      text-align:center;
+      margin-top:8px;
+      color:var(--muted);
+      font-weight:800;
+      word-break:break-word;
+      font-size:14px;
+    }
+
+    .subBox{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--panel2);
+      display:none;
+    }
+    .subTitle{
+      font-weight:1000;
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--text);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      margin-top:12px;
+      font-size:15px;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      vertical-align:top;
+      color:var(--text);
+    }
+    th{
+      background:var(--panel2);
+      font-weight:1000;
+      letter-spacing:.6px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    tr:last-child td{ border-bottom:0; }
+
+    .tableWrap{
+      max-height:460px;
+      overflow:auto;
+      border-radius:14px;
+      margin-top:10px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      font-weight:1000;
+      font-size:12px;
+      line-height:22px;
+      border:1px solid transparent;
+    }
+    .b-empty{ background:rgba(0,200,83,.12); color:#065f46; border-color:rgba(0,200,83,.20); }
+    .b-full{ background:rgba(239,68,68,.10); color:#7f1d1d; border-color:rgba(239,68,68,.20); }
+    .b-admin{ background:rgba(2,6,23,.06); color:#0f172a; border-color:rgba(2,6,23,.10); }
+    .b-user{ background:rgba(100,116,139,.10); color:#334155; border-color:rgba(100,116,139,.18); }
+
+    .setupBox{
+      margin-top:14px;
+      padding:14px;
+      border-radius:16px;
+      border:1px dashed rgba(100,116,139,.45);
+      background:var(--panel2);
+    }
+    .setupTitle{
+      font-weight:1000;
+      font-size:16px;
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--text);
+    }
+    .setupRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:720px){
+      .setupRow{ grid-template-columns:1fr; }
+    }
+    .setupBtn{
+      margin-top:10px;
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#eef2f7;
+      color:var(--text);
+      font-weight:1000;
+      font-size:16px;
+      cursor:pointer;
+    }
+    .setupBtn:hover{ background:#e7edf6; }
+
+    /* ADMIN SUMMARY */
+    .statsGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 980px){
+      .statsGrid{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 520px){
+      .statsGrid{ grid-template-columns: 1fr; }
+    }
+    .stat{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:14px;
+    }
+    .stat .k{
+      font-weight:1000;
+      letter-spacing:.8px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    .stat .v{
+      margin-top:6px;
+      font-weight:1000;
+      font-size:26px;
+      color:var(--text);
+    }
+    .adminRow{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .adminRow{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <div class="center" id="loginView">
+    <div class="loginCard">
+      <h1 class="title">Depo Paneli</h1>
+      <div class="subtitle">Giriş</div>
+
+      <div class="fieldLabel">Şifre</div>
+      <input id="pwInput" class="input" type="password" placeholder="Şifreyi girin" />
+
+      <button class="btn" id="loginBtn" type="button">GİRİŞ YAP</button>
+
+      <div class="note" id="loginNote">Sadece yetkili kullanıcılar erişebilir.</div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="appWrap" id="appView">
+    <div class="appPanel">
+      <h1 class="appHeader">Depo İşlem Paneli</h1>
+      <div class="roleLine" id="roleLine"></div>
+
+      <div class="tabbar" id="tabbar">
+        <div class="tab active" id="tabOps">RAF DOLDUR / BOŞALT</div>
+        <div class="tab" id="tabSearch">ÜRÜN ARA / RAF DURUMU</div>
+        <div class="tab adminOnly" id="tabAdmin">YÖNETİCİ</div>
+        <div class="logoutBtn" id="logoutBtn">ÇIKIŞ</div>
+      </div>
+
+      <div class="content">
+
+        <!-- TAB 1 -->
+        <div id="viewOps">
+          <div class="sectionTitle">Raf İşlemleri</div>
+
+          <div class="grid2">
+            <!-- Raf Doldur -->
+            <div class="card">
+              <h3>Rafa Ürün Koy</h3>
+
+              <label class="fieldLabel">Ürün Kodu</label>
+              <input id="inProduct" class="input" />
+
+              <label class="fieldLabel">Raf Numarası</label>
+              <input id="inShelfNum" class="input" type="number" min="1" />
+
+              <label class="fieldLabel">Adet</label>
+              <input id="inQty" class="input" type="number" min="1" value="1" />
+
+              <button class="actionBtn" id="btnPut" type="button">ÜRÜNÜ RAFA KOY</button>
+
+              <div class="statusBox" id="statusPut">İşlem bekleniyor...</div>
+            </div>
+
+            <!-- Raf Boşalt -->
+            <div class="card">
+              <h3>Raf Boşalt</h3>
+
+              <label class="fieldLabel">Raf Numarası</label>
+              <input id="outShelfNum" class="input" type="number" min="1" />
+
+              <div class="subBox" id="clearProductBox">
+                <div class="subTitle">Bu rafta birden fazla ürün var</div>
+                <label class="fieldLabel">Ürün Kodu</label>
+                <input id="outProductCode" class="input" />
+                <div class="hintLine" id="clearHint"></div>
+              </div>
+
+              <button class="actionBtn red" id="btnClear" type="button">RAFI BOŞALT</button>
+
+              <div class="statusBox" id="statusClear">İşlem bekleniyor...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2 -->
+        <div id="viewSearch" style="display:none;">
+          <div class="sectionTitle">Ürün Ara / Raf Durumu</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Ürün Ara</h3>
+            <div class="searchRow">
+              <input id="searchCode" class="input" style="margin:0;" />
+              <button class="searchBtn" id="btnSearch" type="button">ARA</button>
+            </div>
+
+            <div class="statusBox" id="statusSearch" style="margin-top:12px;">İşlem bekleniyor...</div>
+
+            <div class="tableWrap" id="searchWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr><th>Raf</th><th>Adet</th></tr>
+                </thead>
+                <tbody id="searchBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Raf Durumu</h3>
+
+            <div class="hintLine" id="rackHint"></div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Raf</th>
+                    <th>Durum</th>
+                    <th>Ürünler</th>
+                  </tr>
+                </thead>
+                <tbody id="rackBody"></tbody>
+              </table>
+            </div>
+
+            <!-- Kurulum alanı (ilk kez otomatik kurulum yoksa görünür) -->
+            <div class="setupBox" id="setupBox" style="display:none;">
+              <div class="setupTitle">İlk Kurulum</div>
+              <div class="setupRow">
+                <input id="setupCount" class="input" type="number" min="1" value="300" style="margin:0;" />
+                <input id="setupPrefix" class="input" value="R" style="margin:0;" />
+              </div>
+              <button class="setupBtn" id="btnSetup" type="button">RAFLARI OLUŞTUR</button>
+              <div class="hintLine" id="setupStatus"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3 (ADMIN) -->
+        <div id="viewAdmin" style="display:none;">
+          <div class="sectionTitle">Yönetici Paneli</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Özet Panel</h3>
+
+            <div class="statsGrid" style="margin-top:10px;">
+              <div class="stat"><div class="k">Toplam Raf</div><div class="v" id="stTotal">-</div></div>
+              <div class="stat"><div class="k">Boş Raf</div><div class="v" id="stEmpty">-</div></div>
+              <div class="stat"><div class="k">Dolu Raf</div><div class="v" id="stFull">-</div></div>
+              <div class="stat"><div class="k">Toplam Ürün Adedi</div><div class="v" id="stQty">-</div></div>
+            </div>
+
+            <div class="hintLine" id="stHint" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">İşlem Geçmişi (LOG)</h3>
+
+            <div class="adminRow">
+              <input id="logLimit" class="input" type="number" min="10" max="500" value="100" style="margin:0;" />
+              <button class="searchBtn" id="btnLoadLogs" type="button">LOG YÜKLE</button>
+            </div>
+
+            <div class="statusBox" id="statusLogs" style="margin-top:12px;">Hazır.</div>
+
+            <div class="tableWrap" id="logsWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Kullanıcı</th>
+                    <th>İşlem</th>
+                    <th>Raf</th>
+                    <th>Ürün</th>
+                    <th>Adet</th>
+                    <th>Detay</th>
+                  </tr>
+                </thead>
+                <tbody id="logsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN (module DIŞI) -->
+  <script>
+    // ====== ŞİFRELER ======
+    // Normal kullanıcılar: 1001..1010  (örnek verdiğin 3477'yi de normal saydım)
+    const USER_PINS = new Set(
+      Array.from({length: 10}, (_,i)=> String(1001+i)).concat(["3477"])
+    );
+    // Yönetici: 601  (senin verdiğin)
+    const ADMIN_PIN = "601";
+
+    // Aktif oturum bilgisi (module içinden de okunacak)
+    window.__SESSION = { role: null, pin: null };
+
+    const loginView = document.getElementById("loginView");
+    const appView   = document.getElementById("appView");
+    const pwInput   = document.getElementById("pwInput");
+    const loginBtn  = document.getElementById("loginBtn");
+    const loginNote = document.getElementById("loginNote");
+    const roleLine  = document.getElementById("roleLine");
+
+    function setLoginNote(msg, type){
+      loginNote.className = "note" + (type ? " " + type : "");
+      loginNote.textContent = msg;
+    }
+
+    function showApp(){
+      loginView.style.display="none";
+      appView.style.display="block";
+    }
+
+    function showLogin(){
+      appView.style.display="none";
+      loginView.style.display="flex";
+      pwInput.value="";
+      setLoginNote("Sadece yetkili kullanıcılar erişebilir.", "");
+      window.__SESSION = { role: null, pin: null };
+    }
+
+    function getRoleByPin(pin){
+      if(pin === ADMIN_PIN) return "admin";
+      if(USER_PINS.has(pin)) return "user";
+      return null;
+    }
+
+    function doLogin(){
+      const v = (pwInput.value || "").trim();
+      const role = getRoleByPin(v);
+
+      if(!role){
+        setLoginNote("Şifre yanlış.", "error");
+        return;
+      }
+
+      window.__SESSION = { role, pin: v };
+
+      setLoginNote("Giriş başarılı.", "ok");
+      showApp();
+
+      // role bilgisi header'a yaz
+      if(roleLine){
+        roleLine.innerHTML = role === "admin"
+          ? `Rol: <span class="badge b-admin">YÖNETİCİ</span> | PIN: ${v}`
+          : `Rol: <span class="badge b-user">KULLANICI</span> | PIN: ${v}`;
+      }
+
+      if (window.startFirebase) window.startFirebase();
+    }
+
+    loginBtn.addEventListener("click", doLogin);
+    pwInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") doLogin(); });
+
+    showLogin();
+  </script>
+
+  <!-- FIREBASE + UYGULAMA (module) -->
+  <script type="module">
+    // Firebase config (kendi config'inizi buraya yapıştırın)
+   const firebaseConfig = {
+    apiKey: "AIzaSyC……",
+    authDomain: "depo-paketleme.firebaseapp.com",
+    projectId: "depo-paketleme",
+    storageBucket: "depo-paketleme.appspot.com",
+    messagingSenderId: "2429493…",
+    appId: "1:24294…"
+};
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {
+      getFirestore, collection, doc, setDoc, updateDoc, addDoc,
+      onSnapshot, serverTimestamp, writeBatch,
+      getDoc, getDocs, query, limit, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Tabs
+    const tabOps = document.getElementById("tabOps");
+    const tabSearch = document.getElementById("tabSearch");
+    const tabAdmin = document.getElementById("tabAdmin");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const viewOps = document.getElementById("viewOps");
+    const viewSearch = document.getElementById("viewSearch");
+    const viewAdmin = document.getElementById("viewAdmin");
+
+    function setActiveTab(which){
+      if(which==="ops"){
+        tabOps.classList.add("active");
+        tabSearch.classList.remove("active");
+        if(tabAdmin) tabAdmin.classList.remove("active");
+        viewOps.style.display="block";
+        viewSearch.style.display="none";
+        if(viewAdmin) viewAdmin.style.display="none";
+      }else if(which==="search"){
+        tabSearch.classList.add("active");
+        tabOps.classList.remove("active");
+        if(tabAdmin) tabAdmin.classList.remove("active");
+        viewSearch.style.display="block";
+        viewOps.style.display="none";
+        if(viewAdmin) viewAdmin.style.display="none";
+      }else{
+        if(tabAdmin) tabAdmin.classList.add("active");
+        tabOps.classList.remove("active");
+        tabSearch.classList.remove("active");
+        if(viewAdmin) viewAdmin.style.display="block";
+        viewOps.style.display="none";
+        viewSearch.style.display="none";
+      }
+    }
+    tabOps.onclick = ()=>setActiveTab("ops");
+    tabSearch.onclick = ()=>setActiveTab("search");
+    if(tabAdmin) tabAdmin.onclick = ()=>setActiveTab("admin");
+    logoutBtn.onclick = ()=>location.reload();
+
+    // UI
+    const inProduct  = document.getElementById("inProduct");
+    const inShelfNum = document.getElementById("inShelfNum");
+    const inQty      = document.getElementById("inQty");
+    const btnPut     = document.getElementById("btnPut");
+    const statusPut  = document.getElementById("statusPut");
+
+    const outShelfNum     = document.getElementById("outShelfNum");
+    const outProductCode  = document.getElementById("outProductCode");
+    const clearProductBox = document.getElementById("clearProductBox");
+    const clearHint       = document.getElementById("clearHint");
+    const btnClear        = document.getElementById("btnClear");
+    const statusClear     = document.getElementById("statusClear");
+
+    const searchCode   = document.getElementById("searchCode");
+    const btnSearch    = document.getElementById("btnSearch");
+    const statusSearch = document.getElementById("statusSearch");
+    const searchWrap   = document.getElementById("searchWrap");
+    const searchBody   = document.getElementById("searchBody");
+
+    const rackHint  = document.getElementById("rackHint");
+    const rackBody  = document.getElementById("rackBody");
+
+    const setupBox    = document.getElementById("setupBox");
+    const setupCount  = document.getElementById("setupCount");
+    const setupPrefix = document.getElementById("setupPrefix");
+    const btnSetup    = document.getElementById("btnSetup");
+    const setupStatus = document.getElementById("setupStatus");
+
+    // ADMIN UI
+    const stTotal = document.getElementById("stTotal");
+    const stEmpty = document.getElementById("stEmpty");
+    const stFull  = document.getElementById("stFull");
+    const stQty   = document.getElementById("stQty");
+    const stHint  = document.getElementById("stHint");
+
+    const logLimit = document.getElementById("logLimit");
+    const btnLoadLogs = document.getElementById("btnLoadLogs");
+    const statusLogs = document.getElementById("statusLogs");
+    const logsWrap = document.getElementById("logsWrap");
+    const logsBody = document.getElementById("logsBody");
+
+    let shelvesCache = {};
+    let isAdmin = false;
+    let sessionPin = null;
+
+    function padShelf(num){ return "R" + String(num).padStart(3,"0"); }
+    function setStatusBox(el,msg,type){
+      el.className = "statusBox" + (type ? " " + type : "");
+      el.textContent = msg || "";
+    }
+    function productsSummary(products){
+      if(!products || Object.keys(products).length===0) return "-";
+      return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
+    }
+    function isEmpty(data){
+      const p = data?.products || {};
+      return Object.keys(p).length===0;
+    }
+    function productCount(data){
+      const p = data?.products || {};
+      return Object.keys(p).length;
+    }
+    function listProducts(data){
+      const p = data?.products || {};
+      return Object.keys(p);
+    }
+
+    function refreshClearMode(){
+      const nStr = (outShelfNum.value || "").trim();
+      if(!nStr){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        return;
+      }
+      const n = Number(nStr);
+      if(!n || n < 1){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        return;
+      }
+      const shelfName = padShelf(n);
+      const shelfData = shelvesCache[shelfName];
+      if(!shelfData){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        return;
+      }
+      const count = productCount(shelfData);
+      if(count > 1){
+        clearProductBox.style.display="block";
+        clearHint.textContent = listProducts(shelfData).join(" , ");
+      }else{
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        outProductCode.value="";
+      }
+    }
+    outShelfNum.addEventListener("input", refreshClearMode);
+
+    function runSearch(){
+      setStatusBox(statusSearch, "Aranıyor...", "");
+      searchBody.innerHTML = "";
+      searchWrap.style.display = "none";
+
+      const code = (searchCode.value || "").trim();
+      if(!code) return setStatusBox(statusSearch, "Ürün kodu boş olamaz.", "error");
+
+      const results = [];
+      for(const [raf, data] of Object.entries(shelvesCache)){
+        const qty = Number((data.products && data.products[code]) || 0);
+        if(qty > 0) results.push({ raf, qty });
+      }
+
+      if(results.length === 0) return setStatusBox(statusSearch, "Bulunamadı.", "error");
+
+      results.sort((a,b)=>a.raf.localeCompare(b.raf));
+      for(const r of results){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.raf}</td><td>${r.qty}</td>`;
+        searchBody.appendChild(tr);
+      }
+      searchWrap.style.display = "block";
+      setStatusBox(statusSearch, "Bulundu.", "ok");
+    }
+    btnSearch.onclick = runSearch;
+    searchCode.addEventListener("keydown",(e)=>{ if(e.key==="Enter") runSearch(); });
+
+    function computeSummary(){
+      const names = Object.keys(shelvesCache);
+      const total = names.length;
+      let empty = 0;
+      let full = 0;
+      let totalQty = 0;
+
+      for(const n of names){
+        const p = shelvesCache[n]?.products || {};
+        const keys = Object.keys(p);
+        if(keys.length===0) empty++;
+        else full++;
+
+        for(const k of keys){
+          totalQty += Number(p[k] || 0);
+        }
+      }
+
+      if(stTotal) stTotal.textContent = total;
+      if(stEmpty) stEmpty.textContent = empty;
+      if(stFull)  stFull.textContent  = full;
+      if(stQty)   stQty.textContent   = totalQty;
+      if(stHint)  stHint.textContent  = `Son güncelleme: ${new Date().toLocaleString("tr-TR")}`;
+    }
+
+    // Firebase'i girişten sonra başlat
+    window.startFirebase = async function(){
+      try{
+        const sess = window.__SESSION || {};
+        isAdmin = (sess.role === "admin");
+        sessionPin = sess.pin || null;
+
+        // Admin değilse admin tabını ve admin ekranını tamamen kapat
+        if(!isAdmin){
+          if(tabAdmin) tabAdmin.style.display = "none";
+          if(viewAdmin) viewAdmin.style.display = "none";
+          // tab bar grid'i 2 tab + logout olacak şekilde ayarla
+          const tabbar = document.getElementById("tabbar");
+          if(tabbar) tabbar.style.gridTemplateColumns = "1fr 1fr 170px";
+        }else{
+          if(tabAdmin) tabAdmin.style.display = "block";
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const shelvesCol = collection(db, "shelves");
+        const logsCol = collection(db, "logs");
+
+        // ✅ TEK SEFERLİK KURULUM KİLİDİ
+        const initRef = doc(db, "system", "shelves_init");
+
+        async function ensureShelvesOnce(){
+          const initSnap = await getDoc(initRef);
+
+          if (initSnap.exists() && initSnap.data()?.done === true) return;
+
+          const q = query(shelvesCol, limit(1));
+          const existing = await getDocs(q);
+          if (!existing.empty) {
+            await setDoc(initRef, { done:true, count: null, updated: serverTimestamp() }, { merge:true });
+            return;
+          }
+
+          const count = Number(setupCount.value || 300);
+
+          const CHUNK_SIZE = 450;
+          for (let start = 1; start <= count; start += CHUNK_SIZE) {
+            const batch = writeBatch(db);
+            const end = Math.min(start + CHUNK_SIZE - 1, count);
+
+            for (let i = start; i <= end; i++) {
+              const rafAdi = padShelf(i);
+              batch.set(
+                doc(shelvesCol, rafAdi),
+                { name: rafAdi, products: {}, updated: serverTimestamp() },
+                { merge: true }
+              );
+            }
+            await batch.commit();
+          }
+
+          await setDoc(initRef, { done:true, count, updated: serverTimestamp() }, { merge:true });
+        }
+
+        await ensureShelvesOnce();
+
+        // LOG yazma helper (sadece admin görecek ama herkes yazabilir)
+        async function writeLog(payload){
+          try{
+            await addDoc(logsCol, {
+              ...payload,
+              ts: serverTimestamp(),
+              role: isAdmin ? "admin" : "user",
+              pin: sessionPin || "-",
+            });
+          }catch(e){
+            // log yazılamazsa uygulamayı bozma
+          }
+        }
+
+        onSnapshot(shelvesCol, (snapshot) => {
+          shelvesCache = {};
+          rackBody.innerHTML = "";
+
+          const total = snapshot.size;
+          if(total===0){
+            rackHint.textContent = "Henüz raf yok. (Otomatik kurulum başarısızsa) İlk kurulum yapılmalı.";
+            setupBox.style.display = "block";
+          }else{
+            rackHint.textContent = "Toplam raf: " + total;
+            setupBox.style.display = "none";
+          }
+
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            const name = d.name || docSnap.id;
+            const products = d.products || {};
+            shelvesCache[name] = { ...d, name, products };
+
+            const empty = Object.keys(products).length===0;
+            const badge = empty
+              ? '<span class="badge b-empty">BOŞ</span>'
+              : '<span class="badge b-full">DOLU</span>';
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${name}</td><td>${badge}</td><td>${productsSummary(products)}</td>`;
+            rackBody.appendChild(tr);
+          });
+
+          refreshClearMode();
+
+          // admin özet paneli sürekli güncel kalsın
+          if(isAdmin) computeSummary();
+        });
+
+        btnPut.onclick = async () => {
+          setStatusBox(statusPut, "İşlem yapılıyor...", "");
+
+          const code = (inProduct.value || "").trim();
+          const nStr = (inShelfNum.value || "").trim();
+          const qty  = Number(inQty.value || 0);
+
+          if(!code) return setStatusBox(statusPut, "Ürün kodu boş olamaz.", "error");
+          if(!nStr) return setStatusBox(statusPut, "Raf numarası boş olamaz.", "error");
+          if(!qty || qty < 1) return setStatusBox(statusPut, "Adet en az 1 olmalı.", "error");
+
+          const n = Number(nStr);
+          if(!n || n < 1) return setStatusBox(statusPut, "Raf numarası 1 veya daha büyük olmalı.", "error");
+
+          const shelfName = padShelf(n);
+          const shelfData = shelvesCache[shelfName];
+          if(!shelfData) return setStatusBox(statusPut, "Bu raf yok: " + shelfName, "error");
+
+          const before = { ...(shelfData.products || {}) };
+          const products = { ...(shelfData.products || {}) };
+          products[code] = (products[code] || 0) + qty;
+
+          try{
+            await updateDoc(doc(shelvesCol, shelfName), { products, updated: serverTimestamp() });
+
+            await writeLog({
+              action: "PUT",
+              shelf: shelfName,
+              product: code,
+              qty,
+              detail: `Rafa ürün eklendi`,
+              before,
+              after: products
+            });
+
+            setStatusBox(statusPut, "Kaydedildi.", "ok");
+            inProduct.value = "";
+            inShelfNum.value = "";
+            inQty.value = "1";
+          }catch(e){
+            setStatusBox(statusPut, "Hata: " + e.message, "error");
+          }
+        };
+
+        btnClear.onclick = async () => {
+          setStatusBox(statusClear, "İşlem yapılıyor...", "");
+
+          const nStr = (outShelfNum.value || "").trim();
+          if(!nStr) return setStatusBox(statusClear, "Raf numarası boş olamaz.", "error");
+
+          const n = Number(nStr);
+          if(!n || n < 1) return setStatusBox(statusClear, "Raf numarası 1 veya daha büyük olmalı.", "error");
+
+          const shelfName = padShelf(n);
+          const shelfData = shelvesCache[shelfName];
+          if(!shelfData) return setStatusBox(statusClear, "Bu raf yok: " + shelfName, "error");
+          if(isEmpty(shelfData)) return setStatusBox(statusClear, "Raf zaten boş.", "error");
+
+          const pcount = productCount(shelfData);
+          const before = { ...(shelfData.products || {}) };
+
+          try{
+            if(pcount <= 1){
+              await updateDoc(doc(shelvesCol, shelfName), { products: {}, updated: serverTimestamp() });
+
+              await writeLog({
+                action: "CLEAR_SHELF",
+                shelf: shelfName,
+                product: "-",
+                qty: 0,
+                detail: "Raf tamamen boşaltıldı",
+                before,
+                after: {}
+              });
+
+              setStatusBox(statusClear, "Raf boşaltıldı.", "ok");
+              outShelfNum.value = "";
+              outProductCode.value = "";
+              clearProductBox.style.display = "none";
+              clearHint.textContent = "";
+              return;
+            }
+
+            const code = (outProductCode.value || "").trim();
+            if(!code) return setStatusBox(statusClear, "Ürün kodu yazın.", "error");
+
+            const products = { ...(shelfData.products || {}) };
+            if(!(code in products)) return setStatusBox(statusClear, "Bu ürün bu rafta yok.", "error");
+
+            delete products[code];
+            await updateDoc(doc(shelvesCol, shelfName), { products, updated: serverTimestamp() });
+
+            await writeLog({
+              action: "REMOVE_PRODUCT",
+              shelf: shelfName,
+              product: code,
+              qty: 0,
+              detail: "Ürün raftan çıkarıldı",
+              before,
+              after: products
+            });
+
+            setStatusBox(statusClear, "Ürün raftan çıkarıldı.", "ok");
+            outProductCode.value = "";
+            refreshClearMode();
+          }catch(e){
+            setStatusBox(statusClear, "Hata: " + e.message, "error");
+          }
+        };
+
+        // Manuel kurulum butonu (hala dursun)
+        btnSetup.onclick = async () => {
+          setupStatus.textContent = "Raflar oluşturuluyor...";
+
+          const count = Number(setupCount.value || 0);
+          const prefix = (setupPrefix.value || "R").trim().toUpperCase();
+
+          if (!count || count < 1) {
+            setupStatus.textContent = "Raf sayısı 1 veya daha büyük olmalı.";
+            return;
+          }
+          if (prefix !== "R") {
+            setupStatus.textContent = "Prefix R olmalı.";
+            return;
+          }
+
+          try {
+            const CHUNK_SIZE = 450;
+            let created = 0;
+
+            for (let start = 1; start <= count; start += CHUNK_SIZE) {
+              const batch = writeBatch(db);
+              const end = Math.min(start + CHUNK_SIZE - 1, count);
+
+              for (let i = start; i <= end; i++) {
+                const rafAdi = padShelf(i);
+                batch.set(
+                  doc(shelvesCol, rafAdi),
+                  { name: rafAdi, products: {}, updated: serverTimestamp() },
+                  { merge: true }
+                );
+              }
+
+              await batch.commit();
+              created = end;
+              setupStatus.textContent = `Oluşturuldu: ${created} / ${count}`;
+            }
+
+            await setDoc(initRef, { done:true, count, updated: serverTimestamp() }, { merge:true });
+
+            await writeLog({
+              action: "SETUP",
+              shelf: "-",
+              product: "-",
+              qty: 0,
+              detail: `Manuel kurulum: ${count} raf`,
+              before: {},
+              after: {}
+            });
+
+            setupStatus.textContent = `BİTTİ ✅ Toplam ${count} raf oluşturuldu.`;
+          } catch (e) {
+            setupStatus.textContent = "Hata: " + e.message;
+          }
+        };
+
+        // ADMIN: LOG YÜKLE
+        async function loadLogs(){
+          if(!isAdmin) return;
+
+          setStatusBox(statusLogs, "Loglar yükleniyor...", "");
+          logsBody.innerHTML = "";
+          logsWrap.style.display = "none";
+
+          const lim = Math.max(10, Math.min(500, Number(logLimit.value || 100)));
+
+          try{
+            const q = query(logsCol, orderBy("ts","desc"), limit(lim));
+            const snap = await getDocs(q);
+
+            if(snap.empty){
+              setStatusBox(statusLogs, "Log bulunamadı.", "warn");
+              return;
+            }
+
+            snap.forEach(docSnap=>{
+              const d = docSnap.data() || {};
+              const dt = d.ts?.toDate ? d.ts.toDate() : null;
+              const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${dtStr}</td>
+                <td>${(d.role || "-")} / ${(d.pin || "-")}</td>
+                <td>${(d.action || "-")}</td>
+                <td>${(d.shelf || "-")}</td>
+                <td>${(d.product || "-")}</td>
+                <td>${(d.qty ?? "-")}</td>
+                <td>${(d.detail || "-")}</td>
+              `;
+              logsBody.appendChild(tr);
+            });
+
+            logsWrap.style.display = "block";
+            setStatusBox(statusLogs, `Yüklendi: ${logsBody.children.length} kayıt`, "ok");
+          }catch(e){
+            setStatusBox(statusLogs, "Hata: " + e.message, "error");
+          }
+        }
+
+        if(btnLoadLogs) btnLoadLogs.onclick = loadLogs;
+
+        setStatusBox(statusPut, "Hazır.", "ok");
+        setStatusBox(statusClear, "Hazır.", "ok");
+        setStatusBox(statusSearch, "Hazır.", "ok");
+        if(statusLogs) setStatusBox(statusLogs, "Hazır.", "ok");
+
+        // Admin giriş yaparsa default admin tabı açık olabilir (istersen ops)
+        // setActiveTab(isAdmin ? "admin" : "ops");
+      }catch(e){
+        setStatusBox(statusPut, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusClear, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusSearch, "Firebase yüklenemedi: " + e.message, "error");
+        if(document.getElementById("statusLogs")){
+          setStatusBox(document.getElementById("statusLogs"), "Firebase yüklenemedi: " + e.message, "error");
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>

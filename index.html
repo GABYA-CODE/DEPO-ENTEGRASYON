@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Depo İşlem Paneli</title>
+
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#f3f4f6;
+      --panel:#ffffff;
+      --panel2:#f9fafb;
+      --border:#e5e7eb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --green:#00c853;
+      --green2:#00b84c;
+      --danger:#ef4444;
+      --danger2:#dc2626;
+      --input:#ffffff;
+      --shadow:0 18px 50px rgba(2,6,23,.12);
+      --shadow2:0 10px 30px rgba(2,6,23,.10);
+      --amber:#f59e0b;
+    }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    /* LOGIN */
+    .center{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .loginCard{
+      width:min(520px,96vw);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:28px;
+    }
+    .title{
+      text-align:center;
+      font-weight:900;
+      font-size:42px;
+      letter-spacing:.5px;
+      margin:0 0 8px;
+      color:var(--text);
+    }
+    .subtitle{
+      text-align:center;
+      font-weight:900;
+      font-size:22px;
+      margin:0 0 18px;
+      color:var(--text);
+    }
+
+    .fieldLabel{
+      font-weight:900;
+      letter-spacing:.8px;
+      color:var(--muted);
+      margin:0 0 6px;
+      text-transform:uppercase;
+      font-size:18px;
+    }
+    .input{
+      width:100%;
+      padding:14px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--input);
+      color:var(--text);
+      font-size:18px;
+      outline:none;
+      box-shadow:0 1px 0 rgba(2,6,23,.03) inset;
+    }
+    .input:focus{
+      border-color:rgba(0,200,83,.55);
+      box-shadow:0 0 0 3px rgba(0,200,83,.15);
+    }
+
+    .btn{
+      width:100%;
+      padding:16px 16px;
+      border:0;
+      border-radius:12px;
+      background:var(--green);
+      color:#07210f;
+      font-weight:900;
+      letter-spacing:1px;
+      font-size:22px;
+      cursor:pointer;
+      margin-top:14px;
+      box-shadow:0 10px 20px rgba(0,200,83,.18);
+    }
+    .btn:hover{ background:var(--green2); }
+    .btn:active{ transform:translateY(1px); }
+
+    .note{
+      margin-top:14px;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:16px;
+      text-align:center;
+    }
+    .note.error{
+      background:rgba(239,68,68,.08);
+      border-color:rgba(239,68,68,.25);
+      color:#7f1d1d;
+    }
+    .note.ok{
+      background:rgba(0,200,83,.10);
+      border-color:rgba(0,200,83,.22);
+      color:#065f46;
+    }
+    .note.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.25);
+      color:#7c2d12;
+    }
+
+    /* APP */
+    .appWrap{ padding:18px; display:none; }
+    .appPanel{
+      width:min(1200px,98vw);
+      margin:0 auto;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .appHeader{
+      text-align:center;
+      font-weight:1000;
+      font-size:44px;
+      letter-spacing:.5px;
+      padding:22px 14px 8px;
+      margin:0;
+      color:var(--text);
+    }
+    .roleLine{
+      text-align:center;
+      margin:0 0 12px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.6px;
+    }
+
+    .tabbar{
+      display:flex;
+      gap:0;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin; /* Firefox: show thin scrollbar */
+      scrollbar-color: rgba(0,0,0,.12) transparent;
+      -ms-overflow-style: auto; /* IE 10+ */
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      background:var(--panel2);
+      scroll-behavior: smooth;
+    }
+    .tabbar::-webkit-scrollbar{ height:6px; }
+    .tabbar::-webkit-scrollbar-track{ background: transparent; }
+    .tabbar::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.12); border-radius:4px; }
+    @media (max-width: 900px){
+      .tabbar{ /* keep horizontal scroll on small screens */ }
+      .tabbar .logoutBtn{ margin-left:auto; }
+    }
+    .tab{
+      flex:1;
+      padding:16px 10px;
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:1px;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-size:18px;
+      border-right:1px solid var(--border);
+    }
+    .tab:last-child{ border-right:0; }
+    .tab.active{
+      background:rgba(0,200,83,.14);
+      color:#064e3b;
+      box-shadow: inset 0 -3px 0 rgba(0,200,83,.55);
+    }
+    .logoutBtn{
+      padding:16px 10px;
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:1px;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-size:18px;
+    }
+    .logoutBtn:hover{ background:rgba(2,6,23,.03); color:var(--text); }
+
+    .content{ padding:18px; background:var(--bg); }
+    .sectionTitle{
+      text-align:center;
+      font-weight:1000;
+      font-size:26px;
+      margin:8px 0 14px;
+      color:var(--text);
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:var(--shadow2);
+      height:100%;
+    }
+    .card h3{
+      margin:0 0 12px;
+      text-align:center;
+      font-weight:1000;
+      font-size:22px;
+      color:var(--text);
+    }
+
+    .actionBtn{
+      width:100%;
+      padding:16px 14px;
+      border:0;
+      border-radius:14px;
+      background:var(--green);
+      color:#07210f;
+      font-weight:1000;
+      letter-spacing:1px;
+      font-size:20px;
+      cursor:pointer;
+      margin-top:10px;
+      box-shadow:0 10px 18px rgba(0,200,83,.14);
+    }
+    .actionBtn:hover{ background:var(--green2); }
+    .actionBtn.red{
+      background:var(--danger);
+      color:#1b0707;
+      box-shadow:0 10px 18px rgba(239,68,68,.14);
+    }
+    .actionBtn.red:hover{ background:var(--danger2); }
+
+    .statusBox{
+      margin-top:12px;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      font-size:16px;
+      font-weight:900;
+      color:var(--muted);
+      min-height:56px;
+      display:flex;
+      align-items:center;
+    }
+    .statusBox.ok{
+      background:rgba(0,200,83,.10);
+      border-color:rgba(0,200,83,.22);
+      color:#065f46;
+    }
+    .statusBox.error{
+      background:rgba(239,68,68,.08);
+      border-color:rgba(239,68,68,.22);
+      color:#7f1d1d;
+    }
+    .statusBox.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.25);
+      color:#7c2d12;
+    }
+
+    .searchRow{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .searchRow{ grid-template-columns: 1fr; }
+    }
+    .searchBtn{
+      width:100%;
+      padding:14px 14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:var(--panel2);
+      color:var(--text);
+      font-weight:1000;
+      font-size:18px;
+      cursor:pointer;
+    }
+    .searchBtn:hover{ background:#eef2f7; }
+
+    .hintLine{
+      text-align:center;
+      margin-top:8px;
+      color:var(--muted);
+      font-weight:800;
+      word-break:break-word;
+      font-size:14px;
+    }
+
+    .subBox{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--panel2);
+      display:none;
+    }
+    .subTitle{
+      font-weight:1000;
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--text);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      margin-top:12px;
+      font-size:15px;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      vertical-align:top;
+      color:var(--text);
+    }
+    th{
+      background:var(--panel2);
+      font-weight:1000;
+      letter-spacing:.6px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    tr:last-child td{ border-bottom:0; }
+
+    .tableWrap{
+      max-height:460px;
+      overflow:auto;
+      border-radius:14px;
+      margin-top:10px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      font-weight:1000;
+      font-size:12px;
+      line-height:22px;
+      border:1px solid transparent;
+    }
+    .b-admin{ background:rgba(2,6,23,.06); color:#0f172a; border-color:rgba(2,6,23,.10); }
+    .b-packer{ background:rgba(245,158,11,.14); color:#7c2d12; border-color:rgba(245,158,11,.22); }
+    .b-stower{ background:rgba(59,130,246,.12); color:#1e3a8a; border-color:rgba(59,130,246,.18); }
+    .b-empty{ background:rgba(0,200,83,.12); color:#065f46; border-color:rgba(0,200,83,.20); }
+    .b-full{ background:rgba(239,68,68,.10); color:#7f1d1d; border-color:rgba(239,68,68,.20); }
+
+    .setupBox{
+      margin-top:14px;
+      padding:14px;
+      border-radius:16px;
+      border:1px dashed rgba(100,116,139,.45);
+      background:var(--panel2);
+      display:none;
+    }
+    .setupTitle{
+      font-weight:1000;
+      font-size:16px;
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--text);
+    }
+    .setupRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:720px){
+      .setupRow{ grid-template-columns:1fr; }
+    }
+    .setupBtn{
+      margin-top:10px;
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#eef2f7;
+      color:var(--text);
+      font-weight:1000;
+      font-size:16px;
+      cursor:pointer;
+    }
+    .setupBtn:hover{ background:#e7edf6; }
+
+    /* ADMIN SUMMARY */
+    .statsGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 980px){
+      .statsGrid{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 520px){
+      .statsGrid{ grid-template-columns: 1fr; }
+    }
+    .stat{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:14px;
+    }
+    .stat .k{
+      font-weight:1000;
+      letter-spacing:.8px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    .stat .v{
+      margin-top:6px;
+      font-weight:1000;
+      font-size:26px;
+      color:var(--text);
+    }
+
+    .adminRow{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .adminRow{ grid-template-columns: 1fr; }
+    }
+
+    .b-wait{ background:rgba(100,116,139,.12); color:#334155; border-color:rgba(100,116,139,.18); }
+    .b-done{ background:rgba(0,200,83,.12); color:#065f46; border-color:rgba(0,200,83,.20); }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <div class="center" id="loginView">
+    <div class="loginCard">
+      <h1 class="title">Depo Paneli</h1>
+      <div class="subtitle">Giriş</div>
+
+      <div class="fieldLabel">Şifre</div>
+      <input id="pwInput" class="input" type="password" placeholder="Şifreyi girin" />
+
+      <button class="btn" id="loginBtn" type="button">GİRİŞ YAP</button>
+
+      <div class="note" id="loginNote">Sadece yetkili kullanıcılar erişebilir.</div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="appWrap" id="appView">
+    <div class="appPanel">
+      <h1 class="appHeader">Depo İşlem Paneli</h1>
+      <div class="roleLine" id="roleLine"></div>
+
+      <div class="tabbar" id="tabbar">
+        <div class="tab" id="tabPut">RAFA ÜRÜN KOY</div>
+        <div class="tab" id="tabClear">RAF BOŞALT</div>
+        <div class="tab" id="tabSearch">ÜRÜN ARA</div>
+        <div class="tab" id="tabRack">RAF DURUMU</div>
+        <div class="tab" id="tabRequest">TALEP</div>
+        <div class="tab" id="tabAdmin">YÖNETİCİ</div>
+        <div class="logoutBtn" id="logoutBtn">ÇIKIŞ</div>
+      </div>
+
+      <div class="content">
+
+        <!-- VIEW: PUT -->
+        <div id="viewPut" style="display:none;">
+          <div class="sectionTitle"></div>
+          <div class="card">
+            <h3></h3>
+
+            <label class="fieldLabel">Ürün Kodu</label>
+            <input id="inProduct" class="input" />
+
+            <label class="fieldLabel">Raf Numarası</label>
+            <input id="inShelfNum" class="input" type="number" min="1" />
+
+            <label class="fieldLabel">Adet</label>
+            <input id="inQty" class="input" type="number" min="1" value="1" />
+
+            <button class="actionBtn" id="btnPut" type="button">ÜRÜNÜ RAFA KOY</button>
+
+            <div class="statusBox" id="statusPut" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: CLEAR -->
+        <div id="viewClear" style="display:none;">
+          <div class="sectionTitle"></div>
+          <div class="card">
+            <h3></h3>
+
+            <label class="fieldLabel">Raf Numarası</label>
+            <input id="outShelfNum" class="input" type="number" min="1" />
+
+            <div class="subBox" id="clearProductBox">
+              <div class="subTitle" id="clearBoxTitle">Bu rafta birden fazla ürün var</div>
+
+              <label class="fieldLabel">Ürün Kodu</label>
+              <input id="outProductCode" class="input" />
+
+              <!-- ✅ Adet azalt (sadece gerekli olduğunda açılır) -->
+              <div id="clearQtyBox" style="display:none; margin-top:10px;">
+                <label class="fieldLabel">Adet (Azalt)</label>
+                <input id="outReduceQty" class="input" type="number" min="1" value="1" />
+                <div class="hintLine" id="clearQtyHint"></div>
+              </div>
+
+              <div class="hintLine" id="clearHint"></div>
+            </div>
+
+            <button class="actionBtn red" id="btnClear" type="button">RAFI BOŞALT</button>
+
+            <div class="statusBox" id="statusClear" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: SEARCH -->
+        <div id="viewSearch" style="display:none;">
+          <div class="sectionTitle"></div>
+
+          <div class="card">
+            <h3 style="margin-top:0;"></h3>
+            <div class="searchRow">
+              <input id="searchCode" class="input" style="margin:0;" />
+              <button class="searchBtn" id="btnSearch" type="button">ARA</button>
+            </div>
+
+            <div class="statusBox" id="statusSearch" style="margin-top:12px;display:none;"></div>
+
+            <div class="tableWrap" id="searchWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr><th>Raf</th><th>Adet</th></tr>
+                </thead>
+                <tbody id="searchBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: RACK STATUS -->
+        <div id="viewRack" style="display:none;">
+          <div class="sectionTitle"></div>
+
+          <div class="card">
+            <h3 style="margin-top:0;"></h3>
+
+            <div class="hintLine" id="rackHint"></div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Raf</th>
+                    <th>Durum</th>
+                    <th>Ürünler</th>
+                  </tr>
+                </thead>
+                <tbody id="rackBody"></tbody>
+              </table>
+            </div>
+
+            <div class="setupBox" id="setupBox">
+              <div class="setupTitle">İlk Kurulum</div>
+              <div class="setupRow">
+                <input id="setupCount" class="input" type="number" min="1" value="300" style="margin:0;" />
+                <input id="setupPrefix" class="input" value="R" style="margin:0;" />
+              </div>
+              <button class="setupBtn" id="btnSetup" type="button">RAFLARI OLUŞTUR</button>
+              <div class="hintLine" id="setupStatus"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: REQUEST -->
+        <div id="viewRequest" style="display:none;">
+          <div class="sectionTitle">Talep Ekranı</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Ürün Talebi</h3>
+
+            <label class="fieldLabel">Ürün Kodu</label>
+            <input id="reqProduct" class="input" />
+
+            <button class="actionBtn" id="btnReq" type="button">GELDİĞİNDE HABER VER</button>
+
+            <div class="statusBox" id="statusReq" style="display:none;"></div>
+
+            <div class="hintLine" style="margin-top:10px;">
+              Not: Ürün rafa konulunca tüm paketçilere sesli bildirim gelir.
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Bekleyen Talepler</h3>
+
+            <div class="statusBox" id="statusReqList">Yükleniyor...</div>
+
+            <div class="tableWrap" id="reqWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Ürün</th>
+                    <th>Durum</th>
+                    <th>Talep Eden</th>
+                    <th>Karşılayan</th>
+                  </tr>
+                </thead>
+                <tbody id="reqBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: ADMIN -->
+        <div id="viewAdmin" style="display:none;">
+          <div class="sectionTitle">Yönetici Paneli</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Özet Panel</h3>
+
+            <div class="statsGrid" style="margin-top:10px;">
+              <div class="stat"><div class="k">Toplam Raf</div><div class="v" id="stTotal">-</div></div>
+              <div class="stat"><div class="k">Boş Raf</div><div class="v" id="stEmpty">-</div></div>
+              <div class="stat"><div class="k">Dolu Raf</div><div class="v" id="stFull">-</div></div>
+              <div class="stat"><div class="k">Toplam Ürün Adedi</div><div class="v" id="stQty">-</div></div>
+            </div>
+
+            <div class="hintLine" id="stHint" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">İşlem Geçmişi (LOG)</h3>
+
+            <div class="adminRow">
+              <input id="logLimit" class="input" type="number" min="10" max="500" value="100" style="margin:0;" />
+              <button class="searchBtn" id="btnLoadLogs" type="button">LOG YÜKLE</button>
+            </div>
+
+            <div class="statusBox" id="statusLogs" style="margin-top:12px;display:none;"></div>
+
+            <div class="tableWrap" id="logsWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Kullanıcı</th>
+                    <th>İşlem</th>
+                    <th>Raf</th>
+                    <th>Ürün</th>
+                    <th>Adet</th>
+                    <th>Detay</th>
+                  </tr>
+                </thead>
+                <tbody id="logsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN (module DIŞI) -->
+  <script>
+    // ====== PINLER ======
+    const ADMIN_PINS = new Set(["601","602","603"]);
+
+    const PACKER_PINS = new Set(
+      Array.from({length: 9}, (_,i)=> String(2001+i))
+    );
+
+    const STOWER_PINS = new Set(
+      Array.from({length: 4}, (_,i)=> String(3001+i))
+    );
+
+    window.__SESSION = { role: null, pin: null };
+
+    const loginView = document.getElementById("loginView");
+    const appView   = document.getElementById("appView");
+    const pwInput   = document.getElementById("pwInput");
+    const loginBtn  = document.getElementById("loginBtn");
+    const loginNote = document.getElementById("loginNote");
+    const roleLine  = document.getElementById("roleLine");
+
+    function setLoginNote(msg, type){
+      loginNote.className = "note" + (type ? " " + type : "");
+      loginNote.textContent = msg;
+    }
+
+    function showApp(){
+      loginView.style.display="none";
+      appView.style.display="block";
+    }
+
+    function showLogin(){
+      appView.style.display="none";
+      loginView.style.display="flex";
+      pwInput.value="";
+      setLoginNote("Sadece yetkili kullanıcılar erişebilir.", "");
+      window.__SESSION = { role: null, pin: null };
+    }
+
+    function getRoleByPin(pin){
+      if(ADMIN_PINS.has(pin)) return "admin";
+      if(PACKER_PINS.has(pin)) return "packer";
+      if(STOWER_PINS.has(pin)) return "stower";
+      return null;
+    }
+
+    function roleBadge(role){
+      if(role==="admin")  return `<span class="badge b-admin">YÖNETİCİ</span>`;
+      if(role==="packer") return `<span class="badge b-packer">PAKETÇİ</span>`;
+      if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
+      return `<span class="badge">-</span>`;
+    }
+
+    function doLogin(){
+      const v = (pwInput.value || "").trim();
+      const role = getRoleByPin(v);
+
+      if(!role){
+        setLoginNote("Şifre yanlış.", "error");
+        return;
+      }
+
+      window.__SESSION = { role, pin: v };
+
+      setLoginNote("Giriş başarılı.", "ok");
+      showApp();
+
+      if(roleLine){
+        roleLine.innerHTML = `Rol: ${roleBadge(role)} | PIN: ${v}`;
+      }
+
+      if (window.startFirebase) window.startFirebase();
+    }
+
+    loginBtn.addEventListener("click", doLogin);
+    pwInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") doLogin(); });
+
+    showLogin();
+  </script>
+
+  <!-- FIREBASE + UYGULAMA (module) -->
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyC……",
+      authDomain: "depo-paketleme.firebaseapp.com",
+      projectId: "depo-paketleme",
+      storageBucket: "depo-paketleme.appspot.com",
+      messagingSenderId: "2429493…",
+      appId: "1:24294…"
+    };
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {
+      getFirestore, collection, doc, setDoc, updateDoc, addDoc,
+      onSnapshot, serverTimestamp, writeBatch,
+      getDoc, getDocs, query, limit, orderBy, where
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const tabbar   = document.getElementById("tabbar");
+    const logoutBtn= document.getElementById("logoutBtn");
+
+    const tabPut   = document.getElementById("tabPut");
+    const tabClear = document.getElementById("tabClear");
+    const tabSearch= document.getElementById("tabSearch");
+    const tabRack  = document.getElementById("tabRack");
+    const tabRequest= document.getElementById("tabRequest");
+    const tabAdmin = document.getElementById("tabAdmin");
+
+    const viewPut  = document.getElementById("viewPut");
+    const viewClear= document.getElementById("viewClear");
+    const viewSearch= document.getElementById("viewSearch");
+    const viewRack = document.getElementById("viewRack");
+    const viewRequest= document.getElementById("viewRequest");
+    const viewAdmin= document.getElementById("viewAdmin");
+
+    const inProduct  = document.getElementById("inProduct");
+    const inShelfNum = document.getElementById("inShelfNum");
+    const inQty      = document.getElementById("inQty");
+    const btnPut     = document.getElementById("btnPut");
+    const statusPut  = document.getElementById("statusPut");
+
+    const outShelfNum     = document.getElementById("outShelfNum");
+    const outProductCode  = document.getElementById("outProductCode");
+    const clearProductBox = document.getElementById("clearProductBox");
+    const clearHint       = document.getElementById("clearHint");
+    const btnClear        = document.getElementById("btnClear");
+    const statusClear     = document.getElementById("statusClear");
+
+    // ✅ yeni alanlar (adet azalt)
+    const clearBoxTitle  = document.getElementById("clearBoxTitle");
+    const clearQtyBox    = document.getElementById("clearQtyBox");
+    const outReduceQty   = document.getElementById("outReduceQty");
+    const clearQtyHint   = document.getElementById("clearQtyHint");
+
+    const searchCode   = document.getElementById("searchCode");
+    const btnSearch    = document.getElementById("btnSearch");
+    const statusSearch = document.getElementById("statusSearch");
+    const searchWrap   = document.getElementById("searchWrap");
+    const searchBody   = document.getElementById("searchBody");
+
+    const rackHint  = document.getElementById("rackHint");
+    const rackBody  = document.getElementById("rackBody");
+
+    const setupBox    = document.getElementById("setupBox");
+    const setupCount  = document.getElementById("setupCount");
+    const setupPrefix = document.getElementById("setupPrefix");
+    const btnSetup    = document.getElementById("btnSetup");
+    const setupStatus = document.getElementById("setupStatus");
+
+    const reqProduct = document.getElementById("reqProduct");
+    const btnReq     = document.getElementById("btnReq");
+    const statusReq  = document.getElementById("statusReq");
+    const statusReqList = document.getElementById("statusReqList");
+    const reqWrap    = document.getElementById("reqWrap");
+    const reqBody    = document.getElementById("reqBody");
+
+    const stTotal = document.getElementById("stTotal");
+    const stEmpty = document.getElementById("stEmpty");
+    const stFull  = document.getElementById("stFull");
+    const stQty   = document.getElementById("stQty");
+    const stHint  = document.getElementById("stHint");
+
+    const logLimit = document.getElementById("logLimit");
+    const btnLoadLogs = document.getElementById("btnLoadLogs");
+    const statusLogs = document.getElementById("statusLogs");
+    const logsWrap = document.getElementById("logsWrap");
+    const logsBody = document.getElementById("logsBody");
+
+    let shelvesCache = {};
+    let role = null;
+    let sessionPin = null;
+
+    function padShelf(num){ return "R" + String(num).padStart(3,"0"); }
+
+    function setStatusBox(el,msg,type){
+      if(!el) return;
+      if(!msg){
+        el.style.display = "none";
+        return;
+      }
+      el.style.display = "flex";
+      el.className = "statusBox" + (type ? " " + type : "");
+      el.textContent = msg || "";
+    }
+
+    function productsSummary(products){
+      if(!products || Object.keys(products).length===0) return "-";
+      return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
+    }
+
+    function isEmpty(data){
+      const p = data?.products || {};
+      return Object.keys(p).length===0;
+    }
+
+    function refreshClearMode(){
+      const nStr = (outShelfNum.value || "").trim();
+      if(!nStr){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(outProductCode) outProductCode.value="";
+        if(outReduceQty) outReduceQty.value="1";
+        return;
+      }
+
+      const n = Number(nStr);
+      if(!n || n < 1){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(outReduceQty) outReduceQty.value="1";
+        return;
+      }
+
+      const shelfName = padShelf(n);
+      const shelfData = shelvesCache[shelfName];
+      if(!shelfData){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(outReduceQty) outReduceQty.value="1";
+        return;
+      }
+
+      const products = shelfData.products || {};
+      const keys = Object.keys(products);
+      const pcount = keys.length;
+
+      if(pcount === 0){
+        clearProductBox.style.display="none";
+        clearHint.textContent="";
+        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(outReduceQty) outReduceQty.value="1";
+        return;
+      }
+
+      // Tek ürün varsa
+      if(pcount === 1){
+        const onlyCode = keys[0];
+        const onlyQty  = Number(products[onlyCode] || 0);
+
+        // sadece 1 adet => adet kutusu açılmasın (rafı komple boşalt)
+        if(onlyQty <= 1){
+          clearProductBox.style.display="none";
+          clearHint.textContent="";
+          if(clearQtyBox) clearQtyBox.style.display="none";
+          if(outProductCode) outProductCode.value="";
+          if(outReduceQty) outReduceQty.value="1";
+          return;
+        }
+
+        // 2+ adet => ürün kodu kilitli + adet kutusu açık
+        clearProductBox.style.display="block";
+        if(clearBoxTitle) clearBoxTitle.textContent = "Bu rafta aynı üründen birden fazla adet var";
+        outProductCode.value = onlyCode;
+        outProductCode.readOnly = true;
+
+        clearHint.textContent = `${onlyCode} x${onlyQty}`;
+
+        if(clearQtyBox) clearQtyBox.style.display="block";
+        if(outReduceQty){
+          outReduceQty.value = "1";
+          outReduceQty.max = String(onlyQty);
+        }
+        if(clearQtyHint) clearQtyHint.textContent = `Mevcut: ${onlyQty} adet (Max: ${onlyQty})`;
+        return;
+      }
+
+      // Birden fazla ürün varsa
+      clearProductBox.style.display="block";
+      if(clearBoxTitle) clearBoxTitle.textContent = "Bu rafta birden fazla ürün var";
+      outProductCode.readOnly = false;
+
+      clearHint.textContent = keys.map(k=>`${k} x${products[k]}`).join(" , ");
+
+      const selected = (outProductCode.value || "").trim();
+      const selQty = Number(products[selected] || 0);
+
+      if(selected && selQty > 1){
+        if(clearQtyBox) clearQtyBox.style.display="block";
+        if(outReduceQty){
+          outReduceQty.value = "1";
+          outReduceQty.max = String(selQty);
+        }
+        if(clearQtyHint) clearQtyHint.textContent = `Mevcut: ${selQty} adet (Max: ${selQty})`;
+      }else{
+        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(outReduceQty) outReduceQty.value = "1";
+        if(clearQtyHint) clearQtyHint.textContent = "";
+      }
+    }
+
+    outShelfNum?.addEventListener("input", refreshClearMode);
+    outProductCode?.addEventListener("input", refreshClearMode);
+    outReduceQty?.addEventListener("input", ()=>{
+      const v = Number(outReduceQty.value || 1);
+      if(v < 1) outReduceQty.value = "1";
+    });
+
+    function runSearch(){
+      setStatusBox(statusSearch, "Aranıyor...", "");
+      searchBody.innerHTML = "";
+      searchWrap.style.display = "none";
+
+      const code = (searchCode.value || "").trim();
+      if(!code) return setStatusBox(statusSearch, "Ürün kodu boş olamaz.", "error");
+
+      const results = [];
+      for(const [raf, data] of Object.entries(shelvesCache)){
+        const qty = Number((data.products && data.products[code]) || 0);
+        if(qty > 0) results.push({ raf, qty });
+      }
+
+      if(results.length === 0) return setStatusBox(statusSearch, "Bulunamadı.", "error");
+
+      results.sort((a,b)=>a.raf.localeCompare(b.raf));
+      for(const r of results){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.raf}</td><td>${r.qty}</td>`;
+        searchBody.appendChild(tr);
+      }
+      searchWrap.style.display = "block";
+      setStatusBox(statusSearch, "Bulundu.", "ok");
+    }
+    btnSearch && (btnSearch.onclick = runSearch);
+    searchCode && searchCode.addEventListener("keydown",(e)=>{ if(e.key==="Enter") runSearch(); });
+
+    function computeSummary(){
+      const names = Object.keys(shelvesCache);
+      const total = names.length;
+      let empty = 0;
+      let full = 0;
+      let totalQty = 0;
+
+      for(const n of names){
+        const p = shelvesCache[n]?.products || {};
+        const keys = Object.keys(p);
+        if(keys.length===0) empty++;
+        else full++;
+        for(const k of keys) totalQty += Number(p[k] || 0);
+      }
+
+      stTotal && (stTotal.textContent = total);
+      stEmpty && (stEmpty.textContent = empty);
+      stFull  && (stFull.textContent  = full);
+      stQty   && (stQty.textContent   = totalQty);
+      stHint  && (stHint.textContent  = `Son güncelleme: ${new Date().toLocaleString("tr-TR")}`);
+    }
+
+    function setActiveTab(target){
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabAdmin].filter(Boolean);
+      allTabs.forEach(t=>t.classList.remove("active"));
+
+      const hideAll = ()=>{
+        viewPut && (viewPut.style.display="none");
+        viewClear && (viewClear.style.display="none");
+        viewSearch && (viewSearch.style.display="none");
+        viewRack && (viewRack.style.display="none");
+        viewRequest && (viewRequest.style.display="none");
+        viewAdmin && (viewAdmin.style.display="none");
+      };
+
+      hideAll();
+
+      if(target==="put"){ tabPut?.classList.add("active"); viewPut.style.display="block"; setTimeout(()=>{ try{ inProduct.focus(); inProduct.select && inProduct.select(); }catch(e){} },50); }
+      if(target==="clear"){ tabClear?.classList.add("active"); viewClear.style.display="block"; setTimeout(()=>{ try{ outShelfNum.focus(); outShelfNum.select && outShelfNum.select(); }catch(e){} },50); }
+      if(target==="search"){ tabSearch?.classList.add("active"); viewSearch.style.display="block"; setTimeout(()=>{ try{ searchCode.focus(); searchCode.select && searchCode.select(); }catch(e){} },50); }
+      if(target==="rack"){ tabRack?.classList.add("active"); viewRack.style.display="block"; setTimeout(()=>{ try{ rackBody && rackBody.scrollIntoView && rackBody.scrollIntoView(); }catch(e){} },50); }
+      if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
+      if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; }
+    }
+
+    function setTabsByRole(r){
+      const pairs = [
+        [tabPut, viewPut],
+        [tabClear, viewClear],
+        [tabSearch, viewSearch],
+        [tabRack, viewRack],
+        [tabRequest, viewRequest],
+        [tabAdmin, viewAdmin]
+      ];
+
+      pairs.forEach(([t,v])=>{
+        t && (t.style.display="none");
+        v && (v.style.display="none");
+      });
+
+      if(r==="packer"){
+        tabClear.style.display="block";
+        tabSearch.style.display="block";
+        tabRack.style.display="block";
+        tabRequest.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 170px";
+        setActiveTab("clear");
+      }else if(r==="stower"){
+        tabPut.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 170px";
+        setActiveTab("put");
+      }else if(r==="admin"){
+        tabPut.style.display="block";
+        tabClear.style.display="block";
+        tabSearch.style.display="block";
+        tabRack.style.display="block";
+        tabRequest.style.display="block";
+        tabAdmin.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 170px";
+        setActiveTab("admin");
+      }else{
+        tabbar.style.gridTemplateColumns = "1fr 170px";
+      }
+    }
+
+    function playBeep(){
+      try{
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = 880;
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.26);
+        osc.onended = ()=>{ try{ ctx.close(); }catch(e){} };
+      }catch(e){}
+    }
+
+    window.startFirebase = async function(){
+      try{
+        const sess = window.__SESSION || {};
+        role = sess.role;
+        sessionPin = sess.pin || null;
+
+        setTabsByRole(role);
+
+        tabPut && (tabPut.onclick = ()=>setActiveTab("put"));
+        tabClear && (tabClear.onclick = ()=>setActiveTab("clear"));
+        tabSearch && (tabSearch.onclick = ()=>setActiveTab("search"));
+        tabRack && (tabRack.onclick = ()=>setActiveTab("rack"));
+        tabRequest && (tabRequest.onclick = ()=>setActiveTab("request"));
+        tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
+
+        logoutBtn.onclick = ()=>location.reload();
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const shelvesCol = collection(db, "shelves");
+        const logsCol = collection(db, "logs");
+        const reqCol = collection(db, "requests");
+
+        const initRef = doc(db, "system", "shelves_init");
+
+        async function ensureShelvesOnce(){
+          const initSnap = await getDoc(initRef);
+          if (initSnap.exists() && initSnap.data()?.done === true) return;
+
+          const q = query(shelvesCol, limit(1));
+          const existing = await getDocs(q);
+          if (!existing.empty) {
+            await setDoc(initRef, { done:true, count: null, updated: serverTimestamp() }, { merge:true });
+            return;
+          }
+
+          const count = Number(setupCount?.value || 300);
+          const CHUNK_SIZE = 450;
+
+          for (let start = 1; start <= count; start += CHUNK_SIZE) {
+            const batch = writeBatch(db);
+            const end = Math.min(start + CHUNK_SIZE - 1, count);
+
+            for (let i = start; i <= end; i++) {
+              const rafAdi = padShelf(i);
+              batch.set(
+                doc(shelvesCol, rafAdi),
+                { name: rafAdi, products: {}, updated: serverTimestamp() },
+                { merge: true }
+              );
+            }
+            await batch.commit();
+          }
+
+          await setDoc(initRef, { done:true, count, updated: serverTimestamp() }, { merge:true });
+        }
+
+        await ensureShelvesOnce();
+
+        async function writeLog(payload){
+          try{
+            await addDoc(logsCol, { ...payload, ts: serverTimestamp(), role: role || "-", pin: sessionPin || "-" });
+          }catch(e){}
+        }
+
+        // raf kurulum kutusu sadece admin
+        if(role !== "admin"){
+          if(setupBox) setupBox.style.display = "none";
+          if(btnSetup){
+            btnSetup.disabled = true;
+            btnSetup.style.opacity = .6;
+            btnSetup.style.pointerEvents = "none";
+          }
+        }
+
+        // Raflar snapshot
+        onSnapshot(shelvesCol, (snapshot) => {
+          shelvesCache = {};
+          rackBody && (rackBody.innerHTML = "");
+
+          const total = snapshot.size;
+          let emptyCount = 0;
+          let fullCount = 0;
+
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            const name = d.name || docSnap.id;
+            const products = d.products || {};
+            shelvesCache[name] = { ...d, name, products };
+
+            const empty = Object.keys(products).length===0;
+            if(empty) emptyCount++; else fullCount++;
+
+            // PACKER/STOWER (admin değil) => sadece dolu rafları göster
+            if(role !== "admin" && empty) return;
+
+            if(rackBody){
+              const badge = empty
+                ? '<span class="badge b-empty">BOŞ</span>'
+                : '<span class="badge b-full">DOLU</span>';
+
+              const tr = document.createElement("tr");
+              tr.innerHTML = `<td>${name}</td><td>${badge}</td><td>${productsSummary(products)}</td>`;
+              rackBody.appendChild(tr);
+            }
+          });
+
+          if(rackHint){
+            if(role === "admin"){
+              rackHint.textContent = `Toplam raf: ${total} | Dolu: ${fullCount} | Boş: ${emptyCount}`;
+            }else{
+              rackHint.textContent = `Dolu raf: ${fullCount}`;
+            }
+          }
+
+          refreshClearMode();
+          if(role==="admin") computeSummary();
+        });
+
+        // REQUEST LIST
+        function renderReqRows(docs){
+          if(!reqBody) return;
+          reqBody.innerHTML = "";
+          if(!docs || docs.length===0){
+            reqWrap.style.display="none";
+            setStatusBox(statusReqList, "Talep yok.", "warn");
+            return;
+          }
+
+          for(const x of docs){
+            const d = x.data();
+            const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+            const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+
+            const badge = (d.status === "fulfilled")
+              ? `<span class="badge b-done">KARŞILANDI</span>`
+              : `<span class="badge b-wait">BEKLİYOR</span>`;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${dtStr}</td>
+              <td>${d.product || "-"}</td>
+              <td>${badge}</td>
+              <td>${d.requestedBy || "-"}</td>
+              <td>${d.fulfilledBy || "-"}</td>
+            `;
+            reqBody.appendChild(tr);
+          }
+
+          reqWrap.style.display="block";
+          setStatusBox(statusReqList, `Gösteriliyor: ${docs.length}`, "ok");
+        }
+
+        if(role==="packer" || role==="admin"){
+          const qReq = query(reqCol, orderBy("createdAt","desc"), limit(200));
+          onSnapshot(qReq, (snap)=> renderReqRows(snap.docs));
+        }
+
+        // Packer: fulfilled taleplerde sesli bildirim
+        if(role==="packer"){
+          const key = "seen_fulfilled_requests";
+          const seen = new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+
+          const qFul = query(reqCol, where("status","==","fulfilled"), orderBy("fulfilledAt","desc"), limit(50));
+          onSnapshot(qFul, (snap)=>{
+            let playedAny = false;
+
+            snap.forEach(docSnap=>{
+              const id = docSnap.id;
+              if(seen.has(id)) return;
+              seen.add(id);
+              playedAny = true;
+            });
+
+            if(playedAny){
+              localStorage.setItem(key, JSON.stringify(Array.from(seen).slice(-500)));
+              playBeep(); setTimeout(()=>playBeep(), 350);
+              setStatusBox(statusReq, "🔔 Bildirim: Yeni talep karşılandı!", "ok");
+              setTimeout(()=>setStatusBox(statusReq, "Hazır.", ""), 2500);
+            }
+          });
+        }
+
+        // PUT
+        btnPut && (btnPut.onclick = async () => {
+          setStatusBox(statusPut, "İşlem yapılıyor...", "");
+
+          const code = (inProduct.value || "").trim();
+          const nStr = (inShelfNum.value || "").trim();
+          const qty  = Number(inQty.value || 0);
+
+          if(!code) return setStatusBox(statusPut, "Ürün kodu boş olamaz.", "error");
+          if(!nStr) return setStatusBox(statusPut, "Raf numarası boş olamaz.", "error");
+          if(!qty || qty < 1) return setStatusBox(statusPut, "Adet en az 1 olmalı.", "error");
+
+          const n = Number(nStr);
+          if(!n || n < 1) return setStatusBox(statusPut, "Raf numarası 1 veya daha büyük olmalı.", "error");
+
+          const shelfName = padShelf(n);
+          const shelfData = shelvesCache[shelfName];
+          if(!shelfData) return setStatusBox(statusPut, "Bu raf yok: " + shelfName, "error");
+
+          const products = { ...(shelfData.products || {}) };
+          products[code] = (products[code] || 0) + qty;
+
+          try{
+            await updateDoc(doc(shelvesCol, shelfName), { products, updated: serverTimestamp() });
+
+            await writeLog({ action: "PUT", shelf: shelfName, product: code, qty, detail: "Rafa ürün eklendi" });
+
+            // talepleri karşıla
+            try{
+              const qWait = query(reqCol, where("status","==","waiting"), where("product","==",code), limit(200));
+              const waitSnap = await getDocs(qWait);
+              if(!waitSnap.empty){
+                const batch = writeBatch(db);
+                waitSnap.forEach(r=>{
+                  batch.update(r.ref, {
+                    status: "fulfilled",
+                    fulfilledAt: serverTimestamp(),
+                    fulfilledBy: sessionPin || "-",
+                    fulfilledShelf: shelfName
+                  });
+                });
+                await batch.commit();
+
+                await writeLog({ action: "FULFILL_REQUESTS", shelf: shelfName, product: code, qty, detail: `Bekleyen talepler: ${waitSnap.size}` });
+                setStatusBox(statusPut, `Kaydedildi. ✅ Talepler karşılandı: ${waitSnap.size}`, "ok");
+              }else{
+                setStatusBox(statusPut, "Kaydedildi.", "ok");
+              }
+            }catch(e){
+              setStatusBox(statusPut, "Kaydedildi. (Talep kontrolü hata: " + e.message + ")", "warn");
+            }
+
+            inProduct.value = "";
+            inShelfNum.value = "";
+            inQty.value = "1";
+          }catch(e){
+            setStatusBox(statusPut, "Hata: " + e.message, "error");
+          }
+        });
+
+        // CLEAR (adet azalt modu)
+        btnClear && (btnClear.onclick = async () => {
+          setStatusBox(statusClear, "İşlem yapılıyor...", "");
+
+          const nStr = (outShelfNum.value || "").trim();
+          if(!nStr) return setStatusBox(statusClear, "Raf numarası boş olamaz.", "error");
+
+          const n = Number(nStr);
+          if(!n || n < 1) return setStatusBox(statusClear, "Raf numarası 1 veya daha büyük olmalı.", "error");
+
+          const shelfName = padShelf(n);
+          const shelfData = shelvesCache[shelfName];
+          if(!shelfData) return setStatusBox(statusClear, "Bu raf yok: " + shelfName, "error");
+          if(isEmpty(shelfData)) return setStatusBox(statusClear, "Raf zaten boş.", "error");
+
+          const productsNow = { ...(shelfData.products || {}) };
+          const keys = Object.keys(productsNow);
+
+          try{
+            // 1 ürün varsa
+            if(keys.length === 1){
+              const onlyCode = keys[0];
+              const onlyQty  = Number(productsNow[onlyCode] || 0);
+
+              // qty=1 => rafı komple boşalt
+              if(onlyQty <= 1){
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, updated: serverTimestamp() });
+                await writeLog({ action: "CLEAR_SHELF", shelf: shelfName, product: "-", qty: 0, detail: "Raf tamamen boşaltıldı" });
+
+                setStatusBox(statusClear, "Raf boşaltıldı.", "ok");
+                outShelfNum.value = "";
+                outProductCode.value = "";
+                if(outReduceQty) outReduceQty.value = "1";
+                clearProductBox.style.display = "none";
+                clearHint.textContent = "";
+                if(clearQtyBox) clearQtyBox.style.display="none";
+                return;
+              }
+
+              // qty>1 => adet azalt
+              const reduce = Math.max(1, Number(outReduceQty?.value || 1));
+              const newQty = onlyQty - reduce;
+
+              if(newQty <= 0){
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, updated: serverTimestamp() });
+                await writeLog({ action: "REMOVE_PRODUCT_ALL", shelf: shelfName, product: onlyCode, qty: reduce, detail: `Ürün tamamen çıkarıldı (Mevcut ${onlyQty})` });
+                setStatusBox(statusClear, "Ürün tamamen çıkarıldı.", "ok");
+              }else{
+                productsNow[onlyCode] = newQty;
+                await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, updated: serverTimestamp() });
+                await writeLog({ action: "DECREASE_QTY", shelf: shelfName, product: onlyCode, qty: reduce, detail: `Adet azaltıldı: ${onlyQty} → ${newQty}` });
+                setStatusBox(statusClear, `Adet azaltıldı. Kalan: ${newQty}`, "ok");
+              }
+
+              outProductCode.value = "";
+              if(outReduceQty) outReduceQty.value = "1";
+              refreshClearMode();
+              return;
+            }
+
+            // Birden fazla ürün varsa: ürün kodu şart
+            const code = (outProductCode.value || "").trim();
+            if(!code) return setStatusBox(statusClear, "Ürün kodu yazın.", "error");
+            if(!(code in productsNow)) return setStatusBox(statusClear, "Bu ürün bu rafta yok.", "error");
+
+            const currentQty = Number(productsNow[code] || 0);
+            if(currentQty <= 0) return setStatusBox(statusClear, "Bu ürünün adedi geçersiz.", "error");
+
+            // qty>1 ise azalt; qty=1 ise direkt kaldır
+            let reduce = 1;
+            if(currentQty > 1){
+              reduce = Math.max(1, Number(outReduceQty?.value || 1));
+            }
+
+            const newQty = currentQty - reduce;
+
+            if(newQty <= 0){
+              delete productsNow[code];
+              await writeLog({ action: "REMOVE_PRODUCT", shelf: shelfName, product: code, qty: reduce, detail: `Ürün çıkarıldı (Mevcut ${currentQty})` });
+            }else{
+              productsNow[code] = newQty;
+              await writeLog({ action: "DECREASE_QTY", shelf: shelfName, product: code, qty: reduce, detail: `Adet azaltıldı: ${currentQty} → ${newQty}` });
+            }
+
+            await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, updated: serverTimestamp() });
+
+            setStatusBox(
+              statusClear,
+              (newQty <= 0) ? "Ürün raftan çıkarıldı." : `Adet azaltıldı. Kalan: ${newQty}`,
+              "ok"
+            );
+
+            outProductCode.value = "";
+            if(outReduceQty) outReduceQty.value = "1";
+            refreshClearMode();
+
+          }catch(e){
+            setStatusBox(statusClear, "Hata: " + e.message, "error");
+          }
+        });
+
+        // REQUEST CREATE
+        btnReq && (btnReq.onclick = async () => {
+          setStatusBox(statusReq, "Talep gönderiliyor...", "");
+
+          const code = (reqProduct.value || "").trim();
+          if(!code) return setStatusBox(statusReq, "Ürün kodu boş olamaz.", "error");
+
+          try{
+            const qDup = query(reqCol, where("status","==","waiting"), where("product","==",code), limit(1));
+            const dupSnap = await getDocs(qDup);
+            if(!dupSnap.empty){
+              setStatusBox(statusReq, "Bu ürün için zaten bekleyen talep var.", "warn");
+              reqProduct.value = "";
+              return;
+            }
+
+            await addDoc(reqCol, {
+              product: code,
+              status: "waiting",
+              createdAt: serverTimestamp(),
+              requestedBy: sessionPin || "-",
+              fulfilledAt: null,
+              fulfilledBy: null,
+              fulfilledShelf: null
+            });
+
+            await writeLog({ action: "REQUEST_CREATE", shelf: "-", product: code, qty: 0, detail: "Talep oluşturuldu" });
+
+            setStatusBox(statusReq, "Talep alındı. ✅", "ok");
+            reqProduct.value = "";
+          }catch(e){
+            setStatusBox(statusReq, "Hata: " + e.message, "error");
+          }
+        });
+
+        // SETUP (admin only)
+        if(btnSetup && role==="admin"){
+          btnSetup.onclick = async () => {
+            setupStatus.textContent = "Raflar oluşturuluyor...";
+
+            const count = Number(setupCount.value || 0);
+            const prefix = (setupPrefix.value || "R").trim().toUpperCase();
+
+            if (!count || count < 1) {
+              setupStatus.textContent = "Raf sayısı 1 veya daha büyük olmalı.";
+              return;
+            }
+            if (prefix !== "R") {
+              setupStatus.textContent = "Prefix R olmalı.";
+              return;
+            }
+
+            try {
+              const CHUNK_SIZE = 450;
+              let created = 0;
+
+              for (let start = 1; start <= count; start += CHUNK_SIZE) {
+                const batch = writeBatch(db);
+                const end = Math.min(start + CHUNK_SIZE - 1, count);
+
+                for (let i = start; i <= end; i++) {
+                  const rafAdi = padShelf(i);
+                  batch.set(
+                    doc(shelvesCol, rafAdi),
+                    { name: rafAdi, products: {}, updated: serverTimestamp() },
+                    { merge: true }
+                  );
+                }
+
+                await batch.commit();
+                created = end;
+                setupStatus.textContent = `Oluşturuldu: ${created} / ${count}`;
+              }
+
+              await setDoc(initRef, { done:true, count, updated: serverTimestamp() }, { merge:true });
+              await writeLog({ action: "SETUP", shelf: "-", product: "-", qty: 0, detail: `Manuel kurulum: ${count} raf` });
+
+              setupStatus.textContent = `BİTTİ ✅ Toplam ${count} raf oluşturuldu.`;
+            } catch (e) {
+              setupStatus.textContent = "Hata: " + e.message;
+            }
+          };
+        }
+
+        // ADMIN: LOG YÜKLE
+        async function loadLogs(){
+          if(role!=="admin") return;
+
+          setStatusBox(statusLogs, "Loglar yükleniyor...", "");
+          logsBody.innerHTML = "";
+          logsWrap.style.display = "none";
+
+          const lim = Math.max(10, Math.min(500, Number(logLimit.value || 100)));
+
+          try{
+            const ql = query(logsCol, orderBy("ts","desc"), limit(lim));
+            const snap = await getDocs(ql);
+
+            if(snap.empty){
+              setStatusBox(statusLogs, "Log bulunamadı.", "warn");
+              return;
+            }
+
+            snap.forEach(docSnap=>{
+              const d = docSnap.data() || {};
+              const dt = d.ts?.toDate ? d.ts.toDate() : null;
+              const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${dtStr}</td>
+                <td>${(d.role || "-")} / ${(d.pin || "-")}</td>
+                <td>${(d.action || "-")}</td>
+                <td>${(d.shelf || "-")}</td>
+                <td>${(d.product || "-")}</td>
+                <td>${(d.qty ?? "-")}</td>
+                <td>${(d.detail || "-")}</td>
+              `;
+              logsBody.appendChild(tr);
+            });
+
+            logsWrap.style.display = "block";
+            setStatusBox(statusLogs, `Yüklendi: ${logsBody.children.length} kayıt`, "ok");
+          }catch(e){
+            setStatusBox(statusLogs, "Hata: " + e.message, "error");
+          }
+        }
+        btnLoadLogs && (btnLoadLogs.onclick = loadLogs);
+
+        setStatusBox(statusReqList, "Yükleniyor...", "");
+      }catch(e){
+        setStatusBox(statusPut, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusClear, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusSearch, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusReq, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusReqList, "Firebase yüklenemedi: " + e.message, "error");
+        setStatusBox(statusLogs, "Firebase yüklenemedi: " + e.message, "error");
+      }
+    };
+  </script>
+
+</body>
+</html>

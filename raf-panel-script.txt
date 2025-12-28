@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Depo Raf Sistemi</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 16px;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #111827;
+    }
+    .card {
+      background: #ffffff;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.08);
+    }
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+    }
+    button {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      margin-top: 4px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    p.status {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: #4b5563;
+    }
+    p.status.error { color: #b91c1c; }
+    p.status.ok { color: #15803d; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background: #e5e7eb;
+      font-weight: 600;
+    }
+    tr.empty-row { background: #ecfdf3; }
+    tr.full-row { background: #fef2f2; }
+
+    .legend {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-empty {
+      background: #bbf7d0;
+      color: #166534;
+    }
+    .badge-full {
+      background: #fecaca;
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Depo Raf Sistemi</h1>
+
+<!-- 1) RAF OLUŞTURMA (sadece ilk kurulum için) -->
+<div class="card" id="createCard">
+  <h2>1. Rafları Oluştur (Sadece ilk kez)</h2>
+  <label>
+    Raf Sayısı:
+    <input id="rafSayisi" type="number" value="300">
+  </label>
+  <label>
+    Prefix (harf kısmı):
+    <input id="prefix" type="text" value="R">
+  </label>
+  <button id="createShelvesBtn">Rafları Oluştur</button>
+  <p id="status1" class="status"></p>
+</div>
+
+<!-- 2) ÜRÜN YERLEŞTİR -->
+<div class="card">
+  <h2>2. Ürünü Rafa Koy</h2>
+  <label>
+    Ürün Kodu (etikette yazan kod):
+    <input id="urunKodu" placeholder="Örn: VH-123-XYZ">
+  </label>
+  <label>
+    Raf Numarası (sadece sayı yazın):
+    <input id="rafNumInput" type="number" placeholder="Örn: 5 → R005, 23 → R023, 145 → R145">
+  </label>
+  <button id="putProductBtn">Rafa Yerleştir</button>
+  <p id="status2" class="status"></p>
+</div>
+
+<!-- 3) RAF BOŞALT -->
+<div class="card">
+  <h2>3. Raf Boşalt</h2>
+
+  <label>
+    Raf Numarası (sadece sayı):
+    <input id="clearRafNumInput" type="number" placeholder="Örn: 5 → R005, 23 → R023, 145 → R145">
+  </label>
+
+  <button id="clearShelfBtn">Rafı Boşalt</button>
+  <p id="status3" class="status"></p>
+</div>
+
+<!-- 4) TÜM RAFLAR -->
+<div class="card">
+  <h2>4. Raf Tablosu</h2>
+  <div class="legend">
+    <span class="badge badge-empty">Boş</span> = Yeşil satır &nbsp;&nbsp;
+    <span class="badge badge-full">Dolu</span> = Kırmızı satır
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Raf</th>
+        <th>Durum</th>
+        <th>Ürün Kodu</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script type="module">
+  // 1️⃣ BURAYA KENDİ FIREBASE CONFIG'İNİ YAZ
+ const firebaseConfig = {
+    apiKey: "AIzaSyC……",
+    authDomain: "depo-paketleme.firebaseapp.com",
+    projectId: "depo-paketleme",
+    storageBucket: "depo-paketleme.appspot.com",
+    messagingSenderId: "2429493…",
+    appId: "1:24294…"
+};
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, updateDoc,
+    onSnapshot, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const shelvesCol = collection(db, "shelves");
+
+  const createCard   = document.getElementById("createCard");
+  const status1El    = document.getElementById("status1");
+  const status2El    = document.getElementById("status2");
+  const status3El    = document.getElementById("status3");
+  const tableBody    = document.getElementById("tableBody");
+  const fullSel      = document.getElementById("fullShelves");
+  const rafNumInput  = document.getElementById("rafNumInput");
+  const urunKoduInput= document.getElementById("urunKodu");
+
+  let shelvesCache = {}; // { "R001": {empty: true/false, product: "..."} }
+
+  // 2️⃣ RAF OLUŞTUR (ilk kurulum)
+  document.getElementById("createShelvesBtn").onclick = async () => {
+    const adet   = Number(document.getElementById("rafSayisi").value);
+    const prefix = document.getElementById("prefix").value.trim() || "R";
+
+    status1El.className = "status";
+    if (!adet || adet <= 0) {
+      status1El.textContent = "Raf sayısı 0 olamaz.";
+      status1El.classList.add("error");
+      return;
+    }
+
+    status1El.textContent = "Raflar oluşturuluyor, lütfen bekleyin...";
+    try {
+      for (let i = 1; i <= adet; i++) {
+        const num    = String(i).padStart(3, "0");
+        const rafAdi = prefix + num;
+        await setDoc(doc(shelvesCol, rafAdi), {
+          name: rafAdi,
+          empty: true,
+          product: "",
+          updated: serverTimestamp()
+        }, { merge: true });
+      }
+      status1El.textContent = "Raflar oluşturuldu!";
+      status1El.classList.add("ok");
+      // Oluşturma tamamlanınca bu kartı gizle
+      createCard.style.display = "none";
+    } catch (e) {
+      console.error(e);
+      status1El.textContent = "Hata: " + e.message;
+      status1El.classList.add("error");
+    }
+  };
+
+  // 3️⃣ RAFLARI GERÇEK ZAMANDA DİNLE
+  onSnapshot(shelvesCol, (snapshot) => {
+    shelvesCache = {};
+    tableBody.innerHTML = "";
+    fullSel.innerHTML = '<option value="">— Dolu raf seçin —</option>';
+
+    if (snapshot.size > 0) {
+      // Raflar varsa oluşturma kartını otomatik gizle
+      createCard.style.display = "none";
+    }
+
+    snapshot.forEach((docSnap) => {
+      const d = docSnap.data();
+      const name = d.name || docSnap.id;
+      shelvesCache[name] = d;
+
+      const tr = document.createElement("tr");
+      if (d.empty) {
+        tr.className = "empty-row";
+      } else {
+        tr.className = "full-row";
+        fullSel.innerHTML += `<option value="${name}">${name} (${d.product || "Ürün yok"})</option>`;
+      }
+
+      const durumBadge = d.empty
+        ? '<span class="badge badge-empty">Boş</span>'
+        : '<span class="badge badge-full">Dolu</span>';
+
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td>${durumBadge}</td>
+        <td>${d.product || "-"}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  });
+
+  // 4️⃣ ÜRÜN YERLEŞTİR (sadece sayıdan raf adı üretir: 5 → R005)
+  document.getElementById("putProductBtn").onclick = async () => {
+    status2El.className = "status";
+    const urun = urunKoduInput.value.trim();
+    const numStr = rafNumInput.value.trim();
+
+    if (!urun) {
+      status2El.textContent = "Ürün kodu yazın.";
+      status2El.classList.add("error");
+      return;
+    }
+    if (!numStr) {
+      status2El.textContent = "Raf numarası yazın (sadece sayı).";
+      status2El.classList.add("error");
+      return;
+    }
+
+    const num = Number(numStr);
+    if (!num || num < 1) {
+      status2El.textContent = "Raf numarası 1 veya daha büyük olmalı.";
+      status2El.classList.add("error");
+      return;
+    }
+
+    const shelfName = "R" + String(num).padStart(3, "0"); // R005, R023, R145...
+
+    const shelfData = shelvesCache[shelfName];
+    if (!shelfData) {
+      status2El.textContent = shelfName + " diye bir raf yok.";
+      status2El.classList.add("error");
+      return;
+    }
+    if (!shelfData.empty) {
+      status2El.textContent = shelfName + " şu anda DOLU.";
+      status2El.classList.add("error");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(shelvesCol, shelfName), {
+        empty: false,
+        product: urun,
+        updated: serverTimestamp()
+      });
+      status2El.textContent = urun + " → " + shelfName + " rafına yerleştirildi.";
+      status2El.classList.add("ok");
+      urunKoduInput.value = "";
+      rafNumInput.value = "";
+    } catch (e) {
+      console.error(e);
+      status2El.textContent = "Hata: " + e.message;
+      status2El.classList.add("error");
+    }
+  };
+
+  // 5️⃣ RAF BOŞALT
+  document.getElementById("clearShelfBtn").onclick = async () => {
+    status3El.className = "status";
+    const shelfName = fullSel.value;
+    if (!shelfName) {
+      status3El.textContent = "Dolu bir raf seçin.";
+      status3El.classList.add("error");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(shelvesCol, shelfName), {
+        empty: true,
+        product: "",
+        updated: serverTimestamp()
+      });
+      status3El.textContent = shelfName + " rafı boşaltıldı.";
+      status3El.classList.add("ok");
+    } catch (e) {
+      console.error(e);
+      status3El.textContent = "Hata: " + e.message;
+      status3El.classList.add("error");
+    }
+  };
+</script>
+</body>
+</html>
