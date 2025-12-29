@@ -387,6 +387,7 @@
     .b-admin{ background:rgba(2,6,23,.06); color:#0f172a; border-color:rgba(2,6,23,.10); }
     .b-packer{ background:rgba(245,158,11,.14); color:#7c2d12; border-color:rgba(245,158,11,.22); }
     .b-stower{ background:rgba(59,130,246,.12); color:#1e3a8a; border-color:rgba(59,130,246,.18); }
+    .b-welder{ background:rgba(139,92,246,.12); color:#5b21b6; border-color:rgba(139,92,246,.20); }
     .b-empty{ background:rgba(0,200,83,.12); color:#065f46; border-color:rgba(0,200,83,.20); }
     .b-full{ background:rgba(239,68,68,.10); color:#7f1d1d; border-color:rgba(239,68,68,.20); }
 
@@ -502,6 +503,9 @@
         <div class="tab" id="tabSearch">ÜRÜN ARA</div>
         <div class="tab" id="tabRack">RAF DURUMU</div>
         <div class="tab" id="tabRequest">TALEP</div>
+        <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
+        <div class="tab" id="tabWelderRequests">TALEPLER</div>
+        <div class="tab" id="tabProduction">ÜRETİLENLER</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
         <div class="logoutBtn" id="logoutBtn">ÇIKIŞ</div>
       </div>
@@ -659,6 +663,101 @@
           </div>
         </div>
 
+        <!-- VIEW: PRODUCTION (For Admin & Packer) -->
+        <div id="viewProduction" style="display:none;">
+          <div class="sectionTitle">Üretim Kayıtları</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Tüm Üretimler</h3>
+            
+            <div class="adminRow" style="gap:8px;">
+              <button class="searchBtn" id="btnProdDay" type="button">GÜNLÜK</button>
+              <button class="searchBtn" id="btnProdWeek" type="button">HAFTALIK</button>
+              <button class="searchBtn" id="btnProdMonth" type="button">AYLIK</button>
+              <button class="searchBtn" id="btnProdYear" type="button">YILLIK</button>
+            </div>
+
+            <div class="statusBox" id="statusProduction" style="margin-top:12px;display:none;"></div>
+
+            <div class="tableWrap" id="productionWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih & Saat</th>
+                    <th>Ürün Kodu</th>
+                    <th>Adet</th>
+                    <th>Kaynakçı PIN</th>
+                  </tr>
+                </thead>
+                <tbody id="productionBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: WELDER -->
+        <div id="viewWelder" style="display:none;">
+          <div class="sectionTitle">Üretim Girişi</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Üretilen Ürün Girişi</h3>
+            
+            <div class="formRow">
+              <label>Ürün Kodu</label>
+              <input id="welderCode" class="input" type="text" placeholder="Ürün kodu giriniz" />
+            </div>
+
+            <div class="formRow">
+              <label>Adet</label>
+              <input id="welderQty" class="input" type="number" min="1" placeholder="Adet giriniz" />
+            </div>
+
+            <button class="btn" id="welderSave">KAYDET</button>
+
+            <div class="statusBox" id="statusWelder" style="display:none;margin-top:12px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Bugünkü Üretim</h3>
+            <div class="statusBox" id="statusWelderToday" style="display:none;"></div>
+            <div class="tableWrap" id="welderTodayWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Saat</th>
+                    <th>Ürün Kodu</th>
+                    <th>Adet</th>
+                  </tr>
+                </thead>
+                <tbody id="welderTodayBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: WELDER REQUESTS -->
+        <div id="viewWelderRequests" style="display:none;">
+          <div class="sectionTitle">Talepler</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Tüm Talepler</h3>
+            <div class="statusBox" id="statusWelderRequests" style="display:none;"></div>
+            <div class="tableWrap" id="welderRequestsWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Ürün Kodu</th>
+                    <th>Talep Eden</th>
+                    <th>Durum</th>
+                  </tr>
+                </thead>
+                <tbody id="welderRequestsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
@@ -722,6 +821,8 @@
       Array.from({length: 4}, (_,i)=> String(3001+i))
     );
 
+    const WELDER_PINS = new Set(["4001","4002","4003","4004"]);
+
     window.__SESSION = { role: null, pin: null };
 
     const loginView = document.getElementById("loginView");
@@ -753,6 +854,7 @@
       if(ADMIN_PINS.has(pin)) return "admin";
       if(PACKER_PINS.has(pin)) return "packer";
       if(STOWER_PINS.has(pin)) return "stower";
+      if(WELDER_PINS.has(pin)) return "welder";
       return null;
     }
 
@@ -760,6 +862,7 @@
       if(role==="admin")  return `<span class="badge b-admin">YÖNETİCİ</span>`;
       if(role==="packer") return `<span class="badge b-packer">PAKETÇİ</span>`;
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
+      if(role==="welder") return `<span class="badge b-welder">KAYNAKCI</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -816,6 +919,9 @@
     const tabSearch= document.getElementById("tabSearch");
     const tabRack  = document.getElementById("tabRack");
     const tabRequest= document.getElementById("tabRequest");
+    const tabWelder= document.getElementById("tabWelder");
+    const tabWelderRequests= document.getElementById("tabWelderRequests");
+    const tabProduction= document.getElementById("tabProduction");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -823,6 +929,9 @@
     const viewSearch= document.getElementById("viewSearch");
     const viewRack = document.getElementById("viewRack");
     const viewRequest= document.getElementById("viewRequest");
+    const viewWelder= document.getElementById("viewWelder");
+    const viewWelderRequests= document.getElementById("viewWelderRequests");
+    const viewProduction= document.getElementById("viewProduction");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -877,6 +986,25 @@
     const statusLogs = document.getElementById("statusLogs");
     const logsWrap = document.getElementById("logsWrap");
     const logsBody = document.getElementById("logsBody");
+
+    const welderCode = document.getElementById("welderCode");
+    const welderQty = document.getElementById("welderQty");
+    const welderSave = document.getElementById("welderSave");
+    const statusWelder = document.getElementById("statusWelder");
+    const statusWelderToday = document.getElementById("statusWelderToday");
+    const welderTodayWrap = document.getElementById("welderTodayWrap");
+    const welderTodayBody = document.getElementById("welderTodayBody");
+    const statusWelderRequests = document.getElementById("statusWelderRequests");
+    const welderRequestsWrap = document.getElementById("welderRequestsWrap");
+    const welderRequestsBody = document.getElementById("welderRequestsBody");
+
+    const btnProdDay = document.getElementById("btnProdDay");
+    const btnProdWeek = document.getElementById("btnProdWeek");
+    const btnProdMonth = document.getElementById("btnProdMonth");
+    const btnProdYear = document.getElementById("btnProdYear");
+    const statusProduction = document.getElementById("statusProduction");
+    const productionWrap = document.getElementById("productionWrap");
+    const productionBody = document.getElementById("productionBody");
 
     let shelvesCache = {};
     let role = null;
@@ -1061,7 +1189,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabWelder, tabWelderRequests, tabProduction, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -1070,6 +1198,9 @@
         viewSearch && (viewSearch.style.display="none");
         viewRack && (viewRack.style.display="none");
         viewRequest && (viewRequest.style.display="none");
+        viewWelder && (viewWelder.style.display="none");
+        viewWelderRequests && (viewWelderRequests.style.display="none");
+        viewProduction && (viewProduction.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -1080,6 +1211,9 @@
       if(target==="search"){ tabSearch?.classList.add("active"); viewSearch.style.display="block"; setTimeout(()=>{ try{ searchCode.focus(); searchCode.select && searchCode.select(); }catch(e){} },50); }
       if(target==="rack"){ tabRack?.classList.add("active"); viewRack.style.display="block"; setTimeout(()=>{ try{ rackBody && rackBody.scrollIntoView && rackBody.scrollIntoView(); }catch(e){} },50); }
       if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
+      if(target==="welder"){ tabWelder?.classList.add("active"); viewWelder.style.display="block"; setTimeout(()=>{ try{ welderCode.focus(); welderCode.select && welderCode.select(); }catch(e){} },50); }
+      if(target==="welderRequests"){ tabWelderRequests?.classList.add("active"); viewWelderRequests.style.display="block"; }
+      if(target==="production"){ tabProduction?.classList.add("active"); viewProduction.style.display="block"; }
       if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; }
     }
 
@@ -1090,6 +1224,9 @@
         [tabSearch, viewSearch],
         [tabRack, viewRack],
         [tabRequest, viewRequest],
+        [tabWelder, viewWelder],
+        [tabWelderRequests, viewWelderRequests],
+        [tabProduction, viewProduction],
         [tabAdmin, viewAdmin]
       ];
 
@@ -1103,20 +1240,27 @@
         tabSearch.style.display="block";
         tabRack.style.display="block";
         tabRequest.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 170px";
+        tabProduction.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 170px";
         setActiveTab("clear");
       }else if(r==="stower"){
         tabPut.style.display="block";
         tabbar.style.gridTemplateColumns = "1fr 170px";
         setActiveTab("put");
+      }else if(r==="welder"){
+        tabWelder.style.display="block";
+        tabWelderRequests.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 170px";
+        setActiveTab("welder");
       }else if(r==="admin"){
         tabPut.style.display="block";
         tabClear.style.display="block";
         tabSearch.style.display="block";
         tabRack.style.display="block";
         tabRequest.style.display="block";
+        tabProduction.style.display="block";
         tabAdmin.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 170px";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 170px";
         setActiveTab("admin");
       }else{
         tabbar.style.gridTemplateColumns = "1fr 170px";
@@ -1161,6 +1305,9 @@
         tabSearch && (tabSearch.onclick = ()=>setActiveTab("search"));
         tabRack && (tabRack.onclick = ()=>setActiveTab("rack"));
         tabRequest && (tabRequest.onclick = ()=>setActiveTab("request"));
+        tabWelder && (tabWelder.onclick = ()=>setActiveTab("welder"));
+        tabWelderRequests && (tabWelderRequests.onclick = ()=>setActiveTab("welderRequests"));
+        tabProduction && (tabProduction.onclick = ()=>setActiveTab("production"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>location.reload();
@@ -1171,6 +1318,7 @@
         const shelvesCol = collection(db, "shelves");
         const logsCol = collection(db, "logs");
         const reqCol = collection(db, "requests");
+        const productionCol = collection(db, "production");
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -1621,6 +1769,217 @@
           }
         }
         btnLoadLogs && (btnLoadLogs.onclick = loadLogs);
+
+        // Welder (Kaynaklı İmalat) functionality
+        async function saveProduction(){
+          const code = (welderCode.value || "").trim();
+          const qty = parseInt(welderQty.value || "0", 10);
+
+          if(!code){
+            setStatusBox(statusWelder, "Ürün kodu giriniz.", "error");
+            return;
+          }
+          if(qty <= 0){
+            setStatusBox(statusWelder, "Geçerli bir adet giriniz.", "error");
+            return;
+          }
+
+          try{
+            setStatusBox(statusWelder, "Kaydediliyor...", "");
+            await addDoc(productionCol, {
+              productCode: code,
+              quantity: qty,
+              welderPin: sessionPin,
+              createdAt: serverTimestamp()
+            });
+
+            setStatusBox(statusWelder, "Üretim kaydedildi!", "ok");
+            welderCode.value = "";
+            welderQty.value = "";
+            
+            playBeep();
+            setTimeout(()=>welderCode.focus(), 100);
+            loadTodayProduction();
+          }catch(e){
+            setStatusBox(statusWelder, "Hata: " + e.message, "error");
+          }
+        }
+
+        async function loadTodayProduction(){
+          try{
+            setStatusBox(statusWelderToday, "Yükleniyor...", "");
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const q = query(
+              productionCol,
+              where("createdAt", ">=", today),
+              orderBy("createdAt", "desc")
+            );
+            
+            const snap = await getDocs(q);
+            welderTodayBody.innerHTML = "";
+            
+            if(snap.empty){
+              welderTodayWrap.style.display = "none";
+              setStatusBox(statusWelderToday, "Bugün üretim kaydı yok.", "warn");
+              return;
+            }
+
+            snap.forEach(doc => {
+              const d = doc.data();
+              const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+              const timeStr = dt ? dt.toLocaleTimeString("tr-TR") : "-";
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${timeStr}</td>
+                <td>${d.productCode || "-"}</td>
+                <td>${d.quantity || 0}</td>
+              `;
+              welderTodayBody.appendChild(tr);
+            });
+
+            welderTodayWrap.style.display = "block";
+            setStatusBox(statusWelderToday, `Toplam ${snap.size} kayıt`, "ok");
+          }catch(e){
+            setStatusBox(statusWelderToday, "Hata: " + e.message, "error");
+          }
+        }
+
+        welderSave && (welderSave.onclick = saveProduction);
+        
+        if(role === "welder"){
+          loadTodayProduction();
+          loadWelderRequests();
+        }
+
+        // Welder requests list
+        async function loadWelderRequests(){
+          try{
+            setStatusBox(statusWelderRequests, "Yükleniyor...", "");
+            
+            const q = query(
+              reqCol,
+              orderBy("createdAt", "desc")
+            );
+            
+            const snap = await getDocs(q);
+            welderRequestsBody.innerHTML = "";
+            
+            if(snap.empty){
+              welderRequestsWrap.style.display = "none";
+              setStatusBox(statusWelderRequests, "Talep bulunamadı.", "warn");
+              return;
+            }
+
+            snap.forEach(doc => {
+              const d = doc.data();
+              const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+              const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              
+              const statusBadge = (d.status === "fulfilled")
+                ? `<span class="badge b-done">KARŞILANDI</span>`
+                : `<span class="badge b-wait">BEKLİYOR</span>`;
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${d.product || "-"}</td>
+                <td>${d.requestedBy || "-"}</td>
+                <td>${statusBadge}</td>
+              `;
+              welderRequestsBody.appendChild(tr);
+            });
+
+            welderRequestsWrap.style.display = "block";
+            setStatusBox(statusWelderRequests, `Toplam ${snap.size} talep`, "ok");
+          }catch(e){
+            setStatusBox(statusWelderRequests, "Hata: " + e.message, "error");
+          }
+        }
+
+        // Production list for admin & packer
+        async function loadProduction(filter = 'day'){
+          try{
+            setStatusBox(statusProduction, "Yükleniyor...", "");
+            
+            // Filtre butonlarının aktif durumunu güncelle
+            [btnProdDay, btnProdWeek, btnProdMonth, btnProdYear].forEach(btn => {
+              btn && btn.classList.remove('active');
+            });
+            
+            if(filter === 'day') btnProdDay?.classList.add('active');
+            else if(filter === 'week') btnProdWeek?.classList.add('active');
+            else if(filter === 'month') btnProdMonth?.classList.add('active');
+            else if(filter === 'year') btnProdYear?.classList.add('active');
+            
+            const now = new Date();
+            let startDate = new Date();
+            
+            if(filter === 'day'){
+              startDate.setHours(0, 0, 0, 0);
+            } else if(filter === 'week'){
+              startDate.setDate(now.getDate() - 7);
+              startDate.setHours(0, 0, 0, 0);
+            } else if(filter === 'month'){
+              startDate.setMonth(now.getMonth() - 1);
+              startDate.setHours(0, 0, 0, 0);
+            } else if(filter === 'year'){
+              startDate.setFullYear(now.getFullYear() - 1);
+              startDate.setHours(0, 0, 0, 0);
+            }
+            
+            const q = query(
+              productionCol,
+              where("createdAt", ">=", startDate),
+              orderBy("createdAt", "desc")
+            );
+            
+            const snap = await getDocs(q);
+            productionBody.innerHTML = "";
+            
+            if(snap.empty){
+              productionWrap.style.display = "none";
+              setStatusBox(statusProduction, "Üretim kaydı bulunamadı.", "warn");
+              return;
+            }
+
+            let totalQty = 0;
+            snap.forEach(doc => {
+              const d = doc.data();
+              const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+              const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              totalQty += (d.quantity || 0);
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${d.productCode || "-"}</td>
+                <td>${d.quantity || 0}</td>
+                <td>${d.welderPin || "-"}</td>
+              `;
+              productionBody.appendChild(tr);
+            });
+
+            productionWrap.style.display = "block";
+            const filterText = filter === 'day' ? 'Günlük' : filter === 'week' ? 'Haftalık' : filter === 'month' ? 'Aylık' : 'Yıllık';
+            setStatusBox(statusProduction, `${filterText}: ${snap.size} kayıt, Toplam ${totalQty} adet`, "ok");
+          }catch(e){
+            setStatusBox(statusProduction, "Hata: " + e.message, "error");
+          }
+        }
+
+        btnProdDay && (btnProdDay.onclick = () => loadProduction('day'));
+        btnProdWeek && (btnProdWeek.onclick = () => loadProduction('week'));
+        btnProdMonth && (btnProdMonth.onclick = () => loadProduction('month'));
+        btnProdYear && (btnProdYear.onclick = () => loadProduction('year'));
+        
+        // Admin veya packer için otomatik yükleme
+        if(role === 'admin' || role === 'packer'){
+          loadProduction('day');
+        }
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
       }catch(e){
