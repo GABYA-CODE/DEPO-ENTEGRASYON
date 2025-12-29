@@ -632,12 +632,18 @@
             <label class="fieldLabel">Ürün Kodu</label>
             <input id="reqProduct" class="input" placeholder="Üretilmesini istediğiniz ürün kodunu giriniz" />
 
-            <button class="actionBtn" id="btnReq" type="button">KAYNAKCILARDAN TALEP ET</button>
+            <label class="fieldLabel" style="margin-top:14px;">Üretim Modeli</label>
+            <select id="reqProductionType" class="input">
+              <option value="welder">Kaynak</option>
+              <option value="laser">Lazer</option>
+            </select>
+
+            <button class="actionBtn" id="btnReq" type="button">ÜRETİMDEN TALEP ET</button>
 
             <div class="statusBox" id="statusReq" style="display:none;"></div>
 
             <div class="hintLine" style="margin-top:10px;">
-              Not: Kaynakçılar ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
+              Not: Üretim bölümü ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
             </div>
           </div>
 
@@ -654,6 +660,7 @@
                     <th>Ürün Kodu</th>
                     <th>Durum</th>
                     <th>Talep Eden</th>
+                    <th>Talebi Karşılayan</th>
                   </tr>
                 </thead>
                 <tbody id="reqBody"></tbody>
@@ -685,7 +692,7 @@
                     <th>Tarih & Saat</th>
                     <th>Ürün Kodu</th>
                     <th>Adet</th>
-                    <th>Kaynakçı</th>
+                    <th>Üretim</th>
                   </tr>
                 </thead>
                 <tbody id="productionBody"></tbody>
@@ -823,6 +830,8 @@
 
     const WELDER_PINS = new Set(["4001","4002","4003","4004"]);
 
+    const LASER_PINS = new Set(["5001","5002","5003"]);
+
     window.__SESSION = { role: null, pin: null };
 
     // PIN-isim eşleştirmesi
@@ -834,7 +843,8 @@
       "2003": "Salim",
       "3001": "Salim",
       "4001": "Emin",
-      "4002": "İlhami"
+      "4002": "İlhami",
+      "5001": "Emre K."
     };
 
     function getNameByPin(pin){
@@ -871,6 +881,7 @@
       if(PACKER_PINS.has(pin)) return "packer";
       if(STOWER_PINS.has(pin)) return "stower";
       if(WELDER_PINS.has(pin)) return "welder";
+      if(LASER_PINS.has(pin)) return "welder";
       return null;
     }
 
@@ -878,7 +889,7 @@
       if(role==="admin")  return `<span class="badge b-admin">YÖNETİCİ</span>`;
       if(role==="packer") return `<span class="badge b-packer">PAKETÇİ</span>`;
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
-      if(role==="welder") return `<span class="badge b-welder">KAYNAKCI</span>`;
+      if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -986,6 +997,7 @@
     const setupStatus = document.getElementById("setupStatus");
 
     const reqProduct = document.getElementById("reqProduct");
+    const reqProductionType = document.getElementById("reqProductionType");
     const btnReq     = document.getElementById("btnReq");
     const statusReq  = document.getElementById("statusReq");
     const statusReqList = document.getElementById("statusReqList");
@@ -1028,6 +1040,36 @@
     let sessionPin = null;
 
     function padShelf(num){ return "R" + String(num).padStart(3,"0"); }
+
+    function formatLogDate(date){
+      if(!date) return "-";
+      
+      const now = new Date();
+      const logDate = new Date(date);
+      
+      // Bugünün başlangıcı
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Dünün başlangıcı
+      const yesterdayStart = new Date(todayStart);
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      // 2 gün öncesinin başlangıcı
+      const twoDaysAgoStart = new Date(todayStart);
+      twoDaysAgoStart.setDate(twoDaysAgoStart.getDate() - 2);
+      
+      const timeStr = logDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+      
+      if(logDate >= todayStart){
+        return `Bugün-${timeStr}`;
+      } else if(logDate >= yesterdayStart){
+        return `Dün-${timeStr}`;
+      } else {
+        const day = logDate.getDate();
+        const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+                           "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        const month = monthNames[logDate.getMonth()];
+        return `${day} ${month}-${timeStr}`;
+      }
+    }
 
     function setStatusBox(el,msg,type){
       if(!el) return;
@@ -1447,13 +1489,14 @@
           for(const x of docs){
             const d = x.data();
             const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
-            const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+            const dtStr = formatLogDate(dt);
 
             const badge = (d.status === "produced")
               ? `<span class="badge b-done">ÜRETİLDİ</span>`
               : `<span class="badge b-wait">BEKLİYOR</span>`;
 
             const requesterName = getNameByPin(d.requestedBy);
+            const producerName = d.producedBy ? getNameByPin(d.producedBy) : "-";
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1461,6 +1504,7 @@
               <td>${d.product || "-"}</td>
               <td>${badge}</td>
               <td>${requesterName}</td>
+              <td>${producerName}</td>
             `;
             reqBody.appendChild(tr);
           }
@@ -1665,19 +1709,14 @@
           setStatusBox(statusReq, "Talep gönderiliyor...", "");
 
           const code = (reqProduct.value || "").trim();
+          const prodType = reqProductionType?.value || "welder";
+          
           if(!code) return setStatusBox(statusReq, "Ürün kodu boş olamaz.", "error");
 
           try{
-            const qDup = query(reqCol, where("status","==","pending"), where("product","==",code), where("requestedBy","==",sessionPin), limit(1));
-            const dupSnap = await getDocs(qDup);
-            if(!dupSnap.empty){
-              setStatusBox(statusReq, "Bu ürün için zaten bekleyen talep var.", "warn");
-              reqProduct.value = "";
-              return;
-            }
-
             await addDoc(reqCol, {
               product: code,
+              productionType: prodType,
               status: "pending",
               createdAt: serverTimestamp(),
               requestedBy: sessionPin || "-",
@@ -1685,7 +1724,7 @@
               producedBy: null
             });
 
-            await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: 0, detail: "Üretim talebi oluşturuldu" });
+            await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: 0, detail: `Üretim talebi oluşturuldu (${prodType === 'laser' ? 'Lazer' : 'Kaynak'})` });
 
             setStatusBox(statusReq, "Talep alındı. ✅", "ok");
             reqProduct.value = "";
@@ -1766,12 +1805,15 @@
             snap.forEach(docSnap=>{
               const d = docSnap.data() || {};
               const dt = d.ts?.toDate ? d.ts.toDate() : null;
-              const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              const dtStr = formatLogDate(dt);
+              
+              const userName = getNameByPin(d.pin);
+              const roleText = d.role || "-";
 
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dtStr}</td>
-                <td>${(d.role || "-")} / ${(d.pin || "-")}</td>
+                <td>${roleText} / ${userName}</td>
                 <td>${(d.action || "-")}</td>
                 <td>${(d.shelf || "-")}</td>
                 <td>${(d.product || "-")}</td>
@@ -1789,7 +1831,7 @@
         }
         btnLoadLogs && (btnLoadLogs.onclick = loadLogs);
 
-        // Welder (Kaynaklı İmalat) functionality
+        // Welder (Kaynak İmalat) functionality
         async function saveProduction(){
           const code = (welderCode.value || "").trim();
           const qty = parseInt(welderQty.value || "0", 10);
@@ -1879,24 +1921,42 @@
           try{
             setStatusBox(statusWelderRequests, "Yükleniyor...", "");
             
-            const q = query(
-              reqCol,
-              orderBy("createdAt", "desc")
-            );
+            // Kullanıcının tipini belirle (laser mi welder mı?)
+            let userProductionType = null;
+            if(LASER_PINS.has(sessionPin)){
+              userProductionType = "laser";
+            } else if(WELDER_PINS.has(sessionPin)){
+              userProductionType = "welder";
+            }
             
+            // Tüm talepleri al ve client-side filtrele (index hatası olmasın diye)
+            const q = query(reqCol, orderBy("createdAt", "desc"));
             const snap = await getDocs(q);
+            
             welderRequestsBody.innerHTML = "";
             
-            if(snap.empty){
+            let filteredDocs = [];
+            if(role === "admin"){
+              // Admin tüm talepleri görür
+              filteredDocs = snap.docs;
+            } else if(userProductionType){
+              // Sadece kendi tipine ait talepleri filtrele
+              filteredDocs = snap.docs.filter(doc => {
+                const data = doc.data();
+                return data.productionType === userProductionType;
+              });
+            }
+            
+            if(filteredDocs.length === 0){
               welderRequestsWrap.style.display = "none";
               setStatusBox(statusWelderRequests, "Talep bulunamadı.", "warn");
               return;
             }
 
-            snap.forEach(doc => {
+            filteredDocs.forEach(doc => {
               const d = doc.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
-              const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              const dateStr = dt ? formatLogDate(dt) : "-";
               
               const statusBadge = (d.status === "produced")
                 ? `<span class="badge b-done">ÜRETİLDİ</span>`
@@ -1920,7 +1980,7 @@
             });
 
             welderRequestsWrap.style.display = "block";
-            setStatusBox(statusWelderRequests, `Toplam ${snap.size} talep`, "ok");
+            setStatusBox(statusWelderRequests, `Toplam ${filteredDocs.length} talep`, "ok");
           }catch(e){
             setStatusBox(statusWelderRequests, "Hata: " + e.message, "error");
           }
@@ -2003,7 +2063,7 @@
             snap.forEach(doc => {
               const d = doc.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
-              const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              const dateStr = formatLogDate(dt);
               totalQty += (d.quantity || 0);
               
               const welderName = getNameByPin(d.welderPin);
