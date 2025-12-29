@@ -624,25 +624,25 @@
 
         <!-- VIEW: REQUEST -->
         <div id="viewRequest" style="display:none;">
-          <div class="sectionTitle">Talep Ekranı</div>
+          <div class="sectionTitle">Üretim Talep Ekranı</div>
 
           <div class="card">
-            <h3 style="margin-top:0;">Ürün Talebi</h3>
+            <h3 style="margin-top:0;">Üretim Talebi Oluştur</h3>
 
             <label class="fieldLabel">Ürün Kodu</label>
-            <input id="reqProduct" class="input" />
+            <input id="reqProduct" class="input" placeholder="Üretilmesini istediğiniz ürün kodunu giriniz" />
 
-            <button class="actionBtn" id="btnReq" type="button">GELDİĞİNDE HABER VER</button>
+            <button class="actionBtn" id="btnReq" type="button">KAYNAKCILARDAN TALEP ET</button>
 
             <div class="statusBox" id="statusReq" style="display:none;"></div>
 
             <div class="hintLine" style="margin-top:10px;">
-              Not: Ürün rafa konulunca tüm paketçilere sesli bildirim gelir.
+              Not: Kaynakçılar ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
             </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
-            <h3 style="margin-top:0;">Bekleyen Talepler</h3>
+            <h3 style="margin-top:0;">Üretim Taleplerim</h3>
 
             <div class="statusBox" id="statusReqList">Yükleniyor...</div>
 
@@ -651,10 +651,9 @@
                 <thead>
                   <tr>
                     <th>Tarih</th>
-                    <th>Ürün</th>
+                    <th>Ürün Kodu</th>
                     <th>Durum</th>
                     <th>Talep Eden</th>
-                    <th>Karşılayan</th>
                   </tr>
                 </thead>
                 <tbody id="reqBody"></tbody>
@@ -686,7 +685,7 @@
                     <th>Tarih & Saat</th>
                     <th>Ürün Kodu</th>
                     <th>Adet</th>
-                    <th>Kaynakçı PIN</th>
+                    <th>Kaynakçı</th>
                   </tr>
                 </thead>
                 <tbody id="productionBody"></tbody>
@@ -750,6 +749,7 @@
                     <th>Ürün Kodu</th>
                     <th>Talep Eden</th>
                     <th>Durum</th>
+                    <th>İşlem</th>
                   </tr>
                 </thead>
                 <tbody id="welderRequestsBody"></tbody>
@@ -825,6 +825,22 @@
 
     window.__SESSION = { role: null, pin: null };
 
+    // PIN-isim eşleştirmesi
+    const PIN_NAMES = {
+      "601": "Burak",
+      "602": "Mesut",
+      "2001": "Gökmen",
+      "2002": "Şaban",
+      "2003": "Salim",
+      "3001": "Salim",
+      "4001": "Emin",
+      "4002": "İlhami"
+    };
+
+    function getNameByPin(pin){
+      return PIN_NAMES[pin] || pin;
+    }
+
     const loginView = document.getElementById("loginView");
     const appView   = document.getElementById("appView");
     const pwInput   = document.getElementById("pwInput");
@@ -881,7 +897,8 @@
       showApp();
 
       if(roleLine){
-        roleLine.innerHTML = `${roleBadge(role)} | PIN: ${v}`;
+        const userName = getNameByPin(v);
+        roleLine.innerHTML = `${roleBadge(role)} | ${userName}`;
       }
 
       if (window.startFirebase) window.startFirebase();
@@ -1313,7 +1330,8 @@
         logoutBtn.onclick = ()=>location.reload();
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        window.db = getFirestore(app);
+        const db = window.db;
 
         const shelvesCol = collection(db, "shelves");
         const logsCol = collection(db, "logs");
@@ -1431,17 +1449,18 @@
             const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
             const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
 
-            const badge = (d.status === "fulfilled")
-              ? `<span class="badge b-done">KARŞILANDI</span>`
+            const badge = (d.status === "produced")
+              ? `<span class="badge b-done">ÜRETİLDİ</span>`
               : `<span class="badge b-wait">BEKLİYOR</span>`;
+
+            const requesterName = getNameByPin(d.requestedBy);
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${dtStr}</td>
               <td>${d.product || "-"}</td>
               <td>${badge}</td>
-              <td>${d.requestedBy || "-"}</td>
-              <td>${d.fulfilledBy || "-"}</td>
+              <td>${requesterName}</td>
             `;
             reqBody.appendChild(tr);
           }
@@ -1641,7 +1660,7 @@
           }
         });
 
-        // REQUEST CREATE
+        // PRODUCTION REQUEST CREATE
         btnReq && (btnReq.onclick = async () => {
           setStatusBox(statusReq, "Talep gönderiliyor...", "");
 
@@ -1649,7 +1668,7 @@
           if(!code) return setStatusBox(statusReq, "Ürün kodu boş olamaz.", "error");
 
           try{
-            const qDup = query(reqCol, where("status","==","waiting"), where("product","==",code), limit(1));
+            const qDup = query(reqCol, where("status","==","pending"), where("product","==",code), where("requestedBy","==",sessionPin), limit(1));
             const dupSnap = await getDocs(qDup);
             if(!dupSnap.empty){
               setStatusBox(statusReq, "Bu ürün için zaten bekleyen talep var.", "warn");
@@ -1659,18 +1678,18 @@
 
             await addDoc(reqCol, {
               product: code,
-              status: "waiting",
+              status: "pending",
               createdAt: serverTimestamp(),
               requestedBy: sessionPin || "-",
-              fulfilledAt: null,
-              fulfilledBy: null,
-              fulfilledShelf: null
+              producedAt: null,
+              producedBy: null
             });
 
-            await writeLog({ action: "REQUEST_CREATE", shelf: "-", product: code, qty: 0, detail: "Talep oluşturuldu" });
+            await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: 0, detail: "Üretim talebi oluşturuldu" });
 
             setStatusBox(statusReq, "Talep alındı. ✅", "ok");
             reqProduct.value = "";
+            playBeep();
           }catch(e){
             setStatusBox(statusReq, "Hata: " + e.message, "error");
           }
@@ -1879,16 +1898,23 @@
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
               const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
               
-              const statusBadge = (d.status === "fulfilled")
-                ? `<span class="badge b-done">KARŞILANDI</span>`
+              const statusBadge = (d.status === "produced")
+                ? `<span class="badge b-done">ÜRETİLDİ</span>`
                 : `<span class="badge b-wait">BEKLİYOR</span>`;
+              
+              const actionBtn = (d.status === "pending")
+                ? `<button class="searchBtn" onclick="markAsProduced('${doc.id}', '${d.product}')">ÜRETTİM</button>`
+                : "-";
+              
+              const requesterName = getNameByPin(d.requestedBy);
               
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dateStr}</td>
                 <td>${d.product || "-"}</td>
-                <td>${d.requestedBy || "-"}</td>
+                <td>${requesterName}</td>
                 <td>${statusBadge}</td>
+                <td>${actionBtn}</td>
               `;
               welderRequestsBody.appendChild(tr);
             });
@@ -1899,6 +1925,33 @@
             setStatusBox(statusWelderRequests, "Hata: " + e.message, "error");
           }
         }
+
+        // Mark production request as produced
+        window.markAsProduced = async function(requestId, productCode){
+          if(!requestId) return;
+          
+          try{
+            const requestRef = doc(db, "requests", requestId);
+            await updateDoc(requestRef, {
+              status: "produced",
+              producedAt: serverTimestamp(),
+              producedBy: sessionPin || "-"
+            });
+            
+            await writeLog({ 
+              action: "PRODUCTION_COMPLETED", 
+              shelf: "-", 
+              product: productCode, 
+              qty: 0, 
+              detail: `Üretim talebi tamamlandı (Kaynakçı: ${sessionPin})` 
+            });
+            
+            playBeep();
+            loadWelderRequests(); // Reload the list
+          }catch(e){
+            alert("Hata: " + e.message);
+          }
+        };
 
         // Production list for admin & packer
         async function loadProduction(filter = 'day'){
@@ -1953,12 +2006,14 @@
               const dateStr = dt ? dt.toLocaleString("tr-TR") : "-";
               totalQty += (d.quantity || 0);
               
+              const welderName = getNameByPin(d.welderPin);
+              
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dateStr}</td>
                 <td>${d.productCode || "-"}</td>
                 <td>${d.quantity || 0}</td>
-                <td>${d.welderPin || "-"}</td>
+                <td>${welderName}</td>
               `;
               productionBody.appendChild(tr);
             });
