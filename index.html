@@ -632,12 +632,12 @@
             <label class="fieldLabel">Ürün Kodu</label>
             <input id="reqProduct" class="input" placeholder="Üretilmesini istediğiniz ürün kodunu giriniz" />
 
-            <button class="actionBtn" id="btnReq" type="button">KAYNAKCILARDAN TALEP ET</button>
+            <button class="actionBtn" id="btnReq" type="button">ÜRETİMDEN TALEP ET</button>
 
             <div class="statusBox" id="statusReq" style="display:none;"></div>
 
             <div class="hintLine" style="margin-top:10px;">
-              Not: Kaynakçılar ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
+              Not: Üretim bölümü ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
             </div>
           </div>
 
@@ -654,6 +654,7 @@
                     <th>Ürün Kodu</th>
                     <th>Durum</th>
                     <th>Talep Eden</th>
+                    <th>Talebi Karşılayan</th>
                   </tr>
                 </thead>
                 <tbody id="reqBody"></tbody>
@@ -685,7 +686,7 @@
                     <th>Tarih & Saat</th>
                     <th>Ürün Kodu</th>
                     <th>Adet</th>
-                    <th>Kaynakçı</th>
+                    <th>Üretim</th>
                   </tr>
                 </thead>
                 <tbody id="productionBody"></tbody>
@@ -823,6 +824,8 @@
 
     const WELDER_PINS = new Set(["4001","4002","4003","4004"]);
 
+    const LASER_PINS = new Set(["5001","5002","5003"]);
+
     window.__SESSION = { role: null, pin: null };
 
     // PIN-isim eşleştirmesi
@@ -834,7 +837,8 @@
       "2003": "Salim",
       "3001": "Salim",
       "4001": "Emin",
-      "4002": "İlhami"
+      "4002": "İlhami",
+      "5001": "Emre K."
     };
 
     function getNameByPin(pin){
@@ -871,6 +875,7 @@
       if(PACKER_PINS.has(pin)) return "packer";
       if(STOWER_PINS.has(pin)) return "stower";
       if(WELDER_PINS.has(pin)) return "welder";
+      if(LASER_PINS.has(pin)) return "welder";
       return null;
     }
 
@@ -878,7 +883,7 @@
       if(role==="admin")  return `<span class="badge b-admin">YÖNETİCİ</span>`;
       if(role==="packer") return `<span class="badge b-packer">PAKETÇİ</span>`;
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
-      if(role==="welder") return `<span class="badge b-welder">KAYNAKCI</span>`;
+      if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -1028,6 +1033,36 @@
     let sessionPin = null;
 
     function padShelf(num){ return "R" + String(num).padStart(3,"0"); }
+
+    function formatLogDate(date){
+      if(!date) return "-";
+      
+      const now = new Date();
+      const logDate = new Date(date);
+      
+      // Bugünün başlangıcı
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Dünün başlangıcı
+      const yesterdayStart = new Date(todayStart);
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      // 2 gün öncesinin başlangıcı
+      const twoDaysAgoStart = new Date(todayStart);
+      twoDaysAgoStart.setDate(twoDaysAgoStart.getDate() - 2);
+      
+      const timeStr = logDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+      
+      if(logDate >= todayStart){
+        return `Bugün-${timeStr}`;
+      } else if(logDate >= yesterdayStart){
+        return `Dün-${timeStr}`;
+      } else {
+        const day = logDate.getDate();
+        const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+                           "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        const month = monthNames[logDate.getMonth()];
+        return `${day} ${month}-${timeStr}`;
+      }
+    }
 
     function setStatusBox(el,msg,type){
       if(!el) return;
@@ -1454,6 +1489,7 @@
               : `<span class="badge b-wait">BEKLİYOR</span>`;
 
             const requesterName = getNameByPin(d.requestedBy);
+            const producerName = d.producedBy ? getNameByPin(d.producedBy) : "-";
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1461,6 +1497,7 @@
               <td>${d.product || "-"}</td>
               <td>${badge}</td>
               <td>${requesterName}</td>
+              <td>${producerName}</td>
             `;
             reqBody.appendChild(tr);
           }
@@ -1766,12 +1803,15 @@
             snap.forEach(docSnap=>{
               const d = docSnap.data() || {};
               const dt = d.ts?.toDate ? d.ts.toDate() : null;
-              const dtStr = dt ? dt.toLocaleString("tr-TR") : "-";
+              const dtStr = formatLogDate(dt);
+              
+              const userName = getNameByPin(d.pin);
+              const roleText = d.role || "-";
 
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dtStr}</td>
-                <td>${(d.role || "-")} / ${(d.pin || "-")}</td>
+                <td>${roleText} / ${userName}</td>
                 <td>${(d.action || "-")}</td>
                 <td>${(d.shelf || "-")}</td>
                 <td>${(d.product || "-")}</td>
