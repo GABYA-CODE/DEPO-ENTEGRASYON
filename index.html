@@ -822,27 +822,6 @@
           <div class="card">
             <h3 style="margin-top:0;">Tüm Malzeme Talepleri</h3>
             
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">DURUMA GÖRE FİLTRELE:</div>
-              <div class="adminRow" style="gap:8px;">
-                <button class="searchBtn" id="btnPurchasePending" type="button">BEKLEYENLER</button>
-                <button class="searchBtn" id="btnPurchaseProcessing" type="button">İŞLEMDE</button>
-                <button class="searchBtn" id="btnPurchaseCompleted" type="button">TAMAMLANANLAR</button>
-                <button class="searchBtn" id="btnPurchaseAll" type="button">TÜMÜ</button>
-              </div>
-            </div>
-
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">TALEP EDENE GÖRE FİLTRELE:</div>
-              <div class="adminRow" style="gap:8px;">
-                <button class="searchBtn" id="btnPurchasePacker" type="button">PAKETÇİ</button>
-                <button class="searchBtn" id="btnPurchaseStower" type="button">RAF DİZEN</button>
-                <button class="searchBtn" id="btnPurchaseWelder" type="button">ÜRETİM</button>
-                <button class="searchBtn" id="btnPurchaseAdmin" type="button">YÖNETİCİ</button>
-                <button class="searchBtn" id="btnPurchaseAllRoles" type="button">TÜMÜ</button>
-              </div>
-            </div>
-
             <div class="statusBox" id="statusPurchase" style="margin-top:12px;display:none;"></div>
 
             <div class="tableWrap" id="purchaseWrap" style="display:none;">
@@ -1189,15 +1168,6 @@
     const matReqWrap = document.getElementById("matReqWrap");
     const matReqBody = document.getElementById("matReqBody");
 
-    const btnPurchasePending = document.getElementById("btnPurchasePending");
-    const btnPurchaseProcessing = document.getElementById("btnPurchaseProcessing");
-    const btnPurchaseCompleted = document.getElementById("btnPurchaseCompleted");
-    const btnPurchaseAll = document.getElementById("btnPurchaseAll");
-    const btnPurchasePacker = document.getElementById("btnPurchasePacker");
-    const btnPurchaseStower = document.getElementById("btnPurchaseStower");
-    const btnPurchaseWelder = document.getElementById("btnPurchaseWelder");
-    const btnPurchaseAdmin = document.getElementById("btnPurchaseAdmin");
-    const btnPurchaseAllRoles = document.getElementById("btnPurchaseAllRoles");
     const statusPurchase = document.getElementById("statusPurchase");
     const purchaseWrap = document.getElementById("purchaseWrap");
     const purchaseBody = document.getElementById("purchaseBody");
@@ -2014,40 +1984,11 @@
         }
 
         // PURCHASE MANAGEMENT (for purchase role)
-        let currentPurchaseStatusFilter = 'pending';
-        let currentPurchaseRoleFilter = 'all';
-
-        async function loadMaterialRequests(statusFilter = 'pending', roleFilter = 'all'){
+        async function loadMaterialRequests(){
           try{
             setStatusBox(statusPurchase, "Yükleniyor...", "");
             
-            currentPurchaseStatusFilter = statusFilter;
-            currentPurchaseRoleFilter = roleFilter;
-            
-            [btnPurchasePending, btnPurchaseProcessing, btnPurchaseCompleted, btnPurchaseAll].forEach(btn => {
-              btn && btn.classList.remove('active');
-            });
-            [btnPurchasePacker, btnPurchaseStower, btnPurchaseWelder, btnPurchaseAdmin, btnPurchaseAllRoles].forEach(btn => {
-              btn && btn.classList.remove('active');
-            });
-            
-            if(statusFilter === 'pending') btnPurchasePending?.classList.add('active');
-            else if(statusFilter === 'processing') btnPurchaseProcessing?.classList.add('active');
-            else if(statusFilter === 'completed') btnPurchaseCompleted?.classList.add('active');
-            else btnPurchaseAll?.classList.add('active');
-
-            if(roleFilter === 'packer') btnPurchasePacker?.classList.add('active');
-            else if(roleFilter === 'stower') btnPurchaseStower?.classList.add('active');
-            else if(roleFilter === 'welder') btnPurchaseWelder?.classList.add('active');
-            else if(roleFilter === 'admin') btnPurchaseAdmin?.classList.add('active');
-            else btnPurchaseAllRoles?.classList.add('active');
-            
-            let q;
-            if(statusFilter === 'all'){
-              q = query(materialReqCol, orderBy("createdAt", "desc"), limit(500));
-            } else {
-              q = query(materialReqCol, where("status", "==", statusFilter), orderBy("createdAt", "desc"), limit(500));
-            }
+            const q = query(materialReqCol, orderBy("createdAt", "desc"), limit(500));
             
             const snap = await getDocs(q);
             purchaseBody.innerHTML = "";
@@ -2058,23 +1999,7 @@
               return;
             }
 
-            let filteredDocs = snap.docs;
-            
-            // Role filter uygula (client-side)
-            if(roleFilter !== 'all'){
-              filteredDocs = filteredDocs.filter(doc => {
-                const d = doc.data();
-                return d.requestedByRole === roleFilter;
-              });
-            }
-
-            if(filteredDocs.length === 0){
-              purchaseWrap.style.display = "none";
-              setStatusBox(statusPurchase, "Bu filtreye uygun talep yok.", "warn");
-              return;
-            }
-
-            filteredDocs.forEach(doc => {
+            snap.forEach(doc => {
               const d = doc.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
               const dateStr = formatLogDate(dt);
@@ -2106,9 +2031,7 @@
             });
 
             purchaseWrap.style.display = "block";
-            const statusText = statusFilter === 'pending' ? 'Bekleyen' : statusFilter === 'processing' ? 'İşlemdeki' : statusFilter === 'completed' ? 'Tamamlanan' : 'Tüm';
-            const roleText = roleFilter === 'packer' ? 'Paketçi' : roleFilter === 'stower' ? 'Raf Dizen' : roleFilter === 'welder' ? 'Üretim' : roleFilter === 'admin' ? 'Yönetici' : 'Tüm';
-            setStatusBox(statusPurchase, `${statusText} / ${roleText}: ${filteredDocs.length} kayıt`, "ok");
+            setStatusBox(statusPurchase, `Toplam: ${snap.size} kayıt`, "ok");
           }catch(e){
             setStatusBox(statusPurchase, "Hata: " + e.message, "error");
           }
@@ -2137,25 +2060,14 @@
             });
             
             playBeep();
-            loadMaterialRequests(currentPurchaseStatusFilter, currentPurchaseRoleFilter);
+            loadMaterialRequests();
           }catch(e){
             alert("Hata: " + e.message);
           }
         };
-
-        btnPurchasePending && (btnPurchasePending.onclick = () => loadMaterialRequests('pending', currentPurchaseRoleFilter));
-        btnPurchaseProcessing && (btnPurchaseProcessing.onclick = () => loadMaterialRequests('processing', currentPurchaseRoleFilter));
-        btnPurchaseCompleted && (btnPurchaseCompleted.onclick = () => loadMaterialRequests('completed', currentPurchaseRoleFilter));
-        btnPurchaseAll && (btnPurchaseAll.onclick = () => loadMaterialRequests('all', currentPurchaseRoleFilter));
-        
-        btnPurchasePacker && (btnPurchasePacker.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'packer'));
-        btnPurchaseStower && (btnPurchaseStower.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'stower'));
-        btnPurchaseWelder && (btnPurchaseWelder.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'welder'));
-        btnPurchaseAdmin && (btnPurchaseAdmin.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'admin'));
-        btnPurchaseAllRoles && (btnPurchaseAllRoles.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'all'));
         
         if(role === 'purchase' || role === 'admin'){
-          loadMaterialRequests('pending', 'all');
+          loadMaterialRequests();
         }
 
         // SETUP (admin only)
