@@ -466,6 +466,34 @@
 
     .b-wait{ background:rgba(100,116,139,.12); color:#334155; border-color:rgba(100,116,139,.18); }
     .b-done{ background:rgba(0,200,83,.12); color:#065f46; border-color:rgba(0,200,83,.20); }
+
+    /* Context Menu */
+    .context-menu {
+      position: fixed;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 4px 0;
+      z-index: 10000;
+      min-width: 150px;
+      display: none;
+    }
+    .context-menu-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .context-menu-item:hover {
+      background: rgba(59,130,246,.08);
+    }
+    .context-menu-item.danger {
+      color: #dc2626;
+    }
+    .context-menu-item.danger:hover {
+      background: rgba(239,68,68,.08);
+    }
   </style>
 </head>
 
@@ -499,6 +527,11 @@
         <div style="width:44px;"></div>
       </div>
       <div class="roleLine" id="roleLine"></div>
+
+      <!-- Context Menu -->
+      <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item danger" id="contextMenuDelete">Talebi Sil</div>
+      </div>
 
       <div class="tabbar" id="tabbar">
         <div class="tab" id="tabPut">RAFA ÜRÜN KOY</div>
@@ -644,10 +677,6 @@
             <button class="actionBtn" id="btnReq" type="button">ÜRETİMDEN TALEP ET</button>
 
             <div class="statusBox" id="statusReq" style="display:none;"></div>
-
-            <div class="hintLine" style="margin-top:10px;">
-              Not: Üretim bölümü ürünü ürettiklerinde durum "GÖRÜLDÜ" olarak güncellenecektir.
-            </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
@@ -773,7 +802,7 @@
           <div class="card">
 
             <label class="fieldLabel">Malzeme</label>
-            <input id="matReqName" class="input" placeholder="Malzemeyi yazınız" />
+            <input id="matReqName" class="input" placeholder="" />
 
             <label class="fieldLabel" style="margin-top:14px;">Adet</label>
             <input id="matReqQty" class="input" type="number" min="1" value="1" />
@@ -811,7 +840,6 @@
 
         <!-- VIEW: PURCHASE MANAGEMENT -->
         <div id="viewPurchase" style="display:none;">
-          <div class="sectionTitle">Satın Alma Yönetimi</div>
 
           <div class="card">
             <h3 style="margin-top:0;">Tüm Malzeme Talepleri</h3>
@@ -829,6 +857,8 @@
                     <th>Not</th>
                     <th>Durum</th>
                     <th>İşlem</th>
+                    <th>Not Ekle</th>
+                    <th>Reddet</th>
                   </tr>
                 </thead>
                 <tbody id="purchaseBody"></tbody>
@@ -1036,7 +1066,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {
-      getFirestore, collection, doc, setDoc, updateDoc, addDoc,
+      getFirestore, collection, doc, setDoc, updateDoc, addDoc, deleteDoc,
       onSnapshot, serverTimestamp, writeBatch,
       getDoc, getDocs, query, limit, orderBy, where
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -1548,6 +1578,65 @@
 
         const initRef = doc(db, "system", "shelves_init");
 
+        // Context Menu için global değişken
+        let currentContextRequestId = null;
+        const contextMenu = document.getElementById('contextMenu');
+        const contextMenuDelete = document.getElementById('contextMenuDelete');
+
+        // Context menü göster
+        window.showContextMenu = function(event, requestId) {
+          currentContextRequestId = requestId;
+          contextMenu.style.display = 'block';
+          contextMenu.style.left = event.pageX + 'px';
+          contextMenu.style.top = event.pageY + 'px';
+        };
+
+        // Context menü gizle
+        function hideContextMenu() {
+          contextMenu.style.display = 'none';
+          currentContextRequestId = null;
+        }
+
+        // Sayfa herhangi bir yerine tıklandığında menüyü gizle
+        document.addEventListener('click', hideContextMenu);
+        
+        // Context menünün içine tıklandığında kapatma
+        contextMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+
+        // Silme işlemi
+        contextMenuDelete.addEventListener('click', async () => {
+          if (!currentContextRequestId) return;
+          
+          if (confirm('Bu malzeme talebini silmek istediğinize emin misiniz?')) {
+            try {
+              const requestRef = doc(db, 'materialRequests', currentContextRequestId);
+              await deleteDoc(requestRef);
+              
+              await addDoc(logsCol, {
+                action: 'MATERIAL_STATUS_UPDATE',
+                shelf: '-',
+                product: '-',
+                qty: 0,
+                detail: 'Malzeme talebi silindi',
+                ts: serverTimestamp(),
+                role: role || '-',
+                pin: sessionPin || '-'
+              });
+              
+              playBeep();
+              if (typeof loadMaterialRequests === 'function') {
+                loadMaterialRequests();
+              }
+              alert('Talep başarıyla silindi.');
+            } catch (e) {
+              alert('Hata: ' + e.message);
+            }
+          }
+          hideContextMenu();
+        });
+
         async function ensureShelvesOnce(){
           const initSnap = await getDoc(initRef);
           if (initSnap.exists() && initSnap.data()?.done === true) return;
@@ -1951,10 +2040,16 @@
             const dtStr = formatLogDate(dt);
 
             let badge = `<span class="badge b-wait">BEKLEYEN</span>`;
-            if(d.status === "processing") badge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">İŞLEMDE</span>`;
-            if(d.status === "completed") badge = `<span class="badge b-done">TAMAMLANDI</span>`;
+            if(d.status === "processing") badge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">SİPARİŞ VERİLDİ</span>`;
+            if(d.status === "completed") badge = `<span class="badge b-done">MALZEME ALINDI</span>`;
+            if(d.status === "rejected") badge = `<span class="badge" style="background:rgba(239,68,68,.12);color:#7f1d1d;border-color:rgba(239,68,68,.18);">REDDEDİLDİ</span>`;
 
             const requesterName = getNameByPin(d.requestedBy);
+            
+            let noteDisplay = d.note || "-";
+            if(d.status === "rejected" && d.rejectionNote){
+              noteDisplay = `<span style="color:#dc2626;font-weight:500;">Red Nedeni: ${d.rejectionNote}</span>`;
+            }
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1963,7 +2058,7 @@
               <td>${d.quantity || 1}</td>
               <td>${badge}</td>
               <td>${requesterName}</td>
-              <td>${d.note || "-"}</td>
+              <td>${noteDisplay}</td>
             `;
             matReqBody.appendChild(tr);
           }
@@ -1993,23 +2088,23 @@
               return;
             }
 
-            snap.forEach(doc => {
-              const d = doc.data();
+            snap.forEach(docSnap => {
+              const d = docSnap.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
               const dateStr = formatLogDate(dt);
               
               let statusBadge = `<span class="badge b-wait">BEKLEYEN</span>`;
-              if(d.status === "processing") statusBadge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">İŞLEMDE</span>`;
-              if(d.status === "completed") statusBadge = `<span class="badge b-done">TAMAMLANDI</span>`;
-              
-              let actionBtn = "-";
-              if(d.status === "pending"){
-                actionBtn = `<button class="searchBtn" onclick="updateMaterialStatus('${doc.id}', 'processing')" style="font-size:14px;padding:8px;">İŞLEME AL</button>`;
-              } else if(d.status === "processing"){
-                actionBtn = `<button class="searchBtn" onclick="updateMaterialStatus('${doc.id}', 'completed')" style="font-size:14px;padding:8px;background:rgba(0,200,83,.12);">TAMAMLA</button>`;
-              }
+              if(d.status === "processing") statusBadge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">SİPARİŞ VERİLDİ</span>`;
+              if(d.status === "completed") statusBadge = `<span class="badge b-done">MALZEME ALINDI</span>`;
+              if(d.status === "rejected") statusBadge = `<span class="badge" style="background:rgba(239,68,68,.12);color:#7f1d1d;border-color:rgba(239,68,68,.18);">REDDEDİLDİ</span>`;
               
               const requesterName = getNameByPin(d.requestedBy);
+              
+              // Not gösterimi - önce kullanıcı notu, sonra satın alma notu
+              let noteDisplay = d.note || "-";
+              if(d.purchaseNote) {
+                noteDisplay = `${d.note || '-'} <br><span style="color:#2563eb;font-weight:500;">Satın Alma: ${d.purchaseNote}</span>`;
+              }
               
               const tr = document.createElement("tr");
               tr.innerHTML = `
@@ -2017,10 +2112,63 @@
                 <td>${d.materialName || "-"}</td>
                 <td>${d.quantity || 1}</td>
                 <td>${requesterName}</td>
-                <td>${d.note || "-"}</td>
+                <td>${noteDisplay}</td>
                 <td>${statusBadge}</td>
-                <td>${actionBtn}</td>
+                <td class="action-cell"></td>
               `;
+              
+              const actionCell = tr.querySelector('.action-cell');
+              
+              if(d.status === "pending"){
+                const processBtn = document.createElement('button');
+                processBtn.className = 'searchBtn';
+                processBtn.textContent = 'SİPARİŞ VER';
+                processBtn.style.cssText = 'font-size:14px;padding:8px;';
+                processBtn.onclick = () => window.updateMaterialStatus(docSnap.id, 'processing');
+                
+                actionCell.appendChild(processBtn);
+              } else if(d.status === "processing"){
+                const completeBtn = document.createElement('button');
+                completeBtn.className = 'searchBtn';
+                completeBtn.textContent = 'MALZEME ALINDI';
+                completeBtn.style.cssText = 'font-size:14px;padding:8px;background:rgba(0,200,83,.12);';
+                completeBtn.onclick = () => window.updateMaterialStatus(docSnap.id, 'completed');
+                
+                actionCell.appendChild(completeBtn);
+              } else {
+                actionCell.textContent = '-';
+              }
+              
+              // Not ekleme butonu
+              const noteTd = document.createElement('td');
+              noteTd.style.textAlign = 'center';
+              
+              const noteBtn = document.createElement('button');
+              noteBtn.textContent = '📝';
+              noteBtn.title = 'Not Ekle/Düzenle';
+              noteBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;';
+              noteBtn.onclick = () => window.addPurchaseNote(docSnap.id, d.purchaseNote || '');
+              
+              noteTd.appendChild(noteBtn);
+              tr.appendChild(noteTd);
+              
+              // Reddet butonu (sadece bekleyen ve işlemdeki talepler için)
+              const rejectTd = document.createElement('td');
+              rejectTd.style.textAlign = 'center';
+              
+              if(d.status === 'pending' || d.status === 'processing') {
+                const rejectBtn = document.createElement('button');
+                rejectBtn.textContent = '❌';
+                rejectBtn.title = 'Reddet';
+                rejectBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;';
+                rejectBtn.onclick = () => window.rejectMaterialRequest(docSnap.id);
+                rejectTd.appendChild(rejectBtn);
+              } else {
+                rejectTd.textContent = '-';
+              }
+              
+              tr.appendChild(rejectTd);
+              
               purchaseBody.appendChild(tr);
             });
 
@@ -2030,6 +2178,66 @@
             setStatusBox(statusPurchase, "Hata: " + e.message, "error");
           }
         }
+
+        window.deleteMaterialRequest = async function(requestId){
+          if(!requestId) return;
+          
+          if(!confirm("Bu talebi silmek istediğinize emin misiniz?")){
+            return;
+          }
+          
+          try{
+            const requestRef = doc(db, "materialRequests", requestId);
+            await deleteDoc(requestRef);
+            
+            await writeLog({ 
+              action: "MATERIAL_STATUS_UPDATE", 
+              shelf: "-", 
+              product: "-", 
+              qty: 0, 
+              detail: `Malzeme talebi silindi` 
+            });
+            
+            playBeep();
+            loadMaterialRequests();
+          }catch(e){
+            alert("Hata: " + e.message);
+          }
+        };
+
+        window.addPurchaseNote = async function(requestId, currentNote){
+          try {
+            const newNote = prompt('Satın alma notu:', currentNote || '');
+            if(newNote !== null) {
+              await updateDoc(doc(db, 'materialRequests', requestId), {
+                purchaseNote: newNote.trim()
+              });
+              playBeep();
+              loadMaterialRequests();
+            }
+          } catch (e) {
+            console.error('Not ekleme hatası:', e);
+            alert('Hata: ' + e.message);
+          }
+        };
+
+        window.rejectMaterialRequest = async function(requestId){
+          try {
+            if(!confirm('Bu talebi reddetmek istediğinize emin misiniz?')){
+              return;
+            }
+            await updateDoc(doc(db, 'materialRequests', requestId), {
+              status: 'rejected',
+              rejectedAt: serverTimestamp(),
+              rejectedBy: sessionPin || '-'
+            });
+            playBeep();
+            loadMaterialRequests();
+          } catch (e) {
+            console.error('Reddetme hatası:', e);
+            alert('Hata: ' + e.message);
+          }
+        };
 
         window.updateMaterialStatus = async function(requestId, newStatus){
           if(!requestId) return;
@@ -2509,7 +2717,33 @@
         
         // Admin veya packer için otomatik yükleme
         if(role === 'admin' || role === 'packer'){
-          loadProduction('day');
+          // Önce günlük kontrol et
+          (async () => {
+            try {
+              const now = new Date();
+              const todayStart = new Date();
+              todayStart.setHours(0, 0, 0, 0);
+              
+              const qDay = query(
+                productionCol,
+                where("createdAt", ">=", todayStart),
+                limit(1)
+              );
+              
+              const daySnap = await getDocs(qDay);
+              
+              if(daySnap.empty) {
+                // Günlük üretim yoksa haftalık göster
+                loadProduction('week');
+              } else {
+                // Günlük üretim varsa günlük göster
+                loadProduction('day');
+              }
+            } catch(e) {
+              // Hata durumunda günlük göster
+              loadProduction('day');
+            }
+          })();
         }
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
