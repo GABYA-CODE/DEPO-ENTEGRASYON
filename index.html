@@ -503,9 +503,11 @@
         <div class="tab" id="tabSearch">ÜRÜN ARA</div>
         <div class="tab" id="tabRack">RAF DURUMU</div>
         <div class="tab" id="tabRequest">TALEP</div>
+        <div class="tab" id="tabMaterialRequest">MALZEME TALEP</div>
         <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
         <div class="tab" id="tabWelderRequests">TALEPLER</div>
         <div class="tab" id="tabProduction">ÜRETİLENLER</div>
+        <div class="tab" id="tabPurchase">SATIN ALMA YÖNETİMİ</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
         <div class="logoutBtn" id="logoutBtn">ÇIKIŞ</div>
       </div>
@@ -765,6 +767,89 @@
           </div>
         </div>
 
+        <!-- VIEW: MATERIAL REQUEST -->
+        <div id="viewMaterialRequest" style="display:none;">
+          <div class="sectionTitle">Malzeme Talep Ekranı</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Satın Almadan Malzeme Talep Et</h3>
+
+            <label class="fieldLabel">Malzeme Adı / Açıklama</label>
+            <input id="matReqName" class="input" placeholder="Talep ettiğiniz malzemeyi yazınız" />
+
+            <label class="fieldLabel" style="margin-top:14px;">Adet</label>
+            <input id="matReqQty" class="input" type="number" min="1" value="1" />
+
+            <label class="fieldLabel" style="margin-top:14px;">Açıklama / Not (Opsiyonel)</label>
+            <input id="matReqNote" class="input" placeholder="Ek bilgi yazabilirsiniz" />
+
+            <button class="actionBtn" id="btnMatReq" type="button">TALEP OLUŞTUR</button>
+
+            <div class="statusBox" id="statusMatReq" style="display:none;"></div>
+
+            <div class="hintLine" style="margin-top:10px;">
+              Not: Satın alma birimi talebinizi görecek ve durumu güncelleyecektir.
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Malzeme Taleplerim</h3>
+
+            <div class="statusBox" id="statusMatReqList">Yükleniyor...</div>
+
+            <div class="tableWrap" id="matReqWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Malzeme</th>
+                    <th>Adet</th>
+                    <th>Durum</th>
+                    <th>Talep Eden</th>
+                    <th>Not</th>
+                  </tr>
+                </thead>
+                <tbody id="matReqBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: PURCHASE MANAGEMENT -->
+        <div id="viewPurchase" style="display:none;">
+          <div class="sectionTitle">Satın Alma Yönetimi</div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Tüm Malzeme Talepleri</h3>
+            
+            <div class="adminRow" style="gap:8px;">
+              <button class="searchBtn" id="btnPurchasePending" type="button">BEKLEYENLER</button>
+              <button class="searchBtn" id="btnPurchaseProcessing" type="button">İŞLEMDE</button>
+              <button class="searchBtn" id="btnPurchaseCompleted" type="button">TAMAMLANANLAR</button>
+              <button class="searchBtn" id="btnPurchaseAll" type="button">TÜMÜ</button>
+            </div>
+
+            <div class="statusBox" id="statusPurchase" style="margin-top:12px;display:none;"></div>
+
+            <div class="tableWrap" id="purchaseWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Malzeme</th>
+                    <th>Adet</th>
+                    <th>Talep Eden</th>
+                    <th>Not</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="purchaseBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
@@ -832,6 +917,8 @@
 
     const LASER_PINS = new Set(["5001","5002","5003"]);
 
+    const PURCHASE_PINS = new Set(["6001","6002"]);
+
     window.__SESSION = { role: null, pin: null };
 
     // PIN-isim eşleştirmesi
@@ -844,7 +931,9 @@
       "3001": "Salim",
       "4001": "Emin",
       "4002": "İlhami",
-      "5001": "Emre K."
+      "5001": "Emre K.",
+      "6001": "Satın Alma 1",
+      "6002": "Satın Alma 2"
     };
 
     function getNameByPin(pin){
@@ -882,6 +971,7 @@
       if(STOWER_PINS.has(pin)) return "stower";
       if(WELDER_PINS.has(pin)) return "welder";
       if(LASER_PINS.has(pin)) return "welder";
+      if(PURCHASE_PINS.has(pin)) return "purchase";
       return null;
     }
 
@@ -890,6 +980,7 @@
       if(role==="packer") return `<span class="badge b-packer">PAKETÇİ</span>`;
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
       if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
+      if(role==="purchase") return `<span class="badge b-admin">SATIN ALMA</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -947,9 +1038,11 @@
     const tabSearch= document.getElementById("tabSearch");
     const tabRack  = document.getElementById("tabRack");
     const tabRequest= document.getElementById("tabRequest");
+    const tabMaterialRequest= document.getElementById("tabMaterialRequest");
     const tabWelder= document.getElementById("tabWelder");
     const tabWelderRequests= document.getElementById("tabWelderRequests");
     const tabProduction= document.getElementById("tabProduction");
+    const tabPurchase= document.getElementById("tabPurchase");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -957,9 +1050,11 @@
     const viewSearch= document.getElementById("viewSearch");
     const viewRack = document.getElementById("viewRack");
     const viewRequest= document.getElementById("viewRequest");
+    const viewMaterialRequest= document.getElementById("viewMaterialRequest");
     const viewWelder= document.getElementById("viewWelder");
     const viewWelderRequests= document.getElementById("viewWelderRequests");
     const viewProduction= document.getElementById("viewProduction");
+    const viewPurchase= document.getElementById("viewPurchase");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -1034,6 +1129,23 @@
     const statusProduction = document.getElementById("statusProduction");
     const productionWrap = document.getElementById("productionWrap");
     const productionBody = document.getElementById("productionBody");
+
+    const matReqName = document.getElementById("matReqName");
+    const matReqQty = document.getElementById("matReqQty");
+    const matReqNote = document.getElementById("matReqNote");
+    const btnMatReq = document.getElementById("btnMatReq");
+    const statusMatReq = document.getElementById("statusMatReq");
+    const statusMatReqList = document.getElementById("statusMatReqList");
+    const matReqWrap = document.getElementById("matReqWrap");
+    const matReqBody = document.getElementById("matReqBody");
+
+    const btnPurchasePending = document.getElementById("btnPurchasePending");
+    const btnPurchaseProcessing = document.getElementById("btnPurchaseProcessing");
+    const btnPurchaseCompleted = document.getElementById("btnPurchaseCompleted");
+    const btnPurchaseAll = document.getElementById("btnPurchaseAll");
+    const statusPurchase = document.getElementById("statusPurchase");
+    const purchaseWrap = document.getElementById("purchaseWrap");
+    const purchaseBody = document.getElementById("purchaseBody");
 
     let shelvesCache = {};
     let role = null;
@@ -1248,7 +1360,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabWelder, tabWelderRequests, tabProduction, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -1257,9 +1369,11 @@
         viewSearch && (viewSearch.style.display="none");
         viewRack && (viewRack.style.display="none");
         viewRequest && (viewRequest.style.display="none");
+        viewMaterialRequest && (viewMaterialRequest.style.display="none");
         viewWelder && (viewWelder.style.display="none");
         viewWelderRequests && (viewWelderRequests.style.display="none");
         viewProduction && (viewProduction.style.display="none");
+        viewPurchase && (viewPurchase.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -1270,9 +1384,11 @@
       if(target==="search"){ tabSearch?.classList.add("active"); viewSearch.style.display="block"; setTimeout(()=>{ try{ searchCode.focus(); searchCode.select && searchCode.select(); }catch(e){} },50); }
       if(target==="rack"){ tabRack?.classList.add("active"); viewRack.style.display="block"; setTimeout(()=>{ try{ rackBody && rackBody.scrollIntoView && rackBody.scrollIntoView(); }catch(e){} },50); }
       if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
+      if(target==="materialRequest"){ tabMaterialRequest?.classList.add("active"); viewMaterialRequest.style.display="block"; setTimeout(()=>{ try{ matReqName.focus(); matReqName.select && matReqName.select(); }catch(e){} },50); }
       if(target==="welder"){ tabWelder?.classList.add("active"); viewWelder.style.display="block"; setTimeout(()=>{ try{ welderCode.focus(); welderCode.select && welderCode.select(); }catch(e){} },50); }
       if(target==="welderRequests"){ tabWelderRequests?.classList.add("active"); viewWelderRequests.style.display="block"; }
       if(target==="production"){ tabProduction?.classList.add("active"); viewProduction.style.display="block"; }
+      if(target==="purchase"){ tabPurchase?.classList.add("active"); viewPurchase.style.display="block"; }
       if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; }
     }
 
@@ -1283,9 +1399,11 @@
         [tabSearch, viewSearch],
         [tabRack, viewRack],
         [tabRequest, viewRequest],
+        [tabMaterialRequest, viewMaterialRequest],
         [tabWelder, viewWelder],
         [tabWelderRequests, viewWelderRequests],
         [tabProduction, viewProduction],
+        [tabPurchase, viewPurchase],
         [tabAdmin, viewAdmin]
       ];
 
@@ -1299,27 +1417,36 @@
         tabSearch.style.display="block";
         tabRack.style.display="block";
         tabRequest.style.display="block";
+        tabMaterialRequest.style.display="block";
         tabProduction.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 170px";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 170px";
         setActiveTab("clear");
       }else if(r==="stower"){
         tabPut.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 170px";
+        tabMaterialRequest.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 170px";
         setActiveTab("put");
       }else if(r==="welder"){
         tabWelder.style.display="block";
         tabWelderRequests.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 170px";
+        tabMaterialRequest.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 170px";
         setActiveTab("welder");
+      }else if(r==="purchase"){
+        tabPurchase.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 170px";
+        setActiveTab("purchase");
       }else if(r==="admin"){
         tabPut.style.display="block";
         tabClear.style.display="block";
         tabSearch.style.display="block";
         tabRack.style.display="block";
         tabRequest.style.display="block";
+        tabMaterialRequest.style.display="block";
         tabProduction.style.display="block";
+        tabPurchase.style.display="block";
         tabAdmin.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 170px";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 170px";
         setActiveTab("admin");
       }else{
         tabbar.style.gridTemplateColumns = "1fr 170px";
@@ -1364,9 +1491,11 @@
         tabSearch && (tabSearch.onclick = ()=>setActiveTab("search"));
         tabRack && (tabRack.onclick = ()=>setActiveTab("rack"));
         tabRequest && (tabRequest.onclick = ()=>setActiveTab("request"));
+        tabMaterialRequest && (tabMaterialRequest.onclick = ()=>setActiveTab("materialRequest"));
         tabWelder && (tabWelder.onclick = ()=>setActiveTab("welder"));
         tabWelderRequests && (tabWelderRequests.onclick = ()=>setActiveTab("welderRequests"));
         tabProduction && (tabProduction.onclick = ()=>setActiveTab("production"));
+        tabPurchase && (tabPurchase.onclick = ()=>setActiveTab("purchase"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>location.reload();
@@ -1379,6 +1508,7 @@
         const logsCol = collection(db, "logs");
         const reqCol = collection(db, "requests");
         const productionCol = collection(db, "production");
+        const materialReqCol = collection(db, "materialRequests");
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -1733,6 +1863,192 @@
             setStatusBox(statusReq, "Hata: " + e.message, "error");
           }
         });
+
+        // MATERIAL REQUEST CREATE
+        btnMatReq && (btnMatReq.onclick = async () => {
+          setStatusBox(statusMatReq, "Talep gönderiliyor...", "");
+
+          const name = (matReqName.value || "").trim();
+          const qty = Math.max(1, Number(matReqQty.value || 1));
+          const note = (matReqNote.value || "").trim();
+          
+          if(!name) return setStatusBox(statusMatReq, "Malzeme adı boş olamaz.", "error");
+
+          try{
+            await addDoc(materialReqCol, {
+              materialName: name,
+              quantity: qty,
+              note: note,
+              status: "pending",
+              createdAt: serverTimestamp(),
+              requestedBy: sessionPin || "-",
+              requestedByRole: role || "-",
+              completedAt: null,
+              completedBy: null
+            });
+
+            await writeLog({ action: "MATERIAL_REQUEST", shelf: "-", product: name, qty: qty, detail: `Malzeme talebi oluşturuldu: ${note || '-'}` });
+
+            setStatusBox(statusMatReq, "Malzeme talebi alındı. ✅", "ok");
+            matReqName.value = "";
+            matReqQty.value = "1";
+            matReqNote.value = "";
+            playBeep();
+          }catch(e){
+            setStatusBox(statusMatReq, "Hata: " + e.message, "error");
+          }
+        });
+
+        // MATERIAL REQUEST LIST (for requester)
+        function renderMatReqRows(docs){
+          if(!matReqBody) return;
+          matReqBody.innerHTML = "";
+          if(!docs || docs.length===0){
+            matReqWrap.style.display="none";
+            setStatusBox(statusMatReqList, "Talep yok.", "warn");
+            return;
+          }
+
+          for(const x of docs){
+            const d = x.data();
+            const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+            const dtStr = formatLogDate(dt);
+
+            let badge = `<span class="badge b-wait">BEKLEYEN</span>`;
+            if(d.status === "processing") badge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">İŞLEMDE</span>`;
+            if(d.status === "completed") badge = `<span class="badge b-done">TAMAMLANDI</span>`;
+
+            const requesterName = getNameByPin(d.requestedBy);
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${dtStr}</td>
+              <td>${d.materialName || "-"}</td>
+              <td>${d.quantity || 1}</td>
+              <td>${badge}</td>
+              <td>${requesterName}</td>
+              <td>${d.note || "-"}</td>
+            `;
+            matReqBody.appendChild(tr);
+          }
+
+          matReqWrap.style.display="block";
+          setStatusBox(statusMatReqList, `Gösteriliyor: ${docs.length}`, "ok");
+        }
+
+        if(role==="packer" || role==="admin" || role==="welder" || role==="stower"){
+          const qMatReq = query(materialReqCol, orderBy("createdAt","desc"), limit(200));
+          onSnapshot(qMatReq, (snap)=> renderMatReqRows(snap.docs));
+        }
+
+        // PURCHASE MANAGEMENT (for purchase role)
+        async function loadMaterialRequests(filter = 'all'){
+          try{
+            setStatusBox(statusPurchase, "Yükleniyor...", "");
+            
+            [btnPurchasePending, btnPurchaseProcessing, btnPurchaseCompleted, btnPurchaseAll].forEach(btn => {
+              btn && btn.classList.remove('active');
+            });
+            
+            if(filter === 'pending') btnPurchasePending?.classList.add('active');
+            else if(filter === 'processing') btnPurchaseProcessing?.classList.add('active');
+            else if(filter === 'completed') btnPurchaseCompleted?.classList.add('active');
+            else btnPurchaseAll?.classList.add('active');
+            
+            let q;
+            if(filter === 'all'){
+              q = query(materialReqCol, orderBy("createdAt", "desc"), limit(500));
+            } else {
+              q = query(materialReqCol, where("status", "==", filter), orderBy("createdAt", "desc"), limit(500));
+            }
+            
+            const snap = await getDocs(q);
+            purchaseBody.innerHTML = "";
+            
+            if(snap.empty){
+              purchaseWrap.style.display = "none";
+              setStatusBox(statusPurchase, "Talep bulunamadı.", "warn");
+              return;
+            }
+
+            snap.forEach(doc => {
+              const d = doc.data();
+              const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+              const dateStr = formatLogDate(dt);
+              
+              let statusBadge = `<span class="badge b-wait">BEKLEYEN</span>`;
+              if(d.status === "processing") statusBadge = `<span class="badge" style="background:rgba(59,130,246,.12);color:#1e3a8a;border-color:rgba(59,130,246,.18);">İŞLEMDE</span>`;
+              if(d.status === "completed") statusBadge = `<span class="badge b-done">TAMAMLANDI</span>`;
+              
+              let actionBtn = "-";
+              if(d.status === "pending"){
+                actionBtn = `<button class="searchBtn" onclick="updateMaterialStatus('${doc.id}', 'processing')" style="font-size:14px;padding:8px;">İŞLEME AL</button>`;
+              } else if(d.status === "processing"){
+                actionBtn = `<button class="searchBtn" onclick="updateMaterialStatus('${doc.id}', 'completed')" style="font-size:14px;padding:8px;background:rgba(0,200,83,.12);">TAMAMLA</button>`;
+              }
+              
+              const requesterName = getNameByPin(d.requestedBy);
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${d.materialName || "-"}</td>
+                <td>${d.quantity || 1}</td>
+                <td>${requesterName}</td>
+                <td>${d.note || "-"}</td>
+                <td>${statusBadge}</td>
+                <td>${actionBtn}</td>
+              `;
+              purchaseBody.appendChild(tr);
+            });
+
+            purchaseWrap.style.display = "block";
+            const filterText = filter === 'pending' ? 'Bekleyen' : filter === 'processing' ? 'İşlemdeki' : filter === 'completed' ? 'Tamamlanan' : 'Tüm';
+            setStatusBox(statusPurchase, `${filterText} talepler: ${snap.size} kayıt`, "ok");
+          }catch(e){
+            setStatusBox(statusPurchase, "Hata: " + e.message, "error");
+          }
+        }
+
+        window.updateMaterialStatus = async function(requestId, newStatus){
+          if(!requestId) return;
+          
+          try{
+            const requestRef = doc(db, "materialRequests", requestId);
+            const updateData = { status: newStatus };
+            
+            if(newStatus === "completed"){
+              updateData.completedAt = serverTimestamp();
+              updateData.completedBy = sessionPin || "-";
+            }
+            
+            await updateDoc(requestRef, updateData);
+            
+            await writeLog({ 
+              action: "MATERIAL_STATUS_UPDATE", 
+              shelf: "-", 
+              product: "-", 
+              qty: 0, 
+              detail: `Malzeme talebi durumu: ${newStatus}` 
+            });
+            
+            playBeep();
+            loadMaterialRequests(btnPurchasePending?.classList.contains('active') ? 'pending' : 
+                                 btnPurchaseProcessing?.classList.contains('active') ? 'processing' : 
+                                 btnPurchaseCompleted?.classList.contains('active') ? 'completed' : 'all');
+          }catch(e){
+            alert("Hata: " + e.message);
+          }
+        };
+
+        btnPurchasePending && (btnPurchasePending.onclick = () => loadMaterialRequests('pending'));
+        btnPurchaseProcessing && (btnPurchaseProcessing.onclick = () => loadMaterialRequests('processing'));
+        btnPurchaseCompleted && (btnPurchaseCompleted.onclick = () => loadMaterialRequests('completed'));
+        btnPurchaseAll && (btnPurchaseAll.onclick = () => loadMaterialRequests('all'));
+        
+        if(role === 'purchase' || role === 'admin'){
+          loadMaterialRequests('pending');
+        }
 
         // SETUP (admin only)
         if(btnSetup && role==="admin"){
