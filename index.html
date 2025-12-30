@@ -509,8 +509,8 @@
         <div class="tab" id="tabMaterialRequest">MALZEME TALEP</div>
         <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
         <div class="tab" id="tabWelderRequests">TALEPLER</div>
-        <div class="tab" id="tabProduction">ÜRETİLENLER</div>
-        <div class="tab" id="tabPurchase">SATIN ALMA YÖNETİMİ</div>
+        <div class="tab" id="tabProduction">ÜRETİM</div>
+        <div class="tab" id="tabPurchase">SATIN ALMA</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -632,10 +632,11 @@
           <div class="card">
 
             <label class="fieldLabel">Ürün Kodu</label>
-            <input id="reqProduct" class="input" placeholder="Üretilmesini istediğiniz ürün kodunu giriniz" />
+            <input id="reqProduct" class="input" placeholder="" />
 
             <label class="fieldLabel" style="margin-top:14px;">Üretim Modeli</label>
             <select id="reqProductionType" class="input">
+              <option value="">Seçiniz</option>
               <option value="welder">Kaynak</option>
               <option value="laser">Lazer</option>
             </select>
@@ -673,7 +674,6 @@
 
         <!-- VIEW: PRODUCTION (For Admin & Packer) -->
         <div id="viewProduction" style="display:none;">
-          <div class="sectionTitle">Üretim Kayıtları</div>
 
           <div class="card">
             <h3 style="margin-top:0;">Tüm Üretimler</h3>
@@ -772,22 +772,18 @@
 
           <div class="card">
 
-            <label class="fieldLabel">Malzeme Adı / Açıklama</label>
-            <input id="matReqName" class="input" placeholder="Talep ettiğiniz malzemeyi yazınız" />
+            <label class="fieldLabel">Malzeme</label>
+            <input id="matReqName" class="input" placeholder="Malzemeyi yazınız" />
 
             <label class="fieldLabel" style="margin-top:14px;">Adet</label>
             <input id="matReqQty" class="input" type="number" min="1" value="1" />
 
-            <label class="fieldLabel" style="margin-top:14px;">Açıklama / Not (Opsiyonel)</label>
+            <label class="fieldLabel" style="margin-top:14px;">Not</label>
             <input id="matReqNote" class="input" placeholder="Ek bilgi yazabilirsiniz" />
 
             <button class="actionBtn" id="btnMatReq" type="button">TALEP OLUŞTUR</button>
 
             <div class="statusBox" id="statusMatReq" style="display:none;"></div>
-
-            <div class="hintLine" style="margin-top:10px;">
-              Not: Satın alma birimi talebinizi görecek ve durumu güncelleyecektir.
-            </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
