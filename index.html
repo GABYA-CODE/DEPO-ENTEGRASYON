@@ -822,11 +822,25 @@
           <div class="card">
             <h3 style="margin-top:0;">Tüm Malzeme Talepleri</h3>
             
-            <div class="adminRow" style="gap:8px;">
-              <button class="searchBtn" id="btnPurchasePending" type="button">BEKLEYENLER</button>
-              <button class="searchBtn" id="btnPurchaseProcessing" type="button">İŞLEMDE</button>
-              <button class="searchBtn" id="btnPurchaseCompleted" type="button">TAMAMLANANLAR</button>
-              <button class="searchBtn" id="btnPurchaseAll" type="button">TÜMÜ</button>
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">DURUMA GÖRE FİLTRELE:</div>
+              <div class="adminRow" style="gap:8px;">
+                <button class="searchBtn" id="btnPurchasePending" type="button">BEKLEYENLER</button>
+                <button class="searchBtn" id="btnPurchaseProcessing" type="button">İŞLEMDE</button>
+                <button class="searchBtn" id="btnPurchaseCompleted" type="button">TAMAMLANANLAR</button>
+                <button class="searchBtn" id="btnPurchaseAll" type="button">TÜMÜ</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">TALEP EDENE GÖRE FİLTRELE:</div>
+              <div class="adminRow" style="gap:8px;">
+                <button class="searchBtn" id="btnPurchasePacker" type="button">PAKETÇİ</button>
+                <button class="searchBtn" id="btnPurchaseStower" type="button">RAF DİZEN</button>
+                <button class="searchBtn" id="btnPurchaseWelder" type="button">ÜRETİM</button>
+                <button class="searchBtn" id="btnPurchaseAdmin" type="button">YÖNETİCİ</button>
+                <button class="searchBtn" id="btnPurchaseAllRoles" type="button">TÜMÜ</button>
+              </div>
             </div>
 
             <div class="statusBox" id="statusPurchase" style="margin-top:12px;display:none;"></div>
@@ -869,6 +883,30 @@
 
           <div class="card" style="margin-top:14px;">
             <h3 style="margin-top:0;">İşlem Geçmişi (LOG)</h3>
+
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">İŞLEM TİPİNE GÖRE FİLTRELE:</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
+                <button class="searchBtn" id="btnLogPut" type="button" style="font-size:13px;padding:10px;">RAFA KOY</button>
+                <button class="searchBtn" id="btnLogClear" type="button" style="font-size:13px;padding:10px;">RAF BOŞALT</button>
+                <button class="searchBtn" id="btnLogDecrease" type="button" style="font-size:13px;padding:10px;">ADET AZALT</button>
+                <button class="searchBtn" id="btnLogMaterial" type="button" style="font-size:13px;padding:10px;">MALZEME TALEBİ</button>
+                <button class="searchBtn" id="btnLogProduction" type="button" style="font-size:13px;padding:10px;">ÜRETİM</button>
+                <button class="searchBtn" id="btnLogAllActions" type="button" style="font-size:13px;padding:10px;">TÜM İŞLEMLER</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:900;font-size:14px;color:var(--muted);margin-bottom:6px;">ROLE GÖRE FİLTRELE:</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+                <button class="searchBtn" id="btnLogAdmin" type="button" style="font-size:13px;padding:10px;">YÖNETİCİ</button>
+                <button class="searchBtn" id="btnLogPacker" type="button" style="font-size:13px;padding:10px;">PAKETÇİ</button>
+                <button class="searchBtn" id="btnLogStower" type="button" style="font-size:13px;padding:10px;">RAF DİZEN</button>
+                <button class="searchBtn" id="btnLogWelder" type="button" style="font-size:13px;padding:10px;">ÜRETİM</button>
+                <button class="searchBtn" id="btnLogPurchase" type="button" style="font-size:13px;padding:10px;">SATIN ALMA</button>
+                <button class="searchBtn" id="btnLogAllRoles" type="button" style="font-size:13px;padding:10px;">TÜM ROLLER</button>
+              </div>
+            </div>
 
             <div class="adminRow">
               <input id="logLimit" class="input" type="number" min="10" max="500" value="100" style="margin:0;" />
@@ -1107,6 +1145,18 @@
 
     const logLimit = document.getElementById("logLimit");
     const btnLoadLogs = document.getElementById("btnLoadLogs");
+    const btnLogPut = document.getElementById("btnLogPut");
+    const btnLogClear = document.getElementById("btnLogClear");
+    const btnLogDecrease = document.getElementById("btnLogDecrease");
+    const btnLogMaterial = document.getElementById("btnLogMaterial");
+    const btnLogProduction = document.getElementById("btnLogProduction");
+    const btnLogAllActions = document.getElementById("btnLogAllActions");
+    const btnLogAdmin = document.getElementById("btnLogAdmin");
+    const btnLogPacker = document.getElementById("btnLogPacker");
+    const btnLogStower = document.getElementById("btnLogStower");
+    const btnLogWelder = document.getElementById("btnLogWelder");
+    const btnLogPurchase = document.getElementById("btnLogPurchase");
+    const btnLogAllRoles = document.getElementById("btnLogAllRoles");
     const statusLogs = document.getElementById("statusLogs");
     const logsWrap = document.getElementById("logsWrap");
     const logsBody = document.getElementById("logsBody");
@@ -1143,6 +1193,11 @@
     const btnPurchaseProcessing = document.getElementById("btnPurchaseProcessing");
     const btnPurchaseCompleted = document.getElementById("btnPurchaseCompleted");
     const btnPurchaseAll = document.getElementById("btnPurchaseAll");
+    const btnPurchasePacker = document.getElementById("btnPurchasePacker");
+    const btnPurchaseStower = document.getElementById("btnPurchaseStower");
+    const btnPurchaseWelder = document.getElementById("btnPurchaseWelder");
+    const btnPurchaseAdmin = document.getElementById("btnPurchaseAdmin");
+    const btnPurchaseAllRoles = document.getElementById("btnPurchaseAllRoles");
     const statusPurchase = document.getElementById("statusPurchase");
     const purchaseWrap = document.getElementById("purchaseWrap");
     const purchaseBody = document.getElementById("purchaseBody");
@@ -1181,6 +1236,23 @@
         const month = monthNames[logDate.getMonth()];
         return `${day} ${month}-${timeStr}`;
       }
+    }
+
+    function translateAction(action){
+      const translations = {
+        "PUT": "RAFA KOY",
+        "CLEAR_SHELF": "RAF BOŞALT",
+        "REMOVE_PRODUCT_ALL": "ÜRÜN TAMAMEN ÇIKAR",
+        "DECREASE_QTY": "ADET AZALT",
+        "REMOVE_PRODUCT": "ÜRÜN ÇIKAR",
+        "PRODUCTION_REQUEST": "ÜRETİM TALEBİ",
+        "FULFILL_REQUESTS": "TALEPLERİ KARŞILA",
+        "MATERIAL_REQUEST": "MALZEME TALEBİ",
+        "MATERIAL_STATUS_UPDATE": "MALZEME DURUM GÜNCELLENMESİ",
+        "SETUP": "KURULUM",
+        "PRODUCTION_COMPLETED": "ÜRETİM TAMAMLANDI"
+      };
+      return translations[action] || action;
     }
 
     function setStatusBox(el,msg,type){
@@ -1942,24 +2014,39 @@
         }
 
         // PURCHASE MANAGEMENT (for purchase role)
-        async function loadMaterialRequests(filter = 'all'){
+        let currentPurchaseStatusFilter = 'pending';
+        let currentPurchaseRoleFilter = 'all';
+
+        async function loadMaterialRequests(statusFilter = 'pending', roleFilter = 'all'){
           try{
             setStatusBox(statusPurchase, "Yükleniyor...", "");
+            
+            currentPurchaseStatusFilter = statusFilter;
+            currentPurchaseRoleFilter = roleFilter;
             
             [btnPurchasePending, btnPurchaseProcessing, btnPurchaseCompleted, btnPurchaseAll].forEach(btn => {
               btn && btn.classList.remove('active');
             });
+            [btnPurchasePacker, btnPurchaseStower, btnPurchaseWelder, btnPurchaseAdmin, btnPurchaseAllRoles].forEach(btn => {
+              btn && btn.classList.remove('active');
+            });
             
-            if(filter === 'pending') btnPurchasePending?.classList.add('active');
-            else if(filter === 'processing') btnPurchaseProcessing?.classList.add('active');
-            else if(filter === 'completed') btnPurchaseCompleted?.classList.add('active');
+            if(statusFilter === 'pending') btnPurchasePending?.classList.add('active');
+            else if(statusFilter === 'processing') btnPurchaseProcessing?.classList.add('active');
+            else if(statusFilter === 'completed') btnPurchaseCompleted?.classList.add('active');
             else btnPurchaseAll?.classList.add('active');
+
+            if(roleFilter === 'packer') btnPurchasePacker?.classList.add('active');
+            else if(roleFilter === 'stower') btnPurchaseStower?.classList.add('active');
+            else if(roleFilter === 'welder') btnPurchaseWelder?.classList.add('active');
+            else if(roleFilter === 'admin') btnPurchaseAdmin?.classList.add('active');
+            else btnPurchaseAllRoles?.classList.add('active');
             
             let q;
-            if(filter === 'all'){
+            if(statusFilter === 'all'){
               q = query(materialReqCol, orderBy("createdAt", "desc"), limit(500));
             } else {
-              q = query(materialReqCol, where("status", "==", filter), orderBy("createdAt", "desc"), limit(500));
+              q = query(materialReqCol, where("status", "==", statusFilter), orderBy("createdAt", "desc"), limit(500));
             }
             
             const snap = await getDocs(q);
@@ -1971,7 +2058,23 @@
               return;
             }
 
-            snap.forEach(doc => {
+            let filteredDocs = snap.docs;
+            
+            // Role filter uygula (client-side)
+            if(roleFilter !== 'all'){
+              filteredDocs = filteredDocs.filter(doc => {
+                const d = doc.data();
+                return d.requestedByRole === roleFilter;
+              });
+            }
+
+            if(filteredDocs.length === 0){
+              purchaseWrap.style.display = "none";
+              setStatusBox(statusPurchase, "Bu filtreye uygun talep yok.", "warn");
+              return;
+            }
+
+            filteredDocs.forEach(doc => {
               const d = doc.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
               const dateStr = formatLogDate(dt);
@@ -2003,8 +2106,9 @@
             });
 
             purchaseWrap.style.display = "block";
-            const filterText = filter === 'pending' ? 'Bekleyen' : filter === 'processing' ? 'İşlemdeki' : filter === 'completed' ? 'Tamamlanan' : 'Tüm';
-            setStatusBox(statusPurchase, `${filterText} talepler: ${snap.size} kayıt`, "ok");
+            const statusText = statusFilter === 'pending' ? 'Bekleyen' : statusFilter === 'processing' ? 'İşlemdeki' : statusFilter === 'completed' ? 'Tamamlanan' : 'Tüm';
+            const roleText = roleFilter === 'packer' ? 'Paketçi' : roleFilter === 'stower' ? 'Raf Dizen' : roleFilter === 'welder' ? 'Üretim' : roleFilter === 'admin' ? 'Yönetici' : 'Tüm';
+            setStatusBox(statusPurchase, `${statusText} / ${roleText}: ${filteredDocs.length} kayıt`, "ok");
           }catch(e){
             setStatusBox(statusPurchase, "Hata: " + e.message, "error");
           }
@@ -2033,21 +2137,25 @@
             });
             
             playBeep();
-            loadMaterialRequests(btnPurchasePending?.classList.contains('active') ? 'pending' : 
-                                 btnPurchaseProcessing?.classList.contains('active') ? 'processing' : 
-                                 btnPurchaseCompleted?.classList.contains('active') ? 'completed' : 'all');
+            loadMaterialRequests(currentPurchaseStatusFilter, currentPurchaseRoleFilter);
           }catch(e){
             alert("Hata: " + e.message);
           }
         };
 
-        btnPurchasePending && (btnPurchasePending.onclick = () => loadMaterialRequests('pending'));
-        btnPurchaseProcessing && (btnPurchaseProcessing.onclick = () => loadMaterialRequests('processing'));
-        btnPurchaseCompleted && (btnPurchaseCompleted.onclick = () => loadMaterialRequests('completed'));
-        btnPurchaseAll && (btnPurchaseAll.onclick = () => loadMaterialRequests('all'));
+        btnPurchasePending && (btnPurchasePending.onclick = () => loadMaterialRequests('pending', currentPurchaseRoleFilter));
+        btnPurchaseProcessing && (btnPurchaseProcessing.onclick = () => loadMaterialRequests('processing', currentPurchaseRoleFilter));
+        btnPurchaseCompleted && (btnPurchaseCompleted.onclick = () => loadMaterialRequests('completed', currentPurchaseRoleFilter));
+        btnPurchaseAll && (btnPurchaseAll.onclick = () => loadMaterialRequests('all', currentPurchaseRoleFilter));
+        
+        btnPurchasePacker && (btnPurchasePacker.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'packer'));
+        btnPurchaseStower && (btnPurchaseStower.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'stower'));
+        btnPurchaseWelder && (btnPurchaseWelder.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'welder'));
+        btnPurchaseAdmin && (btnPurchaseAdmin.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'admin'));
+        btnPurchaseAllRoles && (btnPurchaseAllRoles.onclick = () => loadMaterialRequests(currentPurchaseStatusFilter, 'all'));
         
         if(role === 'purchase' || role === 'admin'){
-          loadMaterialRequests('pending');
+          loadMaterialRequests('pending', 'all');
         }
 
         // SETUP (admin only)
@@ -2100,12 +2208,41 @@
         }
 
         // ADMIN: LOG YÜKLE
-        async function loadLogs(){
+        let currentLogActionFilter = 'all';
+        let currentLogRoleFilter = 'all';
+
+        async function loadLogs(actionFilter = 'all', roleFilter = 'all'){
           if(role!=="admin") return;
 
           setStatusBox(statusLogs, "Loglar yükleniyor...", "");
           logsBody.innerHTML = "";
           logsWrap.style.display = "none";
+
+          currentLogActionFilter = actionFilter;
+          currentLogRoleFilter = roleFilter;
+
+          // Action filter butonlarını güncelle
+          [btnLogPut, btnLogClear, btnLogDecrease, btnLogMaterial, btnLogProduction, btnLogAllActions].forEach(btn => {
+            btn && btn.classList.remove('active');
+          });
+          // Role filter butonlarını güncelle
+          [btnLogAdmin, btnLogPacker, btnLogStower, btnLogWelder, btnLogPurchase, btnLogAllRoles].forEach(btn => {
+            btn && btn.classList.remove('active');
+          });
+
+          if(actionFilter === 'put') btnLogPut?.classList.add('active');
+          else if(actionFilter === 'clear') btnLogClear?.classList.add('active');
+          else if(actionFilter === 'decrease') btnLogDecrease?.classList.add('active');
+          else if(actionFilter === 'material') btnLogMaterial?.classList.add('active');
+          else if(actionFilter === 'production') btnLogProduction?.classList.add('active');
+          else btnLogAllActions?.classList.add('active');
+
+          if(roleFilter === 'admin') btnLogAdmin?.classList.add('active');
+          else if(roleFilter === 'packer') btnLogPacker?.classList.add('active');
+          else if(roleFilter === 'stower') btnLogStower?.classList.add('active');
+          else if(roleFilter === 'welder') btnLogWelder?.classList.add('active');
+          else if(roleFilter === 'purchase') btnLogPurchase?.classList.add('active');
+          else btnLogAllRoles?.classList.add('active');
 
           const lim = Math.max(10, Math.min(500, Number(logLimit.value || 100)));
 
@@ -2118,8 +2255,40 @@
               return;
             }
 
+            let filteredLogs = [];
+
             snap.forEach(docSnap=>{
               const d = docSnap.data() || {};
+              
+              // Action filter
+              let passActionFilter = true;
+              if(actionFilter !== 'all'){
+                const action = d.action || "";
+                if(actionFilter === 'put' && action !== 'PUT') passActionFilter = false;
+                else if(actionFilter === 'clear' && !['CLEAR_SHELF', 'REMOVE_PRODUCT_ALL', 'REMOVE_PRODUCT'].includes(action)) passActionFilter = false;
+                else if(actionFilter === 'decrease' && action !== 'DECREASE_QTY') passActionFilter = false;
+                else if(actionFilter === 'material' && !['MATERIAL_REQUEST', 'MATERIAL_STATUS_UPDATE'].includes(action)) passActionFilter = false;
+                else if(actionFilter === 'production' && !['PRODUCTION_REQUEST', 'PRODUCTION_COMPLETED', 'FULFILL_REQUESTS'].includes(action)) passActionFilter = false;
+              }
+
+              // Role filter
+              let passRoleFilter = true;
+              if(roleFilter !== 'all'){
+                const logRole = d.role || "";
+                if(logRole !== roleFilter) passRoleFilter = false;
+              }
+
+              if(passActionFilter && passRoleFilter){
+                filteredLogs.push(d);
+              }
+            });
+
+            if(filteredLogs.length === 0){
+              setStatusBox(statusLogs, "Bu filtreye uygun log bulunamadı.", "warn");
+              return;
+            }
+
+            filteredLogs.forEach(d => {
               const dt = d.ts?.toDate ? d.ts.toDate() : null;
               const dtStr = formatLogDate(dt);
               
@@ -2130,7 +2299,7 @@
               tr.innerHTML = `
                 <td>${dtStr}</td>
                 <td>${roleText} / ${userName}</td>
-                <td>${(d.action || "-")}</td>
+                <td>${translateAction(d.action || "-")}</td>
                 <td>${(d.shelf || "-")}</td>
                 <td>${(d.product || "-")}</td>
                 <td>${(d.qty ?? "-")}</td>
@@ -2140,12 +2309,37 @@
             });
 
             logsWrap.style.display = "block";
-            setStatusBox(statusLogs, `Yüklendi: ${logsBody.children.length} kayıt`, "ok");
+            const actionText = actionFilter === 'put' ? 'Rafa Koy' : 
+                              actionFilter === 'clear' ? 'Raf Boşalt' : 
+                              actionFilter === 'decrease' ? 'Adet Azalt' : 
+                              actionFilter === 'material' ? 'Malzeme' : 
+                              actionFilter === 'production' ? 'Üretim' : 'Tüm';
+            const roleText = roleFilter === 'admin' ? 'Yönetici' : 
+                            roleFilter === 'packer' ? 'Paketçi' : 
+                            roleFilter === 'stower' ? 'Raf Dizen' : 
+                            roleFilter === 'welder' ? 'Üretim' : 
+                            roleFilter === 'purchase' ? 'Satın Alma' : 'Tüm';
+            setStatusBox(statusLogs, `${actionText} / ${roleText}: ${filteredLogs.length} kayıt`, "ok");
           }catch(e){
             setStatusBox(statusLogs, "Hata: " + e.message, "error");
           }
         }
-        btnLoadLogs && (btnLoadLogs.onclick = loadLogs);
+
+        btnLoadLogs && (btnLoadLogs.onclick = () => loadLogs(currentLogActionFilter, currentLogRoleFilter));
+        
+        btnLogPut && (btnLogPut.onclick = () => loadLogs('put', currentLogRoleFilter));
+        btnLogClear && (btnLogClear.onclick = () => loadLogs('clear', currentLogRoleFilter));
+        btnLogDecrease && (btnLogDecrease.onclick = () => loadLogs('decrease', currentLogRoleFilter));
+        btnLogMaterial && (btnLogMaterial.onclick = () => loadLogs('material', currentLogRoleFilter));
+        btnLogProduction && (btnLogProduction.onclick = () => loadLogs('production', currentLogRoleFilter));
+        btnLogAllActions && (btnLogAllActions.onclick = () => loadLogs('all', currentLogRoleFilter));
+        
+        btnLogAdmin && (btnLogAdmin.onclick = () => loadLogs(currentLogActionFilter, 'admin'));
+        btnLogPacker && (btnLogPacker.onclick = () => loadLogs(currentLogActionFilter, 'packer'));
+        btnLogStower && (btnLogStower.onclick = () => loadLogs(currentLogActionFilter, 'stower'));
+        btnLogWelder && (btnLogWelder.onclick = () => loadLogs(currentLogActionFilter, 'welder'));
+        btnLogPurchase && (btnLogPurchase.onclick = () => loadLogs(currentLogActionFilter, 'purchase'));
+        btnLogAllRoles && (btnLogAllRoles.onclick = () => loadLogs(currentLogActionFilter, 'all'));
 
         // Welder (Kaynak İmalat) functionality
         async function saveProduction(){
