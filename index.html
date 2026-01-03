@@ -1417,12 +1417,14 @@
         const onlyCode = keys[0];
         const onlyQty  = Number(products[onlyCode] || 0);
 
-        // sadece 1 adet => adet kutusu açılmasın (rafı komple boşalt)
-        if(onlyQty <= 1){
-          clearProductBox.style.display="none";
-          clearHint.textContent="";
+        // sadece 1 adet => adet kutusu açılmasın, ürün bilgisi göster
+        if(onlyQty === 1){
+          clearProductBox.style.display="block";
+          if(clearBoxTitle) clearBoxTitle.textContent = "Raftaki Ürün";
+          outProductCode.value = onlyCode;
+          outProductCode.readOnly = true;
+          clearHint.textContent = `${onlyCode} x${onlyQty}`;
           if(clearQtyBox) clearQtyBox.style.display="none";
-          if(outProductCode) outProductCode.value="";
           if(outReduceQty) outReduceQty.value="1";
           return;
         }
