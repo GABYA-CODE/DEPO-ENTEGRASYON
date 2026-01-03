@@ -1008,9 +1008,6 @@
                 <input id="accountPaymentAmount" class="input" type="number" placeholder="Örn: 25000" />
               </div>
 
-              <label class="fieldLabel" style="margin-top:12px;">Tarih</label>
-              <input id="accountTransactionDate" class="input" type="date" />
-
               <label class="fieldLabel" style="margin-top:12px;">Not / Açıklama</label>
               <textarea id="accountNote" class="input" rows="2" placeholder="İsteğe bağlı not ekleyin..."></textarea>
 
@@ -3595,45 +3592,40 @@
           try {
             const companyName = accountCompanyName.value.trim();
             const transactionType = accountTransactionType.value;
-            const transactionDate = accountTransactionDate.value;
             const note = accountNote.value.trim();
+            const now = new Date().toISOString();
             
             if(!companyName) {
-              setStatusBox(statusAccounts, "Firma adı boş olamaz.", "error");
-              return;
-            }
-            
-            if(!transactionDate) {
-              setStatusBox(statusAccounts, "Tarih boş olamaz.", "error");
+              setStatusBox(statusAccount, "Firma adı boş olamaz.", "error");
               return;
             }
             
             const transactionData = {
               companyName,
               transactionType,
-              transactionDate,
+              transactionDate: now,
               note,
-              createdAt: new Date().toISOString(),
-              createdBy: sessionUser
+              createdAt: now,
+              createdBy: window.__SESSION?.pin || "admin"
             };
             
             if(transactionType === "purchase") {
               const itemName = accountItemName.value.trim();
-              const quantity = accountQuantity.value.trim();
+              const quantity = accountItemQuantity.value.trim();
               const invoiceAmount = Number(accountInvoiceAmount.value);
               
               if(!itemName) {
-                setStatusBox(statusAccounts, "Mal adı boş olamaz.", "error");
+                setStatusBox(statusAccount, "Mal adı boş olamaz.", "error");
                 return;
               }
               
               if(!quantity) {
-                setStatusBox(statusAccounts, "Adet boş olamaz.", "error");
+                setStatusBox(statusAccount, "Adet boş olamaz.", "error");
                 return;
               }
               
               if(!invoiceAmount || invoiceAmount <= 0) {
-                setStatusBox(statusAccounts, "Fatura tutarı geçersiz.", "error");
+                setStatusBox(statusAccount, "Fatura tutarı geçersiz.", "error");
                 return;
               }
               
@@ -3644,34 +3636,36 @@
               const paymentAmount = Number(accountPaymentAmount.value);
               
               if(!paymentAmount || paymentAmount <= 0) {
-                setStatusBox(statusAccounts, "Ödeme tutarı geçersiz.", "error");
+                setStatusBox(statusAccount, "Ödeme tutarı geçersiz.", "error");
                 return;
               }
               
               transactionData.paymentAmount = paymentAmount;
             }
             
-            setStatusBox(statusAccounts, "Kaydediliyor...", "");
+            setStatusBox(statusAccount, "Kaydediliyor...", "");
             await addDoc(accountCol, transactionData);
             
             // Formu temizle
             accountCompanyName.value = "";
             accountTransactionType.value = "purchase";
             accountItemName.value = "";
-            accountQuantity.value = "";
+            accountItemQuantity.value = "";
             accountInvoiceAmount.value = "";
             accountPaymentAmount.value = "";
-            accountTransactionDate.value = new Date().toISOString().split('T')[0];
             accountNote.value = "";
             purchaseFields.style.display = "block";
             paymentFields.style.display = "none";
             
-            setStatusBox(statusAccounts, "Cari işlem kaydedildi.", "ok");
+            setStatusBox(statusAccount, "Cari işlem kaydedildi.", "ok");
             loadAccountTransactions();
           } catch(e) {
-            setStatusBox(statusAccounts, "Hata: " + e.message, "error");
+            setStatusBox(statusAccount, "Hata: " + e.message, "error");
           }
         };
+        
+        // KAYDET butonuna event listener ekle
+        btnAddAccountTransaction && (btnAddAccountTransaction.onclick = addAccountTransaction);
 
         // Cari işlemleri yükleme ve bakiye hesaplama
         async function loadAccountTransactions() {
@@ -3702,10 +3696,10 @@
               const totalDebt = balance.purchases - balance.payments;
               const tr = document.createElement("tr");
               tr.innerHTML = `
-                <td>${company}</td>
-                <td>${balance.purchases.toLocaleString('tr-TR')} ₺</td>
-                <td>${balance.payments.toLocaleString('tr-TR')} ₺</td>
-                <td style="font-weight:bold; color:${totalDebt > 0 ? 'red' : 'green'}">${totalDebt.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${company}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${balance.purchases.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${balance.payments.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:${totalDebt > 0 ? 'red' : 'green'};">${totalDebt.toLocaleString('tr-TR')} ₺</td>
               `;
               companyBalancesBody.appendChild(tr);
             }
@@ -3748,13 +3742,13 @@
               : "";
             
             tr.innerHTML = `
-              <td>${new Date(t.transactionDate).toLocaleDateString('tr-TR')}</td>
-              <td>${t.companyName}</td>
-              <td>${typeText}</td>
-              <td>${details}</td>
-              <td style="font-weight:bold">${amount}</td>
-              <td>${t.note || ""}</td>
-              <td><button onclick="deleteAccountTransaction('${t.id}')">Sil</button></td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${new Date(t.transactionDate).toLocaleDateString('tr-TR')}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${t.companyName}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${typeText}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${details}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${amount}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${t.note || ""}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;"><button onclick="deleteAccountTransaction('${t.id}')" style="padding:6px 12px;background:red;color:white;border:none;border-radius:4px;cursor:pointer;">Sil</button></td>
             `;
             accountListBody.appendChild(tr);
           });
@@ -3766,7 +3760,7 @@
           
           try {
             await deleteDoc(doc(db, "accountTransactions", docId));
-            setStatusBox(statusAccounts, "İşlem silindi.", "ok");
+            setStatusBox(statusAccount, "İşlem silindi.", "ok");
             loadAccountTransactions();
           } catch(e) {
             alert("Hata: " + e.message);
@@ -3776,7 +3770,7 @@
         // Filtre butonları
         let currentAccountFilter = "all";
         
-        btnFilterAllAccounts && (btnFilterAllAccounts.onclick = async () => {
+        btnFilterAllTransactions && (btnFilterAllTransactions.onclick = async () => {
           currentAccountFilter = "all";
           const snap = await getDocs(query(accountCol, orderBy("transactionDate", "desc")));
           const transactions = [];
@@ -3792,7 +3786,7 @@
           displayAccountTransactions(transactions, "purchase", accountSearchCompany?.value || "");
         });
 
-        btnFilterAccountPayments && (btnFilterAccountPayments.onclick = async () => {
+        btnFilterPayments && (btnFilterPayments.onclick = async () => {
           currentAccountFilter = "payment";
           const snap = await getDocs(query(accountCol, orderBy("transactionDate", "desc")));
           const transactions = [];
