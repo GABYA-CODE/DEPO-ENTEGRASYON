@@ -542,7 +542,7 @@
         <div class="tab" id="tabMaterialRequest">MALZEME TALEP</div>
         <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
         <div class="tab" id="tabWelderRequests">TALEPLER</div>
-        <div class="tab" id="tabProduction">ÜRETİM</div>
+        <div class="tab" id="tabProduction">ÜRETİM KAYITLARI</div>
         <div class="tab" id="tabPurchase">SATIN ALMA</div>
         <div class="tab" id="tabInstructions">ÜRETİM TALİMATLARI</div>
         <div class="tab" id="tabPackaging">PAKETLEME TALİMATLARI</div>
@@ -1590,10 +1590,18 @@
         tabClear.style.display="block";
         tabSearch.style.display="block";
         tabRack.style.display="block";
-        tabRequest.style.display="block";
-        tabMaterialRequest.style.display="block";
         tabPackaging.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
+        
+        // Sadece 2001 şifresi ile giriş yapan paketçi talep sekmelerini görebilir
+        const currentPin = window.__SESSION?.pin;
+        if(currentPin === "2001"){
+          tabRequest.style.display="block";
+          tabMaterialRequest.style.display="block";
+          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
+        } else {
+          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        }
+        
         setActiveTab("clear");
       }else if(r==="stower"){
         tabPut.style.display="block";
