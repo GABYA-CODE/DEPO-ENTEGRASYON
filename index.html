@@ -1603,14 +1603,11 @@
         tabWelderRequests.style.display="block";
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
-        tabPackaging.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
         setActiveTab("welder");
       }else if(r==="purchase"){
         tabPurchase.style.display="block";
-        tabInstructions.style.display="block";
-        tabPackaging.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr";
         setActiveTab("purchase");
       }else if(r==="admin"){
         tabPut.style.display="block";
