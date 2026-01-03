@@ -544,7 +544,8 @@
         <div class="tab" id="tabWelderRequests">TALEPLER</div>
         <div class="tab" id="tabProduction">ÜRETİM</div>
         <div class="tab" id="tabPurchase">SATIN ALMA</div>
-        <div class="tab" id="tabInstructions">ÜRÜN TALİMATLARI</div>
+        <div class="tab" id="tabInstructions">ÜRETİM TALİMATLARI</div>
+        <div class="tab" id="tabPackaging">PAKETLEME TALİMATLARI</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -871,7 +872,7 @@
         <!-- VIEW: INSTRUCTIONS -->
         <div id="viewInstructions" style="display:none;">
           <div class="card">
-            <h3 style="margin-top:0;">Ürün Talimatları</h3>
+            <h3 style="margin-top:0;">Üretim Talimatları</h3>
             
             <label class="fieldLabel">Ürün Kodu</label>
             <input id="instructionsProductCode" class="input" placeholder="Örn: 7001" />
@@ -883,6 +884,25 @@
             <div id="instructionsContent" style="margin-top:24px;display:none;">
               <h4 style="margin:0 0 12px 0;color:var(--text);">Üretim Talimatı</h4>
               <div id="instructionContainer" style="width:100%;min-height:600px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--panel2);display:flex;align-items:center;justify-content:center;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: PACKAGING -->
+        <div id="viewPackaging" style="display:none;">
+          <div class="card">
+            <h3 style="margin-top:0;">Paketleme Talimatları</h3>
+            
+            <label class="fieldLabel">Ürün Kodu</label>
+            <input id="packagingProductCode" class="input" placeholder="Örn: 7001" />
+            
+            <button class="actionBtn" id="btnLoadPackaging" type="button" style="margin-top:16px;">TALİMATI GÖSTER</button>
+            
+            <div class="statusBox" id="statusPackaging" style="display:none;margin-top:16px;"></div>
+            
+            <div id="packagingContent" style="margin-top:24px;display:none;">
+              <h4 style="margin:0 0 12px 0;color:var(--text);">Paketleme Talimatı</h4>
+              <div id="packagingContainer" style="width:100%;min-height:600px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--panel2);display:flex;align-items:center;justify-content:center;"></div>
             </div>
           </div>
         </div>
@@ -905,7 +925,7 @@
           </div>
 
           <div class="card" style="margin-top:14px;">
-            <h3 style="margin-top:0;">Toplu Ürün Talimatı Yükleme</h3>
+            <h3 style="margin-top:0;">Toplu Üretim Talimatı Yükleme</h3>
             
             <div style="margin-bottom:12px;color:var(--muted);font-size:14px;font-weight:800;">
               Her satıra bir ürün yazın. Format: <code style="background:var(--panel2);padding:2px 6px;border-radius:4px;">ÜrünKodu,Tip,URL</code>
@@ -920,6 +940,24 @@
             <button class="actionBtn" id="btnBulkUploadInstructions" type="button" style="margin-top:12px;">TOPLU YÜKLE</button>
 
             <div class="statusBox" id="statusBulkInstructions" style="display:none;margin-top:12px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Toplu Paketleme Talimatı Yükleme</h3>
+            
+            <div style="margin-bottom:12px;color:var(--muted);font-size:14px;font-weight:800;">
+              Her satıra bir ürün yazın. Format: <code style="background:var(--panel2);padding:2px 6px;border-radius:4px;">ÜrünKodu,Tip,URL</code>
+              <br>Tip: <code style="background:var(--panel2);padding:2px 6px;border-radius:4px;">pdf</code>, <code style="background:var(--panel2);padding:2px 6px;border-radius:4px;">image</code> veya <code style="background:var(--panel2);padding:2px 6px;border-radius:4px;">link</code>
+            </div>
+
+            <textarea id="bulkPackagingInput" class="input" rows="10" placeholder="Örnek:
+7001,pdf,https://firebasestorage.googleapis.com/.../paketleme.pdf
+7002,image,https://drive.google.com/.../resim.png
+7003,link,https://drive.google.com/file/d/..." style="font-family:monospace;font-size:13px;"></textarea>
+
+            <button class="actionBtn" id="btnBulkUploadPackaging" type="button" style="margin-top:12px;">TOPLU YÜKLE</button>
+
+            <div class="statusBox" id="statusBulkPackaging" style="display:none;margin-top:12px;"></div>
           </div>
 
           <div class="card" style="margin-top:14px;">
@@ -1123,6 +1161,7 @@
     const tabProduction= document.getElementById("tabProduction");
     const tabPurchase= document.getElementById("tabPurchase");
     const tabInstructions= document.getElementById("tabInstructions");
+    const tabPackaging= document.getElementById("tabPackaging");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -1136,6 +1175,7 @@
     const viewProduction= document.getElementById("viewProduction");
     const viewPurchase= document.getElementById("viewPurchase");
     const viewInstructions= document.getElementById("viewInstructions");
+    const viewPackaging= document.getElementById("viewPackaging");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -1245,6 +1285,16 @@
     const bulkInstructionsInput = document.getElementById("bulkInstructionsInput");
     const btnBulkUploadInstructions = document.getElementById("btnBulkUploadInstructions");
     const statusBulkInstructions = document.getElementById("statusBulkInstructions");
+
+    const packagingProductCode = document.getElementById("packagingProductCode");
+    const btnLoadPackaging = document.getElementById("btnLoadPackaging");
+    const statusPackaging = document.getElementById("statusPackaging");
+    const packagingContent = document.getElementById("packagingContent");
+    const packagingContainer = document.getElementById("packagingContainer");
+
+    const bulkPackagingInput = document.getElementById("bulkPackagingInput");
+    const btnBulkUploadPackaging = document.getElementById("btnBulkUploadPackaging");
+    const statusBulkPackaging = document.getElementById("statusBulkPackaging");
 
     let shelvesCache = {};
     let role = null;
@@ -1476,7 +1526,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -1491,6 +1541,7 @@
         viewProduction && (viewProduction.style.display="none");
         viewPurchase && (viewPurchase.style.display="none");
         viewInstructions && (viewInstructions.style.display="none");
+        viewPackaging && (viewPackaging.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -1507,6 +1558,7 @@
       if(target==="production"){ tabProduction?.classList.add("active"); viewProduction.style.display="block"; }
       if(target==="purchase"){ tabPurchase?.classList.add("active"); viewPurchase.style.display="block"; }
       if(target==="instructions"){ tabInstructions?.classList.add("active"); viewInstructions.style.display="block"; setTimeout(()=>{ try{ instructionsProductCode.focus(); instructionsProductCode.select && instructionsProductCode.select(); }catch(e){} },50); }
+      if(target==="packaging"){ tabPackaging?.classList.add("active"); viewPackaging.style.display="block"; setTimeout(()=>{ try{ packagingProductCode.focus(); packagingProductCode.select && packagingProductCode.select(); }catch(e){} },50); }
       if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; }
     }
 
@@ -1523,6 +1575,7 @@
         [tabProduction, viewProduction],
         [tabPurchase, viewPurchase],
         [tabInstructions, viewInstructions],
+        [tabPackaging, viewPackaging],
         [tabAdmin, viewAdmin]
       ];
 
@@ -1537,27 +1590,27 @@
         tabRack.style.display="block";
         tabRequest.style.display="block";
         tabMaterialRequest.style.display="block";
-        tabProduction.style.display="block";
-        tabInstructions.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr";
+        tabPackaging.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
         setActiveTab("clear");
       }else if(r==="stower"){
         tabPut.style.display="block";
-        tabMaterialRequest.style.display="block";
-        tabInstructions.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
+        tabPackaging.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr";
         setActiveTab("put");
       }else if(r==="welder"){
         tabWelder.style.display="block";
         tabWelderRequests.style.display="block";
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        tabPackaging.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
         setActiveTab("welder");
       }else if(r==="purchase"){
         tabPurchase.style.display="block";
         tabInstructions.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr";
+        tabPackaging.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
         setActiveTab("purchase");
       }else if(r==="admin"){
         tabPut.style.display="block";
@@ -1569,8 +1622,9 @@
         tabProduction.style.display="block";
         tabPurchase.style.display="block";
         tabInstructions.style.display="block";
+        tabPackaging.style.display="block";
         tabAdmin.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
         setActiveTab("admin");
       }else{
         tabbar.style.gridTemplateColumns = "1fr";
@@ -1621,6 +1675,7 @@
         tabProduction && (tabProduction.onclick = ()=>setActiveTab("production"));
         tabPurchase && (tabPurchase.onclick = ()=>setActiveTab("purchase"));
         tabInstructions && (tabInstructions.onclick = ()=>setActiveTab("instructions"));
+        tabPackaging && (tabPackaging.onclick = ()=>setActiveTab("packaging"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>location.reload();
@@ -1635,6 +1690,7 @@
         const productionCol = collection(db, "production");
         const materialReqCol = collection(db, "materialRequests");
         const instructionsCol = collection(db, "productInstructions");
+        const packagingCol = collection(db, "packagingInstructions");
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -2973,6 +3029,163 @@
         }
 
         btnBulkUploadInstructions && (btnBulkUploadInstructions.onclick = bulkUploadInstructions);
+
+        // Paketleme talimatlarını yükleme fonksiyonu
+        async function loadPackagingInstructions() {
+          if(!packagingProductCode || !statusPackaging || !packagingContainer) return;
+          
+          try {
+            const productCode = (packagingProductCode.value || "").trim();
+            if(!productCode) {
+              setStatusBox(statusPackaging, "Lütfen ürün kodu girin.", "error");
+              return;
+            }
+
+            setStatusBox(statusPackaging, "Yükleniyor...", "info");
+            packagingContainer.innerHTML = "";
+            packagingContent.style.display = "none";
+
+            const snap = await getDocs(query(packagingCol, where("productCode", "==", productCode), limit(1)));
+            
+            if(snap.empty) {
+              setStatusBox(statusPackaging, "Bu ürün için paketleme talimatı bulunamadı.", "warn");
+              return;
+            }
+
+            const data = snap.docs[0].data();
+            const type = data.instructionType;
+            const url = data.instructionUrl;
+
+            packagingContent.style.display = "block";
+
+            if(type === "pdf") {
+              const iframe = document.createElement('iframe');
+              iframe.src = url;
+              iframe.style.cssText = 'width:100%;height:600px;border:none;';
+              iframe.onload = () => {
+                setStatusBox(statusPackaging, "Talimat yüklendi.", "ok");
+              };
+              packagingContainer.appendChild(iframe);
+            } else if(type === "image") {
+              const img = document.createElement('img');
+              img.src = url;
+              img.style.cssText = 'max-width:100%;height:auto;display:block;margin:0 auto;';
+              img.onload = () => {
+                setStatusBox(statusPackaging, "Talimat yüklendi.", "ok");
+              };
+              packagingContainer.appendChild(img);
+            } else if(type === "link") {
+              const linkDiv = document.createElement('div');
+              linkDiv.style.cssText = 'padding:40px;text-align:center;';
+              
+              const linkBtn = document.createElement('a');
+              linkBtn.href = url;
+              linkBtn.target = "_blank";
+              linkBtn.textContent = "Talimatı Aç (Yeni Sekmede)";
+              linkBtn.style.cssText = 'display:inline-block;padding:14px 24px;background:var(--green);color:#07210f;text-decoration:none;border-radius:12px;font-weight:900;font-size:16px;';
+              
+              linkDiv.appendChild(linkBtn);
+              packagingContainer.appendChild(linkDiv);
+              setStatusBox(statusPackaging, "Talimat linki hazır.", "ok");
+            } else {
+              setStatusBox(statusPackaging, "Bilinmeyen talimat tipi.", "error");
+            }
+          } catch(e) {
+            console.error('Paketleme talimatı yükleme hatası:', e);
+            setStatusBox(statusPackaging, "Hata: " + e.message, "error");
+          }
+        }
+
+        btnLoadPackaging && (btnLoadPackaging.onclick = loadPackagingInstructions);
+        packagingProductCode && packagingProductCode.addEventListener("keydown", (e) => {
+          if(e.key === "Enter") loadPackagingInstructions();
+        });
+
+        // Toplu paketleme talimatı yükleme fonksiyonu
+        async function bulkUploadPackaging() {
+          if(!bulkPackagingInput || !statusBulkPackaging) return;
+          
+          try {
+            const text = bulkPackagingInput.value.trim();
+            if(!text) {
+              setStatusBox(statusBulkPackaging, "Lütfen veri girin.", "error");
+              return;
+            }
+
+            const lines = text.split('\n').filter(line => line.trim());
+            if(lines.length === 0) {
+              setStatusBox(statusBulkPackaging, "Hiç satır bulunamadı.", "error");
+              return;
+            }
+
+            setStatusBox(statusBulkPackaging, `${lines.length} satır yükleniyor...`, "info");
+
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            for(let i = 0; i < lines.length; i++) {
+              const line = lines[i].trim();
+              const parts = line.split(',').map(p => p.trim());
+              
+              if(parts.length !== 3) {
+                errorCount++;
+                errors.push(`Satır ${i+1}: Yanlış format (3 alan gerekli)`);
+                continue;
+              }
+
+              const [productCode, instructionType, instructionUrl] = parts;
+
+              if(!productCode || !instructionType || !instructionUrl) {
+                errorCount++;
+                errors.push(`Satır ${i+1}: Boş alan var`);
+                continue;
+              }
+
+              if(!['pdf', 'image', 'link'].includes(instructionType.toLowerCase())) {
+                errorCount++;
+                errors.push(`Satır ${i+1}: Geçersiz tip (pdf, image veya link olmalı)`);
+                continue;
+              }
+
+              try {
+                await addDoc(packagingCol, {
+                  productCode: productCode,
+                  instructionType: instructionType.toLowerCase(),
+                  instructionUrl: instructionUrl,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp()
+                });
+                successCount++;
+              } catch(e) {
+                errorCount++;
+                errors.push(`Satır ${i+1}: ${e.message}`);
+              }
+            }
+
+            let message = `✓ ${successCount} başarılı`;
+            if(errorCount > 0) {
+              message += `, ✗ ${errorCount} hata`;
+            }
+            
+            if(errors.length > 0 && errors.length <= 5) {
+              message += '\n' + errors.join('\n');
+            } else if(errors.length > 5) {
+              message += '\n' + errors.slice(0, 5).join('\n') + `\n... ve ${errors.length - 5} hata daha`;
+            }
+
+            setStatusBox(statusBulkPackaging, message, errorCount > 0 ? "warn" : "ok");
+            
+            if(successCount > 0) {
+              bulkPackagingInput.value = '';
+            }
+          } catch(e) {
+            console.error('Toplu paketleme yükleme hatası:', e);
+            setStatusBox(statusBulkPackaging, "Hata: " + e.message, "error");
+          }
+        }
+
+        btnBulkUploadPackaging && (btnBulkUploadPackaging.onclick = bulkUploadPackaging);
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
       }catch(e){
