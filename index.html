@@ -911,15 +911,141 @@
 
         <!-- VIEW: PAYMENTS -->
         <div id="viewPayments" style="display:none;">
-          <div class="card">
-            <h3 style="margin-top:0;">Personel Maaş ve Avans Takibi</h3>
+          
+          <!-- Yaklaşan ve Gecikmiş Ödemeler -->
+          <div class="card" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;margin-bottom:16px;">
+            <h3 style="margin:0 0 16px 0;color:white;">Maaş Ödeme Takibi</h3>
             
-            <div style="margin-bottom:12px;color:var(--muted);font-size:14px;font-weight:800;">
-              Personele yapılan maaş ve avans ödemelerini kayıt altına alın.
+            <div id="upcomingPaymentsAlert" style="background:rgba(255,255,255,0.2);padding:16px;border-radius:8px;margin-bottom:12px;">
+              <div style="font-weight:900;font-size:14px;margin-bottom:8px;">⏰ YAKINLAŞAN ÖDEMELER (7 Gün İçinde)</div>
+              <div id="upcomingPaymentsList" style="font-size:13px;"></div>
+            </div>
+            
+            <div id="overduePaymentsAlert" style="background:rgba(255,59,48,0.3);padding:16px;border-radius:8px;">
+              <div style="font-weight:900;font-size:14px;margin-bottom:8px;">🚨 GECİKMİŞ ÖDEMELER</div>
+              <div id="overduePaymentsList" style="font-size:13px;"></div>
+            </div>
+          </div>
+
+          <!-- Personel Yönetimi -->
+          <div class="card">
+            <h3 style="margin-top:0;">Personel Tanımlama</h3>
+            
+            <div style="margin-bottom:24px;">
+              <label class="fieldLabel">Personel Adı</label>
+              <input id="personnelName" class="input" placeholder="Örn: Evan" />
+
+              <label class="fieldLabel" style="margin-top:12px;">Maaş Periyodu</label>
+              <select id="personnelPaymentPeriod" class="input">
+                <option value="monthly">Aylık</option>
+                <option value="weekly">Haftalık</option>
+              </select>
+
+              <div id="monthlyPaymentFields">
+                <label class="fieldLabel" style="margin-top:12px;">Maaş Ödeme Günü (Ayın Kaçında)</label>
+                <input id="personnelPaymentDayMonthly" class="input" type="number" min="1" max="31" placeholder="Örn: 10 (ayın 10'unda)" />
+              </div>
+
+              <div id="weeklyPaymentFields" style="display:none;">
+                <label class="fieldLabel" style="margin-top:12px;">Maaş Ödeme Günü (Haftanın Hangi Günü)</label>
+                <select id="personnelPaymentDayWeekly" class="input">
+                  <option value="1">Pazartesi</option>
+                  <option value="2">Salı</option>
+                  <option value="3">Çarşamba</option>
+                  <option value="4">Perşembe</option>
+                  <option value="5">Cuma</option>
+                  <option value="6">Cumartesi</option>
+                  <option value="0">Pazar</option>
+                </select>
+              </div>
+
+              <label class="fieldLabel" style="margin-top:12px;">Maaş Tutarı (TL)</label>
+              <input id="personnelSalary" class="input" type="number" placeholder="Örn: 17000" />
+
+              <label class="fieldLabel" style="margin-top:12px;">İşe Başlama Tarihi</label>
+              <input id="personnelStartDate" class="input" type="date" />
+
+              <button class="actionBtn" id="btnAddPersonnel" type="button" style="margin-top:16px;">PERSONEL EKLE</button>
+
+              <div class="statusBox" id="statusPersonnel" style="display:none;margin-top:12px;"></div>
             </div>
 
-            <label class="fieldLabel">Personel Adı</label>
-            <input id="paymentPersonName" class="input" placeholder="Örn: Gökmen" />
+            <!-- Personel Düzenleme Formu -->
+            <div id="editPersonnelSection" style="display:none;background:#fff3cd;padding:16px;border-radius:8px;margin-bottom:24px;border:2px solid #ffc107;">
+              <h4 style="margin:0 0 12px 0;color:#856404;">Personel Düzenle</h4>
+              
+              <input id="editPersonnelId" type="hidden" />
+              
+              <label class="fieldLabel">Personel Adı</label>
+              <input id="editPersonnelName" class="input" placeholder="Örn: Evan" />
+
+              <label class="fieldLabel" style="margin-top:12px;">Maaş Periyodu</label>
+              <select id="editPersonnelPaymentPeriod" class="input">
+                <option value="monthly">Aylık</option>
+                <option value="weekly">Haftalık</option>
+              </select>
+
+              <div id="editMonthlyPaymentFields">
+                <label class="fieldLabel" style="margin-top:12px;">Maaş Ödeme Günü (Ayın Kaçında)</label>
+                <input id="editPersonnelPaymentDayMonthly" class="input" type="number" min="1" max="31" placeholder="Örn: 10" />
+              </div>
+
+              <div id="editWeeklyPaymentFields" style="display:none;">
+                <label class="fieldLabel" style="margin-top:12px;">Maaş Ödeme Günü (Haftanın Hangi Günü)</label>
+                <select id="editPersonnelPaymentDayWeekly" class="input">
+                  <option value="1">Pazartesi</option>
+                  <option value="2">Salı</option>
+                  <option value="3">Çarşamba</option>
+                  <option value="4">Perşembe</option>
+                  <option value="5">Cuma</option>
+                  <option value="6">Cumartesi</option>
+                  <option value="0">Pazar</option>
+                </select>
+              </div>
+
+              <label class="fieldLabel" style="margin-top:12px;">Maaş Tutarı (TL)</label>
+              <input id="editPersonnelSalary" class="input" type="number" placeholder="Örn: 17000" />
+
+              <label class="fieldLabel" style="margin-top:12px;">İşe Başlama Tarihi</label>
+              <input id="editPersonnelStartDate" class="input" type="date" />
+
+              <div style="display:flex;gap:8px;margin-top:16px;">
+                <button class="actionBtn" id="btnUpdatePersonnel" type="button" style="flex:1;">GÜNCELLE</button>
+                <button class="actionBtn" id="btnCancelEdit" type="button" style="flex:1;background:var(--muted);">İPTAL</button>
+              </div>
+
+              <div class="statusBox" id="statusEditPersonnel" style="display:none;margin-top:12px;"></div>
+            </div>
+
+            <h4 style="margin:0 0 12px 0;color:var(--text);">Kayıtlı Personeller</h4>
+            
+            <div id="personnelListWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-bottom:24px;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERSONEL</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERİYOT</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">ÖDEME GÜNÜ</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">MAAŞ</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SONRAKİ ÖDEME</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="personnelListBody">
+                  <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Personel yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Ödeme Yapma -->
+          <div class="card">
+            <h3 style="margin-top:0;">Ödeme Yap</h3>
+            
+            <label class="fieldLabel">Personel Seç</label>
+            <select id="paymentPersonSelect" class="input">
+              <option value="">Personel Seçiniz...</option>
+            </select>
 
             <label class="fieldLabel" style="margin-top:12px;">İşlem Tipi</label>
             <select id="paymentType" class="input">
@@ -928,7 +1054,7 @@
             </select>
 
             <label class="fieldLabel" style="margin-top:12px;">Tutar (TL)</label>
-            <input id="paymentAmount" class="input" type="number" placeholder="Örn: 15000" />
+            <input id="paymentAmount" class="input" type="number" placeholder="Tutar giriniz" />
 
             <label class="fieldLabel" style="margin-top:12px;">Tarih</label>
             <input id="paymentDate" class="input" type="date" />
@@ -936,7 +1062,7 @@
             <label class="fieldLabel" style="margin-top:12px;">Not / Açıklama</label>
             <textarea id="paymentNote" class="input" rows="2" placeholder="İsteğe bağlı not ekleyin..."></textarea>
 
-            <button class="actionBtn" id="btnAddPayment" type="button" style="margin-top:16px;">KAYDET</button>
+            <button class="actionBtn" id="btnAddPayment" type="button" style="margin-top:16px;">ÖDEME KAYDET</button>
 
             <div class="statusBox" id="statusPayment" style="display:none;margin-top:12px;"></div>
 
@@ -1392,7 +1518,38 @@
     const stQty   = document.getElementById("stQty");
     const stHint  = document.getElementById("stHint");
 
-    const paymentPersonName = document.getElementById("paymentPersonName");
+    // Personel yönetimi elementleri
+    const personnelName = document.getElementById("personnelName");
+    const personnelPaymentPeriod = document.getElementById("personnelPaymentPeriod");
+    const personnelPaymentDayMonthly = document.getElementById("personnelPaymentDayMonthly");
+    const personnelPaymentDayWeekly = document.getElementById("personnelPaymentDayWeekly");
+    const personnelSalary = document.getElementById("personnelSalary");
+    const personnelStartDate = document.getElementById("personnelStartDate");
+    const btnAddPersonnel = document.getElementById("btnAddPersonnel");
+    const statusPersonnel = document.getElementById("statusPersonnel");
+    const personnelListBody = document.getElementById("personnelListBody");
+    const monthlyPaymentFields = document.getElementById("monthlyPaymentFields");
+    const weeklyPaymentFields = document.getElementById("weeklyPaymentFields");
+    const upcomingPaymentsList = document.getElementById("upcomingPaymentsList");
+    const overduePaymentsList = document.getElementById("overduePaymentsList");
+
+    // Personel düzenleme elementleri
+    const editPersonnelSection = document.getElementById("editPersonnelSection");
+    const editPersonnelId = document.getElementById("editPersonnelId");
+    const editPersonnelName = document.getElementById("editPersonnelName");
+    const editPersonnelPaymentPeriod = document.getElementById("editPersonnelPaymentPeriod");
+    const editPersonnelPaymentDayMonthly = document.getElementById("editPersonnelPaymentDayMonthly");
+    const editPersonnelPaymentDayWeekly = document.getElementById("editPersonnelPaymentDayWeekly");
+    const editPersonnelSalary = document.getElementById("editPersonnelSalary");
+    const editPersonnelStartDate = document.getElementById("editPersonnelStartDate");
+    const editMonthlyPaymentFields = document.getElementById("editMonthlyPaymentFields");
+    const editWeeklyPaymentFields = document.getElementById("editWeeklyPaymentFields");
+    const btnUpdatePersonnel = document.getElementById("btnUpdatePersonnel");
+    const btnCancelEdit = document.getElementById("btnCancelEdit");
+    const statusEditPersonnel = document.getElementById("statusEditPersonnel");
+
+    // Ödeme elementleri
+    const paymentPersonSelect = document.getElementById("paymentPersonSelect");
     const paymentType = document.getElementById("paymentType");
     const paymentAmount = document.getElementById("paymentAmount");
     const paymentDate = document.getElementById("paymentDate");
@@ -1908,6 +2065,7 @@
         const instructionsCol = collection(db, "productInstructions");
         const packagingCol = collection(db, "packagingInstructions");
         const paymentCol = collection(db, "paymentRecords");
+        const personnelCol = collection(db, "personnel");
         const accountCol = collection(db, "accountTransactions");
 
         const initRef = doc(db, "system", "shelves_init");
@@ -3405,7 +3563,374 @@
 
         btnBulkUploadPackaging && (btnBulkUploadPackaging.onclick = bulkUploadPackaging);
 
-        // Personel ödeme kayıt fonksiyonları
+        // ============================
+        // PERSONEL YÖNETİMİ VE MAAŞ TAKİBİ
+        // ============================
+
+        // Periyot alanlarını göster/gizle
+        personnelPaymentPeriod && personnelPaymentPeriod.addEventListener("change", (e) => {
+          if(e.target.value === "monthly") {
+            monthlyPaymentFields.style.display = "block";
+            weeklyPaymentFields.style.display = "none";
+          } else {
+            monthlyPaymentFields.style.display = "none";
+            weeklyPaymentFields.style.display = "block";
+          }
+        });
+
+        // Personel ekleme
+        async function addPersonnel() {
+          try {
+            const name = personnelName.value.trim();
+            const period = personnelPaymentPeriod.value;
+            const salary = Number(personnelSalary.value);
+            const startDate = personnelStartDate.value;
+
+            if(!name) {
+              setStatusBox(statusPersonnel, "Personel adı zorunludur.", "error");
+              return;
+            }
+
+            if(!salary || salary <= 0) {
+              setStatusBox(statusPersonnel, "Geçerli bir maaş tutarı girin.", "error");
+              return;
+            }
+
+            if(!startDate) {
+              setStatusBox(statusPersonnel, "İşe başlama tarihi zorunludur.", "error");
+              return;
+            }
+
+            let paymentDay;
+            if(period === "monthly") {
+              paymentDay = Number(personnelPaymentDayMonthly.value);
+              if(!paymentDay || paymentDay < 1 || paymentDay > 31) {
+                setStatusBox(statusPersonnel, "Geçerli bir ödeme günü girin (1-31).", "error");
+                return;
+              }
+            } else {
+              paymentDay = Number(personnelPaymentDayWeekly.value);
+            }
+
+            setStatusBox(statusPersonnel, "Kaydediliyor...", "info");
+
+            await addDoc(personnelCol, {
+              name,
+              paymentPeriod: period,
+              paymentDay,
+              salary,
+              startDate,
+              active: true,
+              createdAt: new Date().toISOString(),
+              createdBy: window.__SESSION?.pin || "admin"
+            });
+
+            setStatusBox(statusPersonnel, "Personel başarıyla eklendi.", "ok");
+            
+            // Formu temizle
+            personnelName.value = "";
+            personnelSalary.value = "";
+            personnelStartDate.value = "";
+            personnelPaymentDayMonthly.value = "";
+
+            loadPersonnel();
+            updatePaymentAlerts();
+          } catch(e) {
+            console.error('Personel ekleme hatası:', e);
+            setStatusBox(statusPersonnel, "Hata: " + e.message, "error");
+          }
+        }
+
+        btnAddPersonnel && (btnAddPersonnel.onclick = addPersonnel);
+
+        // Sonraki ödeme tarihini hesapla
+        function calculateNextPaymentDate(personnel, lastPaymentDate = null) {
+          const today = new Date();
+          let referenceDate = lastPaymentDate ? new Date(lastPaymentDate) : new Date(personnel.startDate);
+
+          if(personnel.paymentPeriod === "monthly") {
+            const paymentDay = personnel.paymentDay;
+            let nextDate = new Date(referenceDate);
+            
+            // Bir sonraki ödeme ayını bul
+            if(lastPaymentDate) {
+              nextDate.setMonth(nextDate.getMonth() + 1);
+            }
+            
+            // Ödeme gününü ayarla
+            nextDate.setDate(Math.min(paymentDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
+            
+            // Eğer tarih geçmişte kaldıysa, bir sonraki aya geç
+            while(nextDate <= today) {
+              nextDate.setMonth(nextDate.getMonth() + 1);
+              nextDate.setDate(Math.min(paymentDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
+            }
+            
+            return nextDate;
+          } else {
+            // Haftalık
+            const targetDay = personnel.paymentDay;
+            let nextDate = new Date(referenceDate);
+            
+            if(lastPaymentDate) {
+              nextDate.setDate(nextDate.getDate() + 7);
+            } else {
+              // İlk ödeme tarihini bul
+              while(nextDate.getDay() !== targetDay) {
+                nextDate.setDate(nextDate.getDate() + 1);
+              }
+            }
+            
+            // Eğer tarih geçmişte kaldıysa, bir sonraki haftaya geç
+            while(nextDate <= today) {
+              nextDate.setDate(nextDate.getDate() + 7);
+            }
+            
+            return nextDate;
+          }
+        }
+
+        // Personelleri yükle
+        let allPersonnel = [];
+        async function loadPersonnel() {
+          if(!personnelListBody) return;
+
+          try {
+            const snap = await getDocs(query(personnelCol, where("active", "==", true)));
+            
+            allPersonnel = snap.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+
+            // Her personel için son ödeme tarihini bul
+            const paymentSnap = await getDocs(query(paymentCol, where("paymentType", "==", "salary"), orderBy("paymentDate", "desc")));
+            const lastPayments = {};
+            
+            paymentSnap.docs.forEach(doc => {
+              const data = doc.data();
+              if(!lastPayments[data.personnelId]) {
+                lastPayments[data.personnelId] = data.paymentDate;
+              }
+            });
+
+            if(allPersonnel.length === 0) {
+              personnelListBody.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Henüz personel eklenmedi.</td></tr>`;
+            } else {
+              personnelListBody.innerHTML = allPersonnel.map(p => {
+                const nextPayment = calculateNextPaymentDate(p, lastPayments[p.id]);
+                const daysUntil = Math.ceil((nextPayment - new Date()) / (1000 * 60 * 60 * 24));
+                const periodText = p.paymentPeriod === "monthly" ? "Aylık" : "Haftalık";
+                const dayText = p.paymentPeriod === "monthly" 
+                  ? `Ayın ${p.paymentDay}. günü`
+                  : ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"][p.paymentDay];
+                
+                const dateColor = daysUntil <= 3 ? "red" : daysUntil <= 7 ? "orange" : "var(--text)";
+                
+                return `
+                  <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:12px;font-weight:900;font-size:13px;">${p.name}</td>
+                    <td style="padding:12px;font-size:13px;">${periodText}</td>
+                    <td style="padding:12px;font-size:13px;">${dayText}</td>
+                    <td style="padding:12px;text-align:right;font-weight:900;font-size:14px;">${new Intl.NumberFormat('tr-TR').format(p.salary)} ₺</td>
+                    <td style="padding:12px;font-size:13px;color:${dateColor};font-weight:${daysUntil <= 7 ? 'bold' : 'normal'};">
+                      ${nextPayment.toLocaleDateString('tr-TR')} (${daysUntil} gün)
+                    </td>
+                    <td style="padding:12px;text-align:center;">
+                      <div style="display:flex;gap:4px;justify-content:center;">
+                        <button onclick="editPersonnel('${p.id}')" style="background:#007bff;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:900;cursor:pointer;">DÜZENLE</button>
+                        <button onclick="deletePersonnel('${p.id}')" style="background:#dc3545;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:900;cursor:pointer;">SİL</button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('');
+            }
+
+            // Personel seçim listesini güncelle
+            updatePersonnelSelectList();
+          } catch(e) {
+            console.error('Personel yükleme hatası:', e);
+            personnelListBody.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--red);">Hata: ${e.message}</td></tr>`;
+          }
+        }
+
+        // Personeli pasife al
+        // Personeli sil
+        window.deletePersonnel = async function(personnelId) {
+          if(!confirm('Bu personeli kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) return;
+
+          try {
+            await deleteDoc(doc(personnelCol, personnelId));
+            loadPersonnel();
+            updatePaymentAlerts();
+            alert('Personel silindi.');
+          } catch(e) {
+            alert('Hata: ' + e.message);
+          }
+        };
+
+        // Personel düzenleme formunu aç
+        window.editPersonnel = function(personnelId) {
+          const personnel = allPersonnel.find(p => p.id === personnelId);
+          if(!personnel) return;
+
+          // Formu doldur
+          editPersonnelId.value = personnelId;
+          editPersonnelName.value = personnel.name;
+          editPersonnelPaymentPeriod.value = personnel.paymentPeriod;
+          editPersonnelSalary.value = personnel.salary;
+          editPersonnelStartDate.value = personnel.startDate;
+
+          if(personnel.paymentPeriod === "monthly") {
+            editPersonnelPaymentDayMonthly.value = personnel.paymentDay;
+            editMonthlyPaymentFields.style.display = "block";
+            editWeeklyPaymentFields.style.display = "none";
+          } else {
+            editPersonnelPaymentDayWeekly.value = personnel.paymentDay;
+            editMonthlyPaymentFields.style.display = "none";
+            editWeeklyPaymentFields.style.display = "block";
+          }
+
+          // Düzenleme bölümünü göster
+          editPersonnelSection.style.display = "block";
+          editPersonnelSection.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // Düzenleme periyot değişimi
+        editPersonnelPaymentPeriod && editPersonnelPaymentPeriod.addEventListener("change", (e) => {
+          if(e.target.value === "monthly") {
+            editMonthlyPaymentFields.style.display = "block";
+            editWeeklyPaymentFields.style.display = "none";
+          } else {
+            editMonthlyPaymentFields.style.display = "none";
+            editWeeklyPaymentFields.style.display = "block";
+          }
+        });
+
+        // Personel güncelleme
+        btnUpdatePersonnel && (btnUpdatePersonnel.onclick = async function() {
+          try {
+            const personnelId = editPersonnelId.value;
+            const name = editPersonnelName.value.trim();
+            const period = editPersonnelPaymentPeriod.value;
+            const salary = Number(editPersonnelSalary.value);
+            const startDate = editPersonnelStartDate.value;
+
+            if(!name) {
+              setStatusBox(statusEditPersonnel, "Personel adı zorunludur.", "error");
+              return;
+            }
+
+            if(!salary || salary <= 0) {
+              setStatusBox(statusEditPersonnel, "Geçerli bir maaş tutarı girin.", "error");
+              return;
+            }
+
+            if(!startDate) {
+              setStatusBox(statusEditPersonnel, "İşe başlama tarihi zorunludur.", "error");
+              return;
+            }
+
+            let paymentDay;
+            if(period === "monthly") {
+              paymentDay = Number(editPersonnelPaymentDayMonthly.value);
+              if(!paymentDay || paymentDay < 1 || paymentDay > 31) {
+                setStatusBox(statusEditPersonnel, "Geçerli bir ödeme günü girin (1-31).", "error");
+                return;
+              }
+            } else {
+              paymentDay = Number(editPersonnelPaymentDayWeekly.value);
+            }
+
+            setStatusBox(statusEditPersonnel, "Güncelleniyor...", "info");
+
+            await updateDoc(doc(personnelCol, personnelId), {
+              name,
+              paymentPeriod: period,
+              paymentDay,
+              salary,
+              startDate,
+              updatedAt: new Date().toISOString()
+            });
+
+            setStatusBox(statusEditPersonnel, "Personel güncellendi.", "ok");
+            
+            // Formu gizle
+            editPersonnelSection.style.display = "none";
+            
+            loadPersonnel();
+            updatePaymentAlerts();
+          } catch(e) {
+            console.error('Personel güncelleme hatası:', e);
+            setStatusBox(statusEditPersonnel, "Hata: " + e.message, "error");
+          }
+        });
+
+        // Düzenleme iptali
+        btnCancelEdit && (btnCancelEdit.onclick = function() {
+          editPersonnelSection.style.display = "none";
+        });
+
+        // Personel seçim listesini güncelle
+        function updatePersonnelSelectList() {
+          if(!paymentPersonSelect) return;
+          
+          paymentPersonSelect.innerHTML = '<option value="">Personel Seçiniz...</option>' +
+            allPersonnel.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+
+        // Yaklaşan ve gecikmiş ödemeleri göster
+        async function updatePaymentAlerts() {
+          if(!upcomingPaymentsList || !overduePaymentsList) return;
+
+          try {
+            const paymentSnap = await getDocs(query(paymentCol, where("paymentType", "==", "salary"), orderBy("paymentDate", "desc")));
+            const lastPayments = {};
+            
+            paymentSnap.docs.forEach(doc => {
+              const data = doc.data();
+              if(!lastPayments[data.personnelId]) {
+                lastPayments[data.personnelId] = data.paymentDate;
+              }
+            });
+
+            const today = new Date();
+            const upcoming = [];
+            const overdue = [];
+
+            allPersonnel.forEach(p => {
+              const nextPayment = calculateNextPaymentDate(p, lastPayments[p.id]);
+              const daysUntil = Math.ceil((nextPayment - today) / (1000 * 60 * 60 * 24));
+
+              if(daysUntil < 0) {
+                overdue.push({ ...p, nextPayment, daysUntil: Math.abs(daysUntil) });
+              } else if(daysUntil <= 7) {
+                upcoming.push({ ...p, nextPayment, daysUntil });
+              }
+            });
+
+            if(upcoming.length === 0) {
+              upcomingPaymentsList.innerHTML = '<div style="color:rgba(255,255,255,0.8);">📅 Yaklaşan ödeme yok.</div>';
+            } else {
+              upcomingPaymentsList.innerHTML = upcoming.map(p => 
+                `<div style="padding:4px 0;color:rgba(255,255,255,0.9);">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün kaldı) - ${new Intl.NumberFormat('tr-TR').format(p.salary)} ₺</div>`
+              ).join('');
+            }
+
+            if(overdue.length === 0) {
+              overduePaymentsList.innerHTML = '<div style="color:rgba(255,255,255,0.8);">✅ Gecikmiş ödeme yok.</div>';
+            } else {
+              overduePaymentsList.innerHTML = overdue.map(p => 
+                `<div style="padding:4px 0;color:#fff;font-weight:bold;">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün gecikmiş!) - ${new Intl.NumberFormat('tr-TR').format(p.salary)} ₺</div>`
+              ).join('');
+            }
+          } catch(e) {
+            console.error('Ödeme uyarıları hatası:', e);
+          }
+        }
+
+        // Ödeme kaydı ekleme (YENİ SİSTEM)
         let currentPaymentFilter = "all";
         let allPayments = [];
 
@@ -3415,19 +3940,18 @@
           paymentDate.value = today;
         }
 
-        // Ödeme kaydı ekleme
         async function addPaymentRecord() {
-          if(!paymentPersonName || !paymentType || !paymentAmount || !paymentDate || !statusPayment) return;
+          if(!paymentPersonSelect || !paymentType || !paymentAmount || !paymentDate || !statusPayment) return;
 
           try {
-            const personName = paymentPersonName.value.trim();
+            const personnelId = paymentPersonSelect.value;
             const type = paymentType.value;
             const amount = Number(paymentAmount.value);
             const date = paymentDate.value;
             const note = (paymentNote?.value || "").trim();
 
-            if(!personName) {
-              setStatusBox(statusPayment, "Personel adı zorunludur.", "error");
+            if(!personnelId) {
+              setStatusBox(statusPayment, "Personel seçiniz.", "error");
               return;
             }
 
@@ -3441,10 +3965,17 @@
               return;
             }
 
+            const personnel = allPersonnel.find(p => p.id === personnelId);
+            if(!personnel) {
+              setStatusBox(statusPayment, "Personel bulunamadı.", "error");
+              return;
+            }
+
             setStatusBox(statusPayment, "Kaydediliyor...", "info");
 
             await addDoc(paymentCol, {
-              personName: personName,
+              personnelId: personnelId,
+              personName: personnel.name,
               paymentType: type,
               amount: amount,
               paymentDate: date,
@@ -3456,14 +3987,16 @@
             setStatusBox(statusPayment, "Ödeme kaydı başarıyla eklendi.", "ok");
             
             // Formu temizle
-            paymentPersonName.value = "";
+            paymentPersonSelect.value = "";
             paymentAmount.value = "";
             paymentNote && (paymentNote.value = "");
             const today = new Date().toISOString().split('T')[0];
             paymentDate.value = today;
 
-            // Listeyi yenile
+            // Listeyi ve uyarıları yenile
             loadPaymentRecords();
+            loadPersonnel();
+            updatePaymentAlerts();
           } catch(e) {
             console.error('Ödeme kaydı hatası:', e);
             setStatusBox(statusPayment, "Hata: " + e.message, "error");
@@ -3471,6 +4004,30 @@
         }
 
         btnAddPayment && (btnAddPayment.onclick = addPaymentRecord);
+
+        // Personel seçildiğinde maaş tutarını otomatik doldur
+        paymentPersonSelect && paymentPersonSelect.addEventListener("change", (e) => {
+          const personnelId = e.target.value;
+          if(personnelId && paymentType.value === "salary") {
+            const personnel = allPersonnel.find(p => p.id === personnelId);
+            if(personnel && paymentAmount) {
+              paymentAmount.value = personnel.salary;
+            }
+          }
+        });
+
+        // Ödeme tipi değiştiğinde maaş tutarını otomatik ayarla
+        paymentType && paymentType.addEventListener("change", (e) => {
+          if(e.target.value === "salary" && paymentPersonSelect.value) {
+            const personnelId = paymentPersonSelect.value;
+            const personnel = allPersonnel.find(p => p.id === personnelId);
+            if(personnel && paymentAmount) {
+              paymentAmount.value = personnel.salary;
+            }
+          } else if(e.target.value === "advance" && paymentAmount) {
+            paymentAmount.value = "";
+          }
+        });
 
         // Ödeme kayıtlarını yükleme
         async function loadPaymentRecords(filterType = "all", searchName = "") {
@@ -3569,8 +4126,13 @@
           displayPayments(currentPaymentFilter, e.target.value);
         });
 
-        // Sayfa yüklendiğinde ödeme kayıtlarını yükle
+        // Sayfa yüklendiğinde personel ve ödeme kayıtlarını yükle
+        loadPersonnel();
         loadPaymentRecords();
+        updatePaymentAlerts();
+        
+        // Her 5 dakikada bir ödeme uyarılarını güncelle
+        setInterval(updatePaymentAlerts, 5 * 60 * 1000);
 
         // ============================
         // CARİ HESAPLAR FONKSİYONLARI
