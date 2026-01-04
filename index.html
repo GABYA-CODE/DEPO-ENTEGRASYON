@@ -929,7 +929,92 @@
             </div>
           </div>
 
-          <!-- Personel Yönetimi -->
+          <!-- Ödeme Yapma -->
+          <div class="card">
+            <h3 style="margin-top:0;">Ödeme Yap</h3>
+            
+            <label class="fieldLabel">Personel Seç</label>
+            <select id="paymentPersonSelect" class="input">
+              <option value="">Personel Seçiniz...</option>
+            </select>
+
+            <label class="fieldLabel" style="margin-top:12px;">İşlem Tipi</label>
+            <select id="paymentType" class="input">
+              <option value="salary">Maaş</option>
+              <option value="advance">Avans</option>
+            </select>
+
+            <label class="fieldLabel" style="margin-top:12px;">Tutar (TL)</label>
+            <input id="paymentAmount" class="input" type="number" placeholder="Tutar giriniz" />
+
+            <label class="fieldLabel" style="margin-top:12px;">Tarih</label>
+            <input id="paymentDate" class="input" type="date" />
+
+            <label class="fieldLabel" style="margin-top:12px;">Not / Açıklama</label>
+            <textarea id="paymentNote" class="input" rows="2" placeholder="İsteğe bağlı not ekleyin..."></textarea>
+
+            <button class="actionBtn" id="btnAddPayment" type="button" style="margin-top:16px;">ÖDEME KAYDET</button>
+
+            <div class="statusBox" id="statusPayment" style="display:none;margin-top:12px;"></div>
+          </div>
+
+          <!-- Kayıtlı Personeller -->
+          <div class="card">
+            <h4 style="margin:0 0 12px 0;color:var(--text);">Kayıtlı Personeller</h4>
+            
+            <div id="personnelListWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-bottom:24px;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERSONEL</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERİYOT</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">ÖDEME GÜNÜ</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">MAAŞ</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SONRAKİ ÖDEME</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="personnelListBody">
+                  <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Personel yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Ödeme Kayıtları -->
+          <div class="card">
+            <h4 style="margin:0 0 12px 0;color:var(--text);">Ödeme Kayıtları</h4>
+            
+            <div style="margin-bottom:12px;">
+              <input id="paymentSearchName" class="input" placeholder="Personel adına göre filtrele..." style="margin-bottom:8px;" />
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+                <button class="searchBtn" id="btnFilterAllPayments" type="button" style="font-size:13px;padding:10px;">TÜMÜ</button>
+                <button class="searchBtn" id="btnFilterSalary" type="button" style="font-size:13px;padding:10px;">MAAŞLAR</button>
+                <button class="searchBtn" id="btnFilterAdvance" type="button" style="font-size:13px;padding:10px;">AVANSLAR</button>
+              </div>
+            </div>
+
+            <div id="paymentListWrap" style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERSONEL</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TİP</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">NOT</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentListBody">
+                  <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Kayıt yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Personel Tanımlama -->
           <div class="card">
             <h3 style="margin-top:0;">Personel Tanımlama</h3>
             
@@ -1017,87 +1102,6 @@
               </div>
 
               <div class="statusBox" id="statusEditPersonnel" style="display:none;margin-top:12px;"></div>
-            </div>
-
-            <h4 style="margin:0 0 12px 0;color:var(--text);">Kayıtlı Personeller</h4>
-            
-            <div id="personnelListWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-bottom:24px;">
-              <table style="width:100%;border-collapse:collapse;">
-                <thead>
-                  <tr style="background:var(--panel1);position:sticky;top:0;">
-                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERSONEL</th>
-                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERİYOT</th>
-                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">ÖDEME GÜNÜ</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">MAAŞ</th>
-                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SONRAKİ ÖDEME</th>
-                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
-                  </tr>
-                </thead>
-                <tbody id="personnelListBody">
-                  <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Personel yükleniyor...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Ödeme Yapma -->
-          <div class="card">
-            <h3 style="margin-top:0;">Ödeme Yap</h3>
-            
-            <label class="fieldLabel">Personel Seç</label>
-            <select id="paymentPersonSelect" class="input">
-              <option value="">Personel Seçiniz...</option>
-            </select>
-
-            <label class="fieldLabel" style="margin-top:12px;">İşlem Tipi</label>
-            <select id="paymentType" class="input">
-              <option value="salary">Maaş</option>
-              <option value="advance">Avans</option>
-            </select>
-
-            <label class="fieldLabel" style="margin-top:12px;">Tutar (TL)</label>
-            <input id="paymentAmount" class="input" type="number" placeholder="Tutar giriniz" />
-
-            <label class="fieldLabel" style="margin-top:12px;">Tarih</label>
-            <input id="paymentDate" class="input" type="date" />
-
-            <label class="fieldLabel" style="margin-top:12px;">Not / Açıklama</label>
-            <textarea id="paymentNote" class="input" rows="2" placeholder="İsteğe bağlı not ekleyin..."></textarea>
-
-            <button class="actionBtn" id="btnAddPayment" type="button" style="margin-top:16px;">ÖDEME KAYDET</button>
-
-            <div class="statusBox" id="statusPayment" style="display:none;margin-top:12px;"></div>
-
-            <div style="margin-top:24px;">
-              <h4 style="margin:0 0 12px 0;color:var(--text);">Ödeme Kayıtları</h4>
-              
-              <div style="margin-bottom:12px;">
-                <input id="paymentSearchName" class="input" placeholder="Personel adına göre filtrele..." style="margin-bottom:8px;" />
-                
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
-                  <button class="searchBtn" id="btnFilterAllPayments" type="button" style="font-size:13px;padding:10px;">TÜMÜ</button>
-                  <button class="searchBtn" id="btnFilterSalary" type="button" style="font-size:13px;padding:10px;">MAAŞLAR</button>
-                  <button class="searchBtn" id="btnFilterAdvance" type="button" style="font-size:13px;padding:10px;">AVANSLAR</button>
-                </div>
-              </div>
-
-              <div id="paymentListWrap" style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
-                <table style="width:100%;border-collapse:collapse;">
-                  <thead>
-                    <tr style="background:var(--panel1);position:sticky;top:0;">
-                      <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
-                      <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PERSONEL</th>
-                      <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TİP</th>
-                      <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR</th>
-                      <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">NOT</th>
-                      <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
-                    </tr>
-                  </thead>
-                  <tbody id="paymentListBody">
-                    <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Kayıt yükleniyor...</td></tr>
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         </div>
@@ -1437,6 +1441,166 @@
             </div>
 
             <div class="hintLine" id="stHint" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Kullanıcı Rolleri ve Giriş Bilgileri</h3>
+            
+            <div style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-top:16px;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">ROL</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">GİRİŞ ŞİFRESİ</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">KULLANICI ADI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="background:rgba(255,0,0,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#d32f2f;border-bottom:1px solid var(--border);">YÖNETİCİ</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Admin</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">601</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Burak</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Admin</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">602</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Mesut</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(0,123,255,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#007bff;border-bottom:1px solid var(--border);">PAKETÇI</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Paketçi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">2001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Gökmen (Talep Yetkili)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Paketçi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">2002</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Şaban</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Paketçi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">2003</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Salim</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(255,152,0,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#ff9800;border-bottom:1px solid var(--border);">STOKÇU</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Stokçu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">3001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Salim</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(156,39,176,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#9c27b0;border-bottom:1px solid var(--border);">KAYNAK</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Kaynakçı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">4001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Emin</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Kaynakçı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">4002</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">İlhami</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(233,30,99,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#e91e63;border-bottom:1px solid var(--border);">LAZER</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Lazer Op.</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">5001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Emre K.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Lazer Op.</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">5002</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Lazer 2</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Lazer Op.</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">5003</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Lazer 3</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(76,175,80,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#4caf50;border-bottom:1px solid var(--border);">SATIN ALMA</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Satın Alma</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">6001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Satın Alma 1</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Satın Alma</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">6002</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Satın Alma 2</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(147,51,234,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#9333ea;border-bottom:1px solid var(--border);">KOMİSYONLU SATIŞ (ETSY)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9001</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Murat O.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9101</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Aykut P.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9201</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Öznur P.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9301</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Ömer Faruk A.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9401</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hasibe G.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9501</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Burak A.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9601</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Rukiye A.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9701</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Emre K.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9801</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Müşerref K.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">9901</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Komisyonlu Satış 9901</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
@@ -4103,7 +4267,12 @@
             if(allPersonnel.length === 0) {
               personnelListBody.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted);">Henüz personel eklenmedi.</td></tr>`;
             } else {
-              personnelListBody.innerHTML = allPersonnel.map(p => {
+              // Personelleri alfabetik olarak sırala
+              allPersonnel.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+              
+              let totalSalary = 0;
+              const personnelRows = allPersonnel.map(p => {
+                totalSalary += p.salary;
                 const nextPayment = calculateNextPaymentDate(p, lastPayments[p.id]);
                 const daysUntil = Math.ceil((nextPayment - new Date()) / (1000 * 60 * 60 * 24));
                 const periodText = p.paymentPeriod === "monthly" ? "Aylık" : "Haftalık";
@@ -4131,6 +4300,14 @@
                   </tr>
                 `;
               }).join('');
+              
+              personnelListBody.innerHTML = personnelRows + `
+                <tr style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:#fff;">
+                  <td colspan="3" style="padding:14px;font-weight:900;font-size:14px;text-align:right;">TOPLAM MAAŞ:</td>
+                  <td style="padding:14px;text-align:right;font-weight:900;font-size:16px;">${new Intl.NumberFormat('tr-TR').format(totalSalary)} ₺</td>
+                  <td colspan="2"></td>
+                </tr>
+              `;
             }
 
             // Personel seçim listesini güncelle
@@ -4299,17 +4476,27 @@
             if(upcoming.length === 0) {
               upcomingPaymentsList.innerHTML = '<div style="color:rgba(255,255,255,0.8);">📅 Yaklaşan ödeme yok.</div>';
             } else {
-              upcomingPaymentsList.innerHTML = upcoming.map(p => 
-                `<div style="padding:4px 0;color:rgba(255,255,255,0.9);">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün kaldı) - ${new Intl.NumberFormat('tr-TR').format(p.salary)} ₺</div>`
-              ).join('');
+              let totalUpcoming = 0;
+              const upcomingHtml = upcoming.map(p => {
+                // Haftalık maaş ise aylık maaşı 4'e böl
+                const displayAmount = p.paymentPeriod === 'weekly' ? (p.salary / 4) : p.salary;
+                totalUpcoming += displayAmount;
+                return `<div style="padding:4px 0;color:rgba(255,255,255,0.9);">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün kaldı) - ${new Intl.NumberFormat('tr-TR').format(displayAmount)} ₺</div>`;
+              }).join('');
+              upcomingPaymentsList.innerHTML = upcomingHtml + `<div style="padding:8px 0;border-top:2px solid rgba(255,255,255,0.3);margin-top:8px;font-weight:900;font-size:15px;color:#fff;">TOPLAM TUTAR: ${new Intl.NumberFormat('tr-TR').format(totalUpcoming)} ₺</div>`;
             }
 
             if(overdue.length === 0) {
               overduePaymentsList.innerHTML = '<div style="color:rgba(255,255,255,0.8);">✅ Gecikmiş ödeme yok.</div>';
             } else {
-              overduePaymentsList.innerHTML = overdue.map(p => 
-                `<div style="padding:4px 0;color:#fff;font-weight:bold;">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün gecikmiş!) - ${new Intl.NumberFormat('tr-TR').format(p.salary)} ₺</div>`
-              ).join('');
+              let totalOverdue = 0;
+              const overdueHtml = overdue.map(p => {
+                // Haftalık maaş ise aylık maaşı 4'e böl
+                const displayAmount = p.paymentPeriod === 'weekly' ? (p.salary / 4) : p.salary;
+                totalOverdue += displayAmount;
+                return `<div style="padding:4px 0;color:#fff;font-weight:bold;">• <strong>${p.name}</strong>: ${p.nextPayment.toLocaleDateString('tr-TR')} (${p.daysUntil} gün gecikmiş!) - ${new Intl.NumberFormat('tr-TR').format(displayAmount)} ₺</div>`;
+              }).join('');
+              overduePaymentsList.innerHTML = overdueHtml + `<div style="padding:8px 0;border-top:2px solid rgba(255,255,255,0.5);margin-top:8px;font-weight:900;font-size:15px;color:#fff;">TOPLAM TUTAR: ${new Intl.NumberFormat('tr-TR').format(totalOverdue)} ₺</div>`;
             }
           } catch(e) {
             console.error('Ödeme uyarıları hatası:', e);
@@ -5273,7 +5460,7 @@
           if(!confirm("Bu tahsilat kaydını silmek istediğinizden emin misiniz?")) return;
           
           try {
-            await deleteDoc(doc(db, "sellerCollections", docId));
+            await deleteDoc(doc(db, "commissionCollections", docId));
             alert("Tahsilat kaydı silindi.");
             loadPaymentsHistory();
             loadCommissionSummary(); // Özeti de güncelle
