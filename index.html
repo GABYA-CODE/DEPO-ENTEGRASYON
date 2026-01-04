@@ -703,6 +703,7 @@
                     <th>Durum</th>
                     <th>Talep Eden</th>
                     <th>Talebi Karşılayan</th>
+                    <th>Sil</th>
                   </tr>
                 </thead>
                 <tbody id="reqBody"></tbody>
@@ -2809,12 +2810,56 @@
               <td>${requesterName}</td>
               <td>${producerName}</td>
             `;
+            
+            // Sil butonu - sadece packer (2001) ve admin için
+            const deleteTd = document.createElement('td');
+            deleteTd.style.textAlign = 'center';
+            
+            const currentPin = window.__SESSION?.pin;
+            const currentRole = window.__SESSION?.role;
+            if(currentRole === 'admin' || currentPin === '2001') {
+              const deleteBtn = document.createElement('button');
+              deleteBtn.textContent = '🗑️';
+              deleteBtn.title = 'Sil';
+              deleteBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;color:#dc3545;';
+              deleteBtn.onclick = () => window.deleteProductionRequest(x.id);
+              deleteTd.appendChild(deleteBtn);
+            } else {
+              deleteTd.textContent = '-';
+            }
+            
+            tr.appendChild(deleteTd);
             reqBody.appendChild(tr);
           }
 
           reqWrap.style.display="block";
           setStatusBox(statusReqList, `Gösteriliyor: ${docs.length}`, "ok");
         }
+
+        // Ürün talebini sil
+        window.deleteProductionRequest = async function(requestId){
+          if(!requestId) return;
+          
+          if(!confirm("Bu üretim talebini silmek istediğinize emin misiniz?")){
+            return;
+          }
+          
+          try{
+            await deleteDoc(doc(db, "requests", requestId));
+            
+            await writeLog({ 
+              action: "PRODUCTION_REQUEST_DELETE", 
+              shelf: "-", 
+              product: "-", 
+              qty: 0, 
+              detail: "Üretim talebi silindi" 
+            });
+            
+            playBeep();
+          }catch(e){
+            alert("Hata: " + e.message);
+          }
+        };
 
         if(role==="packer" || role==="admin"){
           const qReq = query(reqCol, orderBy("createdAt","desc"), limit(200));
