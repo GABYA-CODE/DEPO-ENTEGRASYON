@@ -1105,13 +1105,12 @@
         <!-- VIEW: ACCOUNTS -->
         <div id="viewAccounts" style="display:none;">
           <div class="card">
-            <h3 style="margin-top:0;">Cari Hesaplar - Firma Borç Takibi</h3>
+            <h3 style="margin-top:0;">Firma Borç Takibi</h3>
             
             <div style="margin-bottom:24px;">
-              <h4 style="margin:0 0 12px 0;color:var(--text);">Yeni İşlem Ekle</h4>
               
               <label class="fieldLabel">Firma Adı</label>
-              <input id="accountCompanyName" class="input" placeholder="Örn: ABC Demir Çelik" list="companyList" />
+              <input id="accountCompanyName" class="input" list="companyList" />
               <datalist id="companyList"></datalist>
 
               <label class="fieldLabel" style="margin-top:12px;">İşlem Tipi</label>
@@ -1122,10 +1121,10 @@
 
               <div id="purchaseFields" style="display:block;">
                 <label class="fieldLabel" style="margin-top:12px;">Mal/Hizmet Adı</label>
-                <input id="accountItemName" class="input" placeholder="Örn: Sac Levha 5mm" />
+                <input id="accountItemName" class="input" />
 
                 <label class="fieldLabel" style="margin-top:12px;">Adet/Miktar</label>
-                <input id="accountItemQuantity" class="input" type="number" placeholder="Örn: 100" />
+                <input id="accountItemQuantity" class="input" type="number" />
 
                 <label class="fieldLabel" style="margin-top:12px;">Fatura Tutarı (TL)</label>
                 <input id="accountInvoiceAmount" class="input" type="number" placeholder="Örn: 50000" />
