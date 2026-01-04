@@ -1142,6 +1142,23 @@
               <div class="statusBox" id="statusAccount" style="display:none;margin-top:12px;"></div>
             </div>
 
+            <!-- Firma Adı Düzenleme Formu -->
+            <div id="editCompanySection" style="display:none;background:#fff3cd;padding:16px;border-radius:8px;margin-top:24px;margin-bottom:24px;border:2px solid #ffc107;">
+              <h4 style="margin:0 0 12px 0;color:#856404;">Firma Adını Düzenle</h4>
+              
+              <input id="editCompanyOldName" type="hidden" />
+              
+              <label class="fieldLabel">Yeni Firma Adı</label>
+              <input id="editCompanyNewName" class="input" placeholder="Örn: ABC Demir Çelik" />
+
+              <div style="display:flex;gap:8px;margin-top:16px;">
+                <button class="actionBtn" id="btnUpdateCompany" type="button" style="flex:1;">GÜNCELLE</button>
+                <button class="actionBtn" id="btnCancelCompanyEdit" type="button" style="flex:1;background:var(--muted);">İPTAL</button>
+              </div>
+
+              <div class="statusBox" id="statusEditCompany" style="display:none;margin-top:12px;"></div>
+            </div>
+
             <div style="margin-top:24px;">
               <h4 style="margin:0 0 12px 0;color:var(--text);">Firma Bakiyeleri</h4>
               
@@ -1153,10 +1170,11 @@
                       <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM ALIM</th>
                       <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM ÖDEME</th>
                       <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">BAKİYE (BORÇ)</th>
+                      <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
                     </tr>
                   </thead>
                   <tbody id="companyBalancesBody">
-                    <tr><td colspan="4" style="padding:24px;text-align:center;color:var(--muted);">Kayıt yükleniyor...</td></tr>
+                    <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Kayıt yükleniyor...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1581,6 +1599,14 @@
     const btnFilterPurchases = document.getElementById("btnFilterPurchases");
     const btnFilterPayments = document.getElementById("btnFilterPayments");
     const companyList = document.getElementById("companyList");
+
+    // Firma düzenleme elementleri
+    const editCompanySection = document.getElementById("editCompanySection");
+    const editCompanyOldName = document.getElementById("editCompanyOldName");
+    const editCompanyNewName = document.getElementById("editCompanyNewName");
+    const btnUpdateCompany = document.getElementById("btnUpdateCompany");
+    const btnCancelCompanyEdit = document.getElementById("btnCancelCompanyEdit");
+    const statusEditCompany = document.getElementById("statusEditCompany");
 
     const logLimit = document.getElementById("logLimit");
     const btnLoadLogs = document.getElementById("btnLoadLogs");
@@ -4262,6 +4288,12 @@
                 <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${balance.purchases.toLocaleString('tr-TR')} ₺</td>
                 <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${balance.payments.toLocaleString('tr-TR')} ₺</td>
                 <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:${totalDebt > 0 ? 'red' : 'green'};">${totalDebt.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                  <div style="display:flex;gap:4px;justify-content:center;">
+                    <button onclick="editCompany('${company.replace(/'/g, "\\'")}')" style="background:#007bff;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:900;cursor:pointer;">DÜZENLE</button>
+                    <button onclick="deleteCompany('${company.replace(/'/g, "\\'")}')" style="background:#dc3545;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:900;cursor:pointer;">SİL</button>
+                  </div>
+                </td>
               `;
               companyBalancesBody.appendChild(tr);
             }
@@ -4363,6 +4395,77 @@
           snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
           displayAccountTransactions(transactions, currentAccountFilter, e.target.value);
         });
+
+        // Firma adını düzenle
+        window.editCompany = function(companyName) {
+          editCompanyOldName.value = companyName;
+          editCompanyNewName.value = companyName;
+          editCompanySection.style.display = "block";
+          editCompanySection.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // Firma adı güncelleme
+        btnUpdateCompany && (btnUpdateCompany.onclick = async function() {
+          try {
+            const oldName = editCompanyOldName.value;
+            const newName = editCompanyNewName.value.trim();
+
+            if(!newName) {
+              setStatusBox(statusEditCompany, "Firma adı boş olamaz.", "error");
+              return;
+            }
+
+            if(oldName === newName) {
+              setStatusBox(statusEditCompany, "Yeni firma adı eskisiyle aynı.", "error");
+              return;
+            }
+
+            setStatusBox(statusEditCompany, "Güncelleniyor...", "info");
+
+            // Bu firmaya ait tüm işlemleri bul ve güncelle
+            const snap = await getDocs(query(accountCol, where("companyName", "==", oldName)));
+            const batch = writeBatch(db);
+
+            snap.docs.forEach(docSnap => {
+              batch.update(docSnap.ref, { companyName: newName });
+            });
+
+            await batch.commit();
+
+            setStatusBox(statusEditCompany, "Firma adı güncellendi.", "ok");
+            editCompanySection.style.display = "none";
+            loadAccountTransactions();
+          } catch(e) {
+            console.error('Firma güncelleme hatası:', e);
+            setStatusBox(statusEditCompany, "Hata: " + e.message, "error");
+          }
+        });
+
+        // Düzenleme iptali
+        btnCancelCompanyEdit && (btnCancelCompanyEdit.onclick = function() {
+          editCompanySection.style.display = "none";
+        });
+
+        // Firmayı ve tüm işlemlerini sil
+        window.deleteCompany = async function(companyName) {
+          if(!confirm(`${companyName} firmasını ve bu firmaya ait TÜM işlemleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) return;
+
+          try {
+            const snap = await getDocs(query(accountCol, where("companyName", "==", companyName)));
+            const batch = writeBatch(db);
+
+            snap.docs.forEach(docSnap => {
+              batch.delete(docSnap.ref);
+            });
+
+            await batch.commit();
+
+            alert(`${companyName} firması ve ${snap.docs.length} işlem silindi.`);
+            loadAccountTransactions();
+          } catch(e) {
+            alert('Hata: ' + e.message);
+          }
+        };
 
         // Sayfa yüklendiğinde cari işlemleri yükle
         loadAccountTransactions();
