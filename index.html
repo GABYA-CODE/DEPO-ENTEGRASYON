@@ -865,6 +865,7 @@
                     <th>İşlem</th>
                     <th>Not Ekle</th>
                     <th>Reddet</th>
+                    <th>Sil</th>
                   </tr>
                 </thead>
                 <tbody id="purchaseBody"></tbody>
@@ -3210,6 +3211,19 @@
               }
               
               tr.appendChild(rejectTd);
+              
+              // Sil butonu (tüm talepler için)
+              const deleteTd = document.createElement('td');
+              deleteTd.style.textAlign = 'center';
+              
+              const deleteBtn = document.createElement('button');
+              deleteBtn.textContent = '🗑️';
+              deleteBtn.title = 'Sil';
+              deleteBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;color:#dc3545;';
+              deleteBtn.onclick = () => window.deleteMaterialRequest(docSnap.id);
+              deleteTd.appendChild(deleteBtn);
+              
+              tr.appendChild(deleteTd);
               
               purchaseBody.appendChild(tr);
             });
