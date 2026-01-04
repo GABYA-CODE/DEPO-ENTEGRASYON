@@ -548,6 +548,8 @@
         <div class="tab" id="tabPackaging">PAKETLEME TALİMATLARI</div>
         <div class="tab" id="tabPayments">PERSONEL ÖDEMELERİ</div>
         <div class="tab" id="tabAccounts">CARİ HESAPLAR</div>
+        <div class="tab" id="tabCommissionSummary">KOMİSYON ÖZETİ</div>
+        <div class="tab" id="tabCommission">KOMİSYONLU SATIŞLAR</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1213,6 +1215,215 @@
           </div>
         </div>
 
+        <!-- VIEW: COMMISSION -->
+        <div id="viewCommission" style="display:none;">
+          <div class="card">
+            <h3 style="margin-top:0;">ETSY Komisyonlu Satışlar</h3>
+            
+            <h4 style="margin:0 0 12px 0;color:var(--text);">Hak Ediş Durumu</h4>
+            
+            <div id="commissionSummarySection" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:20px;border-radius:8px;margin-bottom:24px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                <div>
+                  <div style="font-size:13px;opacity:0.9;">Toplam Gelir</div>
+                  <div style="font-size:24px;font-weight:900;" id="myTotalIncome">0 ₺</div>
+                </div>
+                <div>
+                  <div style="font-size:13px;opacity:0.9;">Toplam Gider (Şirket Üstlenir)</div>
+                  <div style="font-size:24px;font-weight:900;" id="myTotalExpense">0 ₺</div>
+                </div>
+                <div>
+                  <div style="font-size:13px;opacity:0.9;">Benim Net Payım</div>
+                  <div style="font-size:24px;font-weight:900;" id="myNetAmount">0 ₺</div>
+                </div>
+                <div>
+                  <div style="font-size:13px;opacity:0.9;">Benim Payım (Gelir × %20)</div>
+                  <div style="font-size:28px;font-weight:900;color:#fbbf24;" id="myCommission">0 ₺</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="commissionFormSection" style="margin-bottom:24px;">
+              <h4 style="margin:0 0 12px 0;color:var(--text);">Yeni İşlem Ekle</h4>
+              <label class="fieldLabel">İşlem Tipi</label>
+              <select id="commissionTransactionType" class="input">
+                <option value="income">Gelir (Satış)</option>
+                <option value="expense">Gider (İade/Kesinti)</option>
+              </select>
+
+              <label class="fieldLabel" style="margin-top:12px;">Tutar (TL)</label>
+              <input id="commissionAmount" class="input" type="number" placeholder="Örn: 5000" />
+
+              <label class="fieldLabel" style="margin-top:12px;">Açıklama</label>
+              <textarea id="commissionNote" class="input" rows="2" placeholder="Örn: ETSY satış ödemesi, İade, Kargo kesintisi vb."></textarea>
+
+              <button class="actionBtn" id="btnAddCommission" type="button" style="margin-top:16px;">KAYDET</button>
+
+              <div class="statusBox" id="statusCommission" style="display:none;margin-top:12px;"></div>
+            </div>
+
+            <h4 style="margin:0 0 12px 0;color:var(--text);">İşlem Geçmişi</h4>
+            
+            <div style="margin-bottom:12px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+                <button class="searchBtn" id="btnFilterAllCommission" type="button" style="font-size:13px;padding:10px;">TÜMÜ</button>
+                <button class="searchBtn" id="btnFilterIncome" type="button" style="font-size:13px;padding:10px;">GELİRLER</button>
+                <button class="searchBtn" id="btnFilterExpense" type="button" style="font-size:13px;padding:10px;">GİDERLER</button>
+              </div>
+            </div>
+
+            <div id="commissionListWrap" style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TİP</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">AÇIKLAMA</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="commissionListBody">
+                  <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Kayıt yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4 style="margin:24px 0 12px 0;color:var(--text);">Tahsilat Geçmişi</h4>
+            <div id="myPaymentsWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">AÇIKLAMA</th>
+                  </tr>
+                </thead>
+                <tbody id="myPaymentsBody">
+                  <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: COMMISSION SUMMARY -->
+        <div id="viewCommissionSummary" style="display:none;">
+          <div class="sectionTitle">Komisyon Özeti</div>
+          
+          <div class="card">
+            <h2>Komisyonlu Satışlar Özeti</h2>
+            <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+              <thead style="background:var(--card);">
+                <tr>
+                  <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">SATICI</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">TOPLAM GELİR</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">TOPLAM GİDER</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">ŞİRKET BRÜT (%80)</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">SATICI PAYI (%20)</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">ŞİRKET NET</th>
+                  <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);">İŞLEM</th>
+                </tr>
+              </thead>
+              <tbody id="commissionSummaryBody">
+                <tr><td colspan="7" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card" style="margin-top:24px;">
+            <h2>Tahsilat Girişi</h2>
+            <p style="color:#666;font-size:14px;margin-top:8px;">Bayilerden yapılan tahsilatları kaydedin. Tahsilatlar şirket hak edişinden düşer.</p>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:12px;margin-top:16px;align-items:end;">
+              <div>
+                <label class="fieldLabel">Satıcı</label>
+                <select id="collectionSellerPin" class="input">
+                  <option value="">Satıcı Seçin</option>
+                </select>
+              </div>
+              <div>
+                <label class="fieldLabel">Tahsilat Tutarı (₺)</label>
+                <input type="number" id="collectionAmount" class="input" placeholder="0.00" step="0.01" />
+              </div>
+              <div>
+                <label class="fieldLabel">Açıklama</label>
+                <input type="text" id="collectionNote" class="input" placeholder="Ödeme açıklaması" />
+              </div>
+              <div>
+                <button id="btnAddCollection" style="padding:12px 24px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">TAHSİLAT KAYDET</button>
+              </div>
+            </div>
+            <div id="statusCollection" style="margin-top:12px;padding:8px;border-radius:4px;display:none;"></div>
+          </div>
+
+          <!-- Satıcı Detay Paneli -->
+          <div id="sellerDetailSection" style="display:none;margin-top:24px;">
+            <div class="card" style="background:#fff3cd;border:2px solid #ffc107;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h2 id="sellerDetailTitle" style="margin:0;">Satıcı Detayları</h2>
+                <button onclick="hideSellerDetail()" style="padding:8px 16px;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">KAPAT</button>
+              </div>
+              
+              <div style="background:#fff;padding:16px;border-radius:8px;margin-bottom:16px;">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+                  <div>
+                    <div style="color:#666;font-size:12px;margin-bottom:4px;">Toplam Gelir</div>
+                    <div id="detailIncome" style="font-size:20px;font-weight:bold;color:green;">0 ₺</div>
+                  </div>
+                  <div>
+                    <div style="color:#666;font-size:12px;margin-bottom:4px;">Toplam Gider</div>
+                    <div id="detailExpense" style="font-size:20px;font-weight:bold;color:red;">0 ₺</div>
+                  </div>
+                  <div>
+                    <div style="color:#666;font-size:12px;margin-bottom:4px;">Net Tutar</div>
+                    <div id="detailNet" style="font-size:20px;font-weight:bold;">0 ₺</div>
+                  </div>
+                  <div>
+                    <div style="color:#666;font-size:12px;margin-bottom:4px;">Yönetici Hak Ediş (%80)</div>
+                    <div id="detailCompanyShare" style="font-size:20px;font-weight:bold;color:blue;">0 ₺</div>
+                  </div>
+                </div>
+              </div>
+
+              <h3 style="margin-top:24px;margin-bottom:12px;">İşlem Geçmişi</h3>
+              <table style="width:100%;border-collapse:collapse;">
+                <thead style="background:#f8f9fa;">
+                  <tr>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid #dee2e6;">TARİH</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid #dee2e6;">TİP</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid #dee2e6;">TUTAR</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid #dee2e6;">AÇIKLAMA</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid #dee2e6;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="detailTransactionsBody">
+                  <tr><td colspan="5" style="padding:24px;text-align:center;color:#666;">Yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tahsilat Geçmişi -->
+          <div class="card" style="margin-top:24px;">
+            <h2>Tahsilat Geçmişi</h2>
+            <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+              <thead style="background:var(--card);">
+                <tr>
+                  <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">TARİH</th>
+                  <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">BAYİ ADI</th>
+                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">TUTAR</th>
+                  <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">AÇIKLAMA</th>
+                  <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);">İŞLEM</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsHistoryBody">
+                <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
@@ -1228,6 +1439,73 @@
             </div>
 
             <div class="hintLine" id="stHint" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Komisyonlu Satışlar Özeti</h3>
+            
+            <div id="commissionSummaryWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-top:16px;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SATICI</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM GELİR</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM GİDER</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">NET TUTAR</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SATICI PAYI (%20)</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">YÖNETİCİ HAK EDİŞ (%80)</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="commissionSummaryBody">
+                  <tr><td colspan="7" style="padding:24px;text-align:center;color:var(--muted);">Komisyon verileri yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" id="sellerDetailSection" style="margin-top:14px;display:none;">
+            <h3 style="margin-top:0;display:flex;justify-content:space-between;align-items:center;">
+              <span id="sellerDetailName">Satıcı Detayları</span>
+              <button onclick="hideSellerDetail()" style="background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700;">KAPAT</button>
+            </h3>
+            
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+              <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:20px;border-radius:10px;color:#fff;">
+                <div style="font-size:13px;font-weight:700;opacity:0.9;margin-bottom:8px;">TOPLAM GELİR</div>
+                <div id="sellerDetailIncome" style="font-size:26px;font-weight:900;">0 ₺</div>
+              </div>
+              <div style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);padding:20px;border-radius:10px;color:#fff;">
+                <div style="font-size:13px;font-weight:700;opacity:0.9;margin-bottom:8px;">TOPLAM GİDER</div>
+                <div id="sellerDetailExpense" style="font-size:26px;font-weight:900;">0 ₺</div>
+              </div>
+              <div style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);padding:20px;border-radius:10px;color:#fff;">
+                <div style="font-size:13px;font-weight:700;opacity:0.9;margin-bottom:8px;">NET TUTAR</div>
+                <div id="sellerDetailNet" style="font-size:26px;font-weight:900;">0 ₺</div>
+              </div>
+              <div style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%);padding:20px;border-radius:10px;color:#fff;">
+                <div style="font-size:13px;font-weight:700;opacity:0.9;margin-bottom:8px;">YÖNETİCİ HAK EDİŞ (%80)</div>
+                <div id="sellerDetailCommission" style="font-size:26px;font-weight:900;">0 ₺</div>
+              </div>
+            </div>
+
+            <h4 style="margin-top:24px;margin-bottom:12px;">İşlem Geçmişi</h4>
+            
+            <div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TİP</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">AÇIKLAMA</th>
+                  </tr>
+                </thead>
+                <tbody id="sellerDetailTransactions">
+                  <tr><td colspan="4" style="padding:24px;text-align:center;color:var(--muted);">İşlem yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
@@ -1342,6 +1620,8 @@
 
     const PURCHASE_PINS = new Set(["6001","6002"]);
 
+    const COMMISSION_PINS = new Set(["9001","9101","9201","9301","9401","9501","9601","9701","9801","9901"]);
+
     window.__SESSION = { role: null, pin: null };
 
     // PIN-isim eşleştirmesi
@@ -1356,12 +1636,25 @@
       "4002": "İlhami",
       "5001": "Emre K.",
       "6001": "Satın Alma 1",
-      "6002": "Satın Alma 2"
+      "6002": "Satın Alma 2",
+      "9001": "Murat O.",
+      "9101": "Aykut P.",
+      "9201": "Öznur P.",
+      "9301": "Ömer Faruk A.",
+      "9401": "Hasibe G.",
+      "9501": "Burak A.",
+      "9601": "Rukiye A.",
+      "9701": "Emre K.",
+      "9801": "Müşerref K.",
+      "9901": "Komisyonlu Satış 9901"
     };
 
     function getNameByPin(pin){
       return PIN_NAMES[pin] || pin;
     }
+
+    // PIN_NAMES'i global scope'a da ekle (module script içinden erişim için)
+    window.PIN_NAMES = PIN_NAMES;
 
     const loginView = document.getElementById("loginView");
     const appView   = document.getElementById("appView");
@@ -1395,6 +1688,7 @@
       if(WELDER_PINS.has(pin)) return "welder";
       if(LASER_PINS.has(pin)) return "welder";
       if(PURCHASE_PINS.has(pin)) return "purchase";
+      if(COMMISSION_PINS.has(pin)) return "commission";
       return null;
     }
 
@@ -1404,6 +1698,7 @@
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
       if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
       if(role==="purchase") return `<span class="badge b-admin">SATIN ALMA</span>`;
+      if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">KOMİSYONLU SATIŞ</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -1470,6 +1765,8 @@
     const tabPackaging= document.getElementById("tabPackaging");
     const tabPayments= document.getElementById("tabPayments");
     const tabAccounts= document.getElementById("tabAccounts");
+    const tabCommissionSummary= document.getElementById("tabCommissionSummary");
+    const tabCommission= document.getElementById("tabCommission");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -1486,6 +1783,8 @@
     const viewPackaging= document.getElementById("viewPackaging");
     const viewPayments= document.getElementById("viewPayments");
     const viewAccounts= document.getElementById("viewAccounts");
+    const viewCommissionSummary= document.getElementById("viewCommissionSummary");
+    const viewCommission= document.getElementById("viewCommission");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -1579,6 +1878,36 @@
     const btnFilterAllPayments = document.getElementById("btnFilterAllPayments");
     const btnFilterSalary = document.getElementById("btnFilterSalary");
     const btnFilterAdvance = document.getElementById("btnFilterAdvance");
+
+    // Komisyonlu satış elementleri
+    const commissionTransactionType = document.getElementById("commissionTransactionType");
+    const commissionAmount = document.getElementById("commissionAmount");
+    const commissionNote = document.getElementById("commissionNote");
+    const btnAddCommission = document.getElementById("btnAddCommission");
+    const statusCommission = document.getElementById("statusCommission");
+    const myTotalIncome = document.getElementById("myTotalIncome");
+    const myTotalExpense = document.getElementById("myTotalExpense");
+    const myNetAmount = document.getElementById("myNetAmount");
+    const myCommission = document.getElementById("myCommission");
+    const commissionListBody = document.getElementById("commissionListBody");
+    const myPaymentsBody = document.getElementById("myPaymentsBody");
+    const btnFilterAllCommission = document.getElementById("btnFilterAllCommission");
+    const btnFilterIncome = document.getElementById("btnFilterIncome");
+    const btnFilterExpense = document.getElementById("btnFilterExpense");
+    const commissionSummaryBody = document.getElementById("commissionSummaryBody");
+    const paymentsHistoryBody = document.getElementById("paymentsHistoryBody");
+    const collectionSellerPin = document.getElementById("collectionSellerPin");
+    const collectionAmount = document.getElementById("collectionAmount");
+    const collectionNote = document.getElementById("collectionNote");
+    const btnAddCollection = document.getElementById("btnAddCollection");
+    const statusCollection = document.getElementById("statusCollection");
+    const sellerDetailSection = document.getElementById("sellerDetailSection");
+    const sellerDetailTitle = document.getElementById("sellerDetailTitle");
+    const detailIncome = document.getElementById("detailIncome");
+    const detailExpense = document.getElementById("detailExpense");
+    const detailNet = document.getElementById("detailNet");
+    const detailCompanyShare = document.getElementById("detailCompanyShare");
+    const detailTransactionsBody = document.getElementById("detailTransactionsBody");
 
     const accountCompanyName = document.getElementById("accountCompanyName");
     const accountTransactionType = document.getElementById("accountTransactionType");
@@ -1910,7 +2239,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -1928,6 +2257,8 @@
         viewPackaging && (viewPackaging.style.display="none");
         viewPayments && (viewPayments.style.display="none");
         viewAccounts && (viewAccounts.style.display="none");
+        viewCommissionSummary && (viewCommissionSummary.style.display="none");
+        viewCommission && (viewCommission.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -1945,9 +2276,30 @@
       if(target==="purchase"){ tabPurchase?.classList.add("active"); viewPurchase.style.display="block"; }
       if(target==="instructions"){ tabInstructions?.classList.add("active"); viewInstructions.style.display="block"; setTimeout(()=>{ try{ instructionsProductCode.focus(); instructionsProductCode.select && instructionsProductCode.select(); }catch(e){} },50); }
       if(target==="packaging"){ tabPackaging?.classList.add("active"); viewPackaging.style.display="block"; setTimeout(()=>{ try{ packagingProductCode.focus(); packagingProductCode.select && packagingProductCode.select(); }catch(e){} },50); }
-      if(target==="payments"){ tabPayments?.classList.add("active"); viewPayments.style.display="block"; setTimeout(()=>{ try{ paymentPersonName.focus(); paymentPersonName.select && paymentPersonName.select(); }catch(e){} },50); }
+      if(target==="payments"){ tabPayments?.classList.add("active"); viewPayments.style.display="block"; setTimeout(()=>{ try{ paymentPersonSelect.focus(); }catch(e){} },50); }
       if(target==="accounts"){ tabAccounts?.classList.add("active"); viewAccounts.style.display="block"; setTimeout(()=>{ try{ accountCompanyName.focus(); accountCompanyName.select && accountCompanyName.select(); }catch(e){} },50); }
-      if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; }
+      if(target==="commissionSummary"){ tabCommissionSummary?.classList.add("active"); viewCommissionSummary.style.display="block"; setTimeout(()=>{ try{ if(typeof loadCommissionSummary === "function"){ loadCommissionSummary(); } if(typeof loadPaymentsHistory === "function"){ loadPaymentsHistory(); } }catch(e){console.error(e);} },100); }
+      if(target==="commission"){ 
+        tabCommission?.classList.add("active"); 
+        viewCommission.style.display="block"; 
+        
+        // Admin rolü ise formu gizle, sadece raporları göster
+        const currentRole = window.__SESSION?.role;
+        if(currentRole === "admin") {
+          const formSection = document.getElementById("commissionFormSection");
+          const summarySection = document.getElementById("commissionSummarySection");
+          if(formSection) formSection.style.display = "none";
+          if(summarySection) summarySection.style.display = "none";
+        } else {
+          const formSection = document.getElementById("commissionFormSection");
+          const summarySection = document.getElementById("commissionSummarySection");
+          if(formSection) formSection.style.display = "block";
+          if(summarySection) summarySection.style.display = "block";
+        }
+        
+        setTimeout(()=>{ try{ commissionTransactionType.focus(); }catch(e){} },50); 
+      }
+      if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; setTimeout(()=>{ try{ if(typeof loadCommissionSummary === "function"){ loadCommissionSummary(); } }catch(e){console.error(e);} },100); }
     }
 
     function setTabsByRole(r){
@@ -1966,6 +2318,8 @@
         [tabPackaging, viewPackaging],
         [tabPayments, viewPayments],
         [tabAccounts, viewAccounts],
+        [tabCommissionSummary, viewCommissionSummary],
+        [tabCommission, viewCommission],
         [tabAdmin, viewAdmin]
       ];
 
@@ -2020,9 +2374,14 @@
         tabPackaging.style.display="block";
         tabPayments.style.display="block";
         tabAccounts.style.display="block";
+        tabCommissionSummary.style.display="block";
         tabAdmin.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
         setActiveTab("admin");
+      }else if(r==="commission"){
+        tabCommission.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr";
+        setActiveTab("commission");
       }else{
         tabbar.style.gridTemplateColumns = "1fr";
       }
@@ -2075,6 +2434,8 @@
         tabPackaging && (tabPackaging.onclick = ()=>setActiveTab("packaging"));
         tabPayments && (tabPayments.onclick = ()=>setActiveTab("payments"));
         tabAccounts && (tabAccounts.onclick = ()=>setActiveTab("accounts"));
+        tabCommissionSummary && (tabCommissionSummary.onclick = ()=>setActiveTab("commissionSummary"));
+        tabCommission && (tabCommission.onclick = ()=>setActiveTab("commission"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>location.reload();
@@ -2093,6 +2454,8 @@
         const paymentCol = collection(db, "paymentRecords");
         const personnelCol = collection(db, "personnel");
         const accountCol = collection(db, "accountTransactions");
+        const commissionCol = collection(db, "commissionSales");
+        const collectionCol = collection(db, "commissionCollections");
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -4469,6 +4832,511 @@
 
         // Sayfa yüklendiğinde cari işlemleri yükle
         loadAccountTransactions();
+
+        // ============================
+        // KOMİSYONLU SATIŞLAR FONKSİYONLARI
+        // ============================
+
+        // Komisyon işlemi ekleme
+        window.addCommissionTransaction = async function() {
+          try {
+            console.log("addCommissionTransaction called");
+            const transactionType = commissionTransactionType.value;
+            const amount = Number(commissionAmount.value);
+            const note = commissionNote.value.trim();
+            const sellerPin = window.__SESSION?.pin;
+            const sellerName = PIN_NAMES[sellerPin] || "Bilinmeyen Satıcı";
+            
+            console.log("Commission data:", { transactionType, amount, note, sellerPin, sellerName });
+            
+            if(!amount || amount <= 0) {
+              setStatusBox(statusCommission, "Tutar geçersiz.", "error");
+              console.error("Invalid amount:", amount);
+              return;
+            }
+            
+            setStatusBox(statusCommission, "Kaydediliyor...", "");
+            
+            console.log("Attempting to save to commissionCol...");
+            await addDoc(commissionCol, {
+              sellerPin,
+              sellerName,
+              transactionType,
+              amount,
+              note,
+              createdAt: new Date().toISOString()
+            });
+            
+            console.log("Document saved successfully");
+            
+            // Formu temizle
+            commissionTransactionType.value = "income";
+            commissionAmount.value = "";
+            commissionNote.value = "";
+            
+            setStatusBox(statusCommission, "İşlem kaydedildi.", "ok");
+            loadMyCommissions();
+          } catch(e) {
+            console.error("addCommissionTransaction error:", e);
+            setStatusBox(statusCommission, "Hata: " + e.message, "error");
+          }
+        };
+        
+        // KAYDET butonuna event listener ekle
+        btnAddCommission && (btnAddCommission.onclick = addCommissionTransaction);
+
+        // Satıcının kendi işlemlerini yükleme
+        async function loadMyCommissions() {
+          try {
+            const sellerPin = window.__SESSION?.pin;
+            console.log("Loading commissions for PIN:", sellerPin);
+            
+            // orderBy kaldırıldı - Firebase index gerektirebilir
+            const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+            
+            console.log("Found documents:", snap.size);
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const transactions = [];
+            
+            snap.forEach(docSnap => {
+              const data = docSnap.data();
+              console.log("Transaction data:", data);
+              transactions.push({ id: docSnap.id, ...data });
+              
+              if(data.transactionType === "income") {
+                totalIncome += data.amount || 0;
+              } else {
+                totalExpense += data.amount || 0;
+              }
+            });
+            
+            // Tarihe göre sırala (client-side)
+            transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Satıcı payı sadece gelirden hesaplanır (gider satıcıyı etkilemez)
+            const sellerShare = totalIncome * 0.20;
+            const companyGrossShare = totalIncome * 0.80;
+            const companyNetShare = companyGrossShare - totalExpense;
+            
+            myTotalIncome.textContent = totalIncome.toLocaleString('tr-TR') + " ₺";
+            myTotalExpense.textContent = totalExpense.toLocaleString('tr-TR') + " ₺ (Şirket Üstlenir)";
+            myNetAmount.textContent = sellerShare.toLocaleString('tr-TR') + " ₺";
+            myCommission.textContent = sellerShare.toLocaleString('tr-TR') + " ₺";
+            
+            console.log("Calling displayMyCommissions with", transactions.length, "transactions");
+            displayMyCommissions(transactions, "all");
+            loadMyPayments(); // Tahsilatları yükle
+            
+          } catch(e) {
+            console.error("Komisyon işlemleri yüklenemedi:", e);
+            setStatusBox(statusCommission, "Yükleme hatası: " + e.message, "error");
+          }
+        }
+
+        // İşlemleri görüntüleme
+        function displayMyCommissions(transactions, filter) {
+          commissionListBody.innerHTML = "";
+          
+          const filtered = transactions.filter(t => {
+            if(filter === "all") return true;
+            return t.transactionType === filter;
+          });
+          
+          filtered.forEach(t => {
+            const tr = document.createElement("tr");
+            const typeText = t.transactionType === "income" ? "GELİR" : "GİDER";
+            const typeColor = t.transactionType === "income" ? "green" : "red";
+            const date = new Date(t.createdAt).toLocaleDateString('tr-TR');
+            
+            tr.innerHTML = `
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);color:${typeColor};font-weight:bold;">${typeText}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${t.amount.toLocaleString('tr-TR')} ₺</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);">${t.note || ""}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                <button onclick="deleteCommissionTransaction('${t.id}')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;">SİL</button>
+              </td>
+            `;
+            commissionListBody.appendChild(tr);
+          });
+        }
+
+        // Komisyon işlemi silme
+        window.deleteCommissionTransaction = async function(docId) {
+          if(!confirm("Bu işlemi silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await deleteDoc(doc(db, "commissionSales", docId));
+            setStatusBox(statusCommission, "İşlem silindi.", "ok");
+            loadMyCommissions();
+          } catch(e) {
+            alert("Hata: " + e.message);
+          }
+        };
+
+        // Filtre butonları
+        let allCommissionTransactions = [];
+
+        btnFilterAllCommission && (btnFilterAllCommission.onclick = async () => {
+          const sellerPin = window.__SESSION?.pin;
+          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const transactions = [];
+          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          displayMyCommissions(transactions, "all");
+        });
+
+        btnFilterIncome && (btnFilterIncome.onclick = async () => {
+          const sellerPin = window.__SESSION?.pin;
+          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const transactions = [];
+          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          displayMyCommissions(transactions, "income");
+        });
+
+        btnFilterExpense && (btnFilterExpense.onclick = async () => {
+          const sellerPin = window.__SESSION?.pin;
+          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const transactions = [];
+          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          displayMyCommissions(transactions, "expense");
+        });
+
+        // Admin için tüm satıcıların özetini yükleme
+        async function loadCommissionSummary() {
+          try {
+            console.log("🔄 loadCommissionSummary çağrıldı");
+            const snap = await getDocs(commissionCol);
+            const collectionSnap = await getDocs(collectionCol);
+            
+            const sellerData = {};
+            let totalCompanyShare = 0;
+            let totalCollections = 0;
+            
+            // Komisyon işlemlerini topla
+            snap.forEach(doc => {
+              const data = doc.data();
+              if(!sellerData[data.sellerPin]) {
+                sellerData[data.sellerPin] = {
+                  name: data.sellerName,
+                  income: 0,
+                  expense: 0,
+                  collections: 0
+                };
+              }
+              
+              if(data.transactionType === "income") {
+                sellerData[data.sellerPin].income += data.amount || 0;
+              } else {
+                sellerData[data.sellerPin].expense += data.amount || 0;
+              }
+            });
+            
+            // Tahsilatları topla
+            collectionSnap.forEach(doc => {
+              const data = doc.data();
+              if(sellerData[data.sellerPin]) {
+                sellerData[data.sellerPin].collections += data.amount || 0;
+              }
+            });
+            
+            // Satıcı seçim listesini güncelle
+            if(collectionSellerPin) {
+              collectionSellerPin.innerHTML = "<option value=''>Satıcı Seçin</option>";
+              for(const [pin, data] of Object.entries(sellerData)) {
+                const option = document.createElement("option");
+                option.value = pin;
+                option.textContent = data.name;
+                collectionSellerPin.appendChild(option);
+              }
+            }
+            
+            commissionSummaryBody.innerHTML = "";
+            
+            if(Object.keys(sellerData).length === 0) {
+              commissionSummaryBody.innerHTML = "<tr><td colspan='7' style='padding:24px;text-align:center;color:var(--muted);'>Henüz komisyon verisi yok.</td></tr>";
+              return;
+            }
+            
+            for(const [pin, data] of Object.entries(sellerData)) {
+              // Satıcı payı = Gelir * %20 (giderden etkilenmez)
+              // Şirket brüt payı = Gelir * %80
+              // Şirket net payı = Brüt pay - Gider - Tahsilat
+              const sellerShare = data.income * 0.20;
+              const companyGrossShare = data.income * 0.80;
+              const companyNetBeforeCollection = companyGrossShare - data.expense;
+              const companyFinalShare = companyNetBeforeCollection - data.collections;
+              totalCompanyShare += companyFinalShare;
+              totalCollections += data.collections;
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.name}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${data.income.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${data.expense.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${companyGrossShare.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${sellerShare.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">
+                  <div style="color:blue;font-weight:bold;">${companyNetBeforeCollection.toLocaleString('tr-TR')} ₺</div>
+                  ${data.collections > 0 ? `<div style="color:red;font-size:12px;margin-top:4px;">- ${data.collections.toLocaleString('tr-TR')} ₺ (tahsilat)</div>` : ''}
+                  ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:13px;margin-top:2px;font-weight:bold;">${companyFinalShare.toLocaleString('tr-TR')} ₺ (kalan)</div>` : ''}
+                </td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                  <button onclick="showSellerDetail('${pin}')" style="padding:8px 14px;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">DETAY</button>
+                </td>
+              `;
+              commissionSummaryBody.appendChild(tr);
+            }
+            
+            // Toplam şirket hak edişi satırı
+            const totalTr = document.createElement("tr");
+            totalTr.style.background = "#e3f2fd";
+            totalTr.style.fontWeight = "bold";
+            totalTr.innerHTML = `
+              <td colspan="5" style="padding:16px;text-align:right;font-size:16px;">
+                <div>TOPLAM ŞİRKET HAK EDİŞİ</div>
+                ${totalCollections > 0 ? `<div style="color:red;font-size:14px;margin-top:4px;">- ${totalCollections.toLocaleString('tr-TR')} ₺ (tahsilatlar)</div>` : ''}
+              </td>
+              <td style="padding:16px;text-align:right;color:#0d47a1;font-size:18px;font-weight:900;">${totalCompanyShare.toLocaleString('tr-TR')} ₺</td>
+              <td></td>
+            `;
+            commissionSummaryBody.appendChild(totalTr);
+            
+            console.log("✅ Komisyon özeti yüklendi");
+            
+          } catch(e) {
+            console.error("❌ Komisyon özeti yüklenemedi:", e);
+            commissionSummaryBody.innerHTML = `<tr><td colspan='7' style='padding:24px;text-align:center;color:red;'>Hata: ${e.message}</td></tr>`;
+          }
+        }
+
+        // Satıcı detaylarını göster
+        window.showSellerDetail = async function(sellerPin) {
+          try {
+            console.log('📋 Satıcı detayı yükleniyor, PIN:', sellerPin);
+            const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const transactions = [];
+            
+            snap.forEach(doc => {
+              const data = doc.data();
+              transactions.push({ id: doc.id, ...data });
+              
+              if(data.transactionType === "income") {
+                totalIncome += data.amount || 0;
+              } else {
+                totalExpense += data.amount || 0;
+              }
+            });
+            
+            // Satıcı payı = Gelir * %20
+            // Şirket brüt payı = Gelir * %80
+            // Şirket net payı = Brüt pay - Gider
+            const sellerShare = totalIncome * 0.20;
+            const companyGrossShare = totalIncome * 0.80;
+            const companyNetShare = companyGrossShare - totalExpense;
+            const sellerName = transactions.length > 0 ? transactions[0].sellerName : "Satıcı";
+            
+            console.log('💰 Gelir:', totalIncome, 'Gider:', totalExpense, 'Şirket Net:', companyNetShare);
+            
+            sellerDetailTitle.textContent = sellerName + " - Detayları";
+            detailIncome.textContent = totalIncome.toLocaleString('tr-TR') + " ₺";
+            detailExpense.textContent = totalExpense.toLocaleString('tr-TR') + " ₺ (Şirket Üstlenir)";
+            detailNet.textContent = companyGrossShare.toLocaleString('tr-TR') + " ₺ (Brüt)";
+            detailCompanyShare.textContent = companyNetShare.toLocaleString('tr-TR') + " ₺ (Net)";
+            
+            detailTransactionsBody.innerHTML = "";
+            
+            if(transactions.length === 0) {
+              detailTransactionsBody.innerHTML = "<tr><td colspan='5' style='padding:24px;text-align:center;color:var(--muted);'>İşlem bulunamadı.</td></tr>";
+            } else {
+              transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+              
+              transactions.forEach(t => {
+                const tr = document.createElement("tr");
+                const typeText = t.transactionType === "income" ? "GELİR" : "GİDER";
+                const typeColor = t.transactionType === "income" ? "green" : "red";
+                const date = new Date(t.createdAt).toLocaleDateString('tr-TR');
+                
+                tr.innerHTML = `
+                  <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
+                  <td style="padding:12px;border-bottom:1px solid var(--border);color:${typeColor};font-weight:bold;">${typeText}</td>
+                  <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${t.amount.toLocaleString('tr-TR')} ₺</td>
+                  <td style="padding:12px;border-bottom:1px solid var(--border);">${t.note || ""}</td>
+                  <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                    <button onclick="deleteCommissionFromDetail('${t.id}', '${sellerPin}')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;">SİL</button>
+                  </td>
+                `;
+                detailTransactionsBody.appendChild(tr);
+              });
+            }
+            
+            sellerDetailSection.style.display = "block";
+            sellerDetailSection.scrollIntoView({ behavior: 'smooth' });
+            console.log('✅ Detay paneli gösterildi');
+            
+          } catch(e) {
+            console.error("❌ Satıcı detayları hatası:", e);
+            alert("Satıcı detayları yüklenemedi: " + e.message);
+          }
+        };
+
+        // Satıcı detay panelini kapat
+        window.hideSellerDetail = function() {
+          sellerDetailSection.style.display = "none";
+        };
+
+        // Tahsilat ekleme
+        window.addCollection = async function() {
+          try {
+            const sellerPin = collectionSellerPin.value;
+            const amount = Number(collectionAmount.value);
+            const note = collectionNote.value.trim();
+            
+            if(!sellerPin) {
+              setStatusBox(statusCollection, "Satıcı seçin.", "error");
+              return;
+            }
+            
+            if(!amount || amount <= 0) {
+              setStatusBox(statusCollection, "Tutar geçersiz.", "error");
+              return;
+            }
+            
+            setStatusBox(statusCollection, "Kaydediliyor...", "");
+            
+            // Satıcı adını bul
+            const sellerName = collectionSellerPin.options[collectionSellerPin.selectedIndex].text;
+            
+            await addDoc(collectionCol, {
+              sellerPin,
+              sellerName,
+              amount,
+              note,
+              createdAt: new Date().toISOString(),
+              createdBy: window.__SESSION?.pin || "admin"
+            });
+            
+            // Formu temizle
+            collectionSellerPin.value = "";
+            collectionAmount.value = "";
+            collectionNote.value = "";
+            
+            setStatusBox(statusCollection, "Tahsilat kaydedildi.", "ok");
+            loadCommissionSummary();
+            loadPaymentsHistory(); // Tahsilat geçmişini güncelle
+          } catch(e) {
+            setStatusBox(statusCollection, "Hata: " + e.message, "error");
+          }
+        };
+        
+        btnAddCollection && (btnAddCollection.onclick = addCollection);
+
+        // Tahsilat geçmişini yükleme
+        async function loadPaymentsHistory() {
+          try {
+            const snap = await getDocs(query(collectionCol, orderBy("createdAt", "desc")));
+            paymentsHistoryBody.innerHTML = "";
+            
+            if(snap.empty) {
+              paymentsHistoryBody.innerHTML = "<tr><td colspan='5' style='padding:24px;text-align:center;color:var(--muted);'>Henüz tahsilat kaydı yok.</td></tr>";
+              return;
+            }
+            
+            snap.forEach(doc => {
+              const data = doc.data();
+              const date = new Date(data.createdAt).toLocaleDateString('tr-TR');
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.sellerName}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:#28a745;">${data.amount.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.note || ""}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                  <button onclick="deletePayment('${doc.id}')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;">SİL</button>
+                </td>
+              `;
+              paymentsHistoryBody.appendChild(tr);
+            });
+          } catch(e) {
+            console.error("Tahsilat geçmişi yüklenemedi:", e);
+            paymentsHistoryBody.innerHTML = `<tr><td colspan='5' style='padding:24px;text-align:center;color:red;'>Hata: ${e.message}</td></tr>`;
+          }
+        }
+
+        // Tahsilat kaydını silme
+        window.deletePayment = async function(docId) {
+          if(!confirm("Bu tahsilat kaydını silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await deleteDoc(doc(db, "sellerCollections", docId));
+            alert("Tahsilat kaydı silindi.");
+            loadPaymentsHistory();
+            loadCommissionSummary(); // Özeti de güncelle
+          } catch(e) {
+            alert("Hata: " + e.message);
+          }
+        };
+
+        // Komisyonlu satıcının kendi tahsilatlarını yükleme
+        async function loadMyPayments() {
+          try {
+            const sellerPin = window.__SESSION?.pin;
+            const snap = await getDocs(query(collectionCol, where("sellerPin", "==", sellerPin), orderBy("createdAt", "desc")));
+            
+            myPaymentsBody.innerHTML = "";
+            
+            if(snap.empty) {
+              myPaymentsBody.innerHTML = "<tr><td colspan='3' style='padding:24px;text-align:center;color:var(--muted);'>Henüz tahsilat kaydı yok.</td></tr>";
+              return;
+            }
+            
+            snap.forEach(doc => {
+              const data = doc.data();
+              const date = new Date(data.createdAt).toLocaleDateString('tr-TR');
+              
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:#28a745;">${data.amount.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.note || ""}</td>
+              `;
+              myPaymentsBody.appendChild(tr);
+            });
+          } catch(e) {
+            console.error("Tahsilat geçmişi yüklenemedi:", e);
+            myPaymentsBody.innerHTML = `<tr><td colspan='3' style='padding:24px;text-align:center;color:red;'>Hata: ${e.message}</td></tr>`;
+          }
+        }
+
+        // Detaydan komisyon işlemi silme
+        window.deleteCommissionFromDetail = async function(docId, sellerPin) {
+          if(!confirm("Bu işlemi silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await deleteDoc(doc(db, "commissionSales", docId));
+            alert("İşlem silindi.");
+            showSellerDetail(sellerPin); // Detayı yeniden yükle
+            loadCommissionSummary(); // Özeti güncelle
+          } catch(e) {
+            alert("Hata: " + e.message);
+          }
+        };
+
+        // Sayfa yüklendiğinde komisyon verilerini yükle
+        const currentRole = window.__SESSION?.role;
+        if(currentRole === "commission") {
+          loadMyCommissions();
+        } else if(currentRole === "admin") {
+          loadCommissionSummary();
+        }
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
       }catch(e){
