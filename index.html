@@ -673,6 +673,9 @@
             <label class="fieldLabel">Ürün Kodu</label>
             <input id="reqProduct" class="input" placeholder="" />
 
+            <label class="fieldLabel" style="margin-top:14px;">Adet</label>
+            <input id="reqQuantity" class="input" type="number" min="1" value="1" placeholder="Adet giriniz" />
+
             <label class="fieldLabel" style="margin-top:14px;">Üretim Modeli</label>
             <select id="reqProductionType" class="input">
               <option value="">Seçiniz</option>
@@ -696,6 +699,7 @@
                   <tr>
                     <th>Tarih</th>
                     <th>Ürün Kodu</th>
+                    <th>Adet</th>
                     <th>Durum</th>
                     <th>Talep Eden</th>
                     <th>Talebi Karşılayan</th>
@@ -2800,6 +2804,7 @@
             tr.innerHTML = `
               <td>${dtStr}</td>
               <td>${d.product || "-"}</td>
+              <td>${d.quantity || 1}</td>
               <td>${badge}</td>
               <td>${requesterName}</td>
               <td>${producerName}</td>
@@ -3007,6 +3012,7 @@
           setStatusBox(statusReq, "Talep gönderiliyor...", "");
 
           const code = (reqProduct.value || "").trim();
+          const qty = Math.max(1, Number(reqQuantity.value || 1));
           const prodType = reqProductionType?.value || "welder";
           
           if(!code) return setStatusBox(statusReq, "Ürün kodu boş olamaz.", "error");
@@ -3014,6 +3020,7 @@
           try{
             await addDoc(reqCol, {
               product: code,
+              quantity: qty,
               productionType: prodType,
               status: "pending",
               createdAt: serverTimestamp(),
@@ -3022,10 +3029,11 @@
               producedBy: null
             });
 
-            await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: 0, detail: `Üretim talebi oluşturuldu (${prodType === 'laser' ? 'Lazer' : 'Kaynak'})` });
+            await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: qty, detail: `Üretim talebi oluşturuldu (${prodType === 'laser' ? 'Lazer' : 'Kaynak'}) - ${qty} adet` });
 
             setStatusBox(statusReq, "Talep alındı. ✅", "ok");
             reqProduct.value = "";
+            reqQuantity.value = "1";
             playBeep();
           }catch(e){
             setStatusBox(statusReq, "Hata: " + e.message, "error");
