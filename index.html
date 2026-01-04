@@ -796,6 +796,7 @@
                   <tr>
                     <th>Tarih</th>
                     <th>Ürün Kodu</th>
+                    <th>Adet</th>
                     <th>Talep Eden</th>
                     <th>Durum</th>
                     <th>İşlem</th>
@@ -2801,11 +2802,14 @@
             const requesterName = getNameByPin(d.requestedBy);
             const producerName = d.producedBy ? getNameByPin(d.producedBy) : "-";
 
+            const quantity = d.quantity || 1;
+            const quantityStyle = quantity > 1 ? 'color:#dc3545;font-weight:bold;' : '';
+            
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${dtStr}</td>
               <td>${d.product || "-"}</td>
-              <td>${d.quantity || 1}</td>
+              <td style="${quantityStyle}">${quantity}</td>
               <td>${badge}</td>
               <td>${requesterName}</td>
               <td>${producerName}</td>
@@ -3701,10 +3705,14 @@
               
               const requesterName = getNameByPin(d.requestedBy);
               
+              const quantity = d.quantity || 1;
+              const quantityStyle = quantity > 1 ? 'color:#dc3545;font-weight:bold;' : '';
+              
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dateStr}</td>
                 <td>${d.product || "-"}</td>
+                <td style="${quantityStyle}">${quantity}</td>
                 <td>${requesterName}</td>
                 <td>${statusBadge}</td>
                 <td>${actionBtn}</td>
