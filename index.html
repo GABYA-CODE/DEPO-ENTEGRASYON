@@ -1610,28 +1610,6 @@
             </div>
           </div>
 
-          <div class="card" style="margin-top:14px;">
-            
-            <div id="commissionSummaryWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);margin-top:16px;">
-              <table style="width:100%;border-collapse:collapse;">
-                <thead>
-                  <tr style="background:var(--panel1);position:sticky;top:0;">
-                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SATICI</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM GELİR</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TOPLAM GİDER</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">NET TUTAR</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SATICI PAYI (%20)</th>
-                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">YÖNETİCİ HAK EDİŞ (%80)</th>
-                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
-                  </tr>
-                </thead>
-                <tbody id="commissionSummaryBody">
-                  <tr><td colspan="7" style="padding:24px;text-align:center;color:var(--muted);">Komisyon verileri yükleniyor...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
           <div class="card" id="sellerDetailSection" style="margin-top:14px;display:none;">
             <h3 style="margin-top:0;display:flex;justify-content:space-between;align-items:center;">
               <span id="sellerDetailName">Satıcı Detayları</span>
@@ -1723,6 +1701,9 @@
                 <button class="searchBtn" id="btnLogDecrease" type="button" style="font-size:13px;padding:10px;">ADET AZALT</button>
                 <button class="searchBtn" id="btnLogMaterial" type="button" style="font-size:13px;padding:10px;">MALZEME TALEBİ</button>
                 <button class="searchBtn" id="btnLogProduction" type="button" style="font-size:13px;padding:10px;">ÜRETİM</button>
+                <button class="searchBtn" id="btnLogAccounts" type="button" style="font-size:13px;padding:10px;">CARİ HESAPLAR</button>
+                <button class="searchBtn" id="btnLogPayments" type="button" style="font-size:13px;padding:10px;">PERSONEL ÖDEMELERİ</button>
+                <button class="searchBtn" id="btnLogCommission" type="button" style="font-size:13px;padding:10px;">KOMİSYON</button>
                 <button class="searchBtn" id="btnLogAllActions" type="button" style="font-size:13px;padding:10px;">TÜM İŞLEMLER</button>
               </div>
             </div>
@@ -1740,7 +1721,7 @@
             </div>
 
             <div class="adminRow">
-              <input id="logLimit" class="input" type="number" min="10" max="500" value="100" style="margin:0;" />
+              <input id="logLimit" class="input" type="number" min="10" max="10000" value="1000" style="margin:0;" />
               <button class="searchBtn" id="btnLoadLogs" type="button">LOG YÜKLE</button>
             </div>
 
@@ -2112,6 +2093,9 @@
     const btnLogDecrease = document.getElementById("btnLogDecrease");
     const btnLogMaterial = document.getElementById("btnLogMaterial");
     const btnLogProduction = document.getElementById("btnLogProduction");
+    const btnLogAccounts = document.getElementById("btnLogAccounts");
+    const btnLogPayments = document.getElementById("btnLogPayments");
+    const btnLogCommission = document.getElementById("btnLogCommission");
     const btnLogAllActions = document.getElementById("btnLogAllActions");
     const btnLogAdmin = document.getElementById("btnLogAdmin");
     const btnLogPacker = document.getElementById("btnLogPacker");
@@ -2219,11 +2203,16 @@
         "DECREASE_QTY": "ADET AZALT",
         "REMOVE_PRODUCT": "ÜRÜN ÇIKAR",
         "PRODUCTION_REQUEST": "ÜRETİM TALEBİ",
+        "PRODUCTION_REQUEST_DELETE": "ÜRETİM TALEBİ SİLİNDİ",
         "FULFILL_REQUESTS": "TALEPLERİ KARŞILA",
         "MATERIAL_REQUEST": "MALZEME TALEBİ",
         "MATERIAL_STATUS_UPDATE": "MALZEME DURUM GÜNCELLENMESİ",
         "SETUP": "KURULUM",
-        "PRODUCTION_COMPLETED": "ÜRETİM TAMAMLANDI"
+        "PRODUCTION_COMPLETED": "ÜRETİM TAMAMLANDI",
+        "ACCOUNT_TRANSACTION": "CARİ HESAP İŞLEMİ",
+        "PAYMENT_RECORD": "PERSONEL ÖDEMESİ",
+        "COMMISSION_TRANSACTION": "KOMİSYON İŞLEMİ",
+        "COMMISSION_COLLECTION": "BAYİ TAHSİLATI"
       };
       return translations[action] || action;
     }
@@ -3449,7 +3438,7 @@
           currentLogRoleFilter = roleFilter;
 
           // Action filter butonlarını güncelle
-          [btnLogPut, btnLogClear, btnLogDecrease, btnLogMaterial, btnLogProduction, btnLogAllActions].forEach(btn => {
+          [btnLogPut, btnLogClear, btnLogDecrease, btnLogMaterial, btnLogProduction, btnLogAccounts, btnLogPayments, btnLogCommission, btnLogAllActions].forEach(btn => {
             btn && btn.classList.remove('active');
           });
           // Role filter butonlarını güncelle
@@ -3462,6 +3451,9 @@
           else if(actionFilter === 'decrease') btnLogDecrease?.classList.add('active');
           else if(actionFilter === 'material') btnLogMaterial?.classList.add('active');
           else if(actionFilter === 'production') btnLogProduction?.classList.add('active');
+          else if(actionFilter === 'accounts') btnLogAccounts?.classList.add('active');
+          else if(actionFilter === 'payments') btnLogPayments?.classList.add('active');
+          else if(actionFilter === 'commission') btnLogCommission?.classList.add('active');
           else btnLogAllActions?.classList.add('active');
 
           if(roleFilter === 'admin') btnLogAdmin?.classList.add('active');
@@ -3471,7 +3463,7 @@
           else if(roleFilter === 'purchase') btnLogPurchase?.classList.add('active');
           else btnLogAllRoles?.classList.add('active');
 
-          const lim = Math.max(10, Math.min(500, Number(logLimit.value || 100)));
+          const lim = Math.max(10, Math.min(10000, Number(logLimit.value || 1000)));
 
           try{
             const ql = query(logsCol, orderBy("ts","desc"), limit(lim));
@@ -3495,7 +3487,10 @@
                 else if(actionFilter === 'clear' && !['CLEAR_SHELF', 'REMOVE_PRODUCT_ALL', 'REMOVE_PRODUCT'].includes(action)) passActionFilter = false;
                 else if(actionFilter === 'decrease' && action !== 'DECREASE_QTY') passActionFilter = false;
                 else if(actionFilter === 'material' && !['MATERIAL_REQUEST', 'MATERIAL_STATUS_UPDATE'].includes(action)) passActionFilter = false;
-                else if(actionFilter === 'production' && !['PRODUCTION_REQUEST', 'PRODUCTION_COMPLETED', 'FULFILL_REQUESTS'].includes(action)) passActionFilter = false;
+                else if(actionFilter === 'production' && !['PRODUCTION_REQUEST', 'PRODUCTION_REQUEST_DELETE', 'PRODUCTION_COMPLETED', 'FULFILL_REQUESTS'].includes(action)) passActionFilter = false;
+                else if(actionFilter === 'accounts' && action !== 'ACCOUNT_TRANSACTION') passActionFilter = false;
+                else if(actionFilter === 'payments' && action !== 'PAYMENT_RECORD') passActionFilter = false;
+                else if(actionFilter === 'commission' && !['COMMISSION_TRANSACTION', 'COMMISSION_COLLECTION'].includes(action)) passActionFilter = false;
               }
 
               // Role filter
@@ -3540,7 +3535,10 @@
                               actionFilter === 'clear' ? 'Raf Boşalt' : 
                               actionFilter === 'decrease' ? 'Adet Azalt' : 
                               actionFilter === 'material' ? 'Malzeme' : 
-                              actionFilter === 'production' ? 'Üretim' : 'Tüm';
+                              actionFilter === 'production' ? 'Üretim' : 
+                              actionFilter === 'accounts' ? 'Cari Hesaplar' : 
+                              actionFilter === 'payments' ? 'Personel Ödemeleri' : 
+                              actionFilter === 'commission' ? 'Komisyon' : 'Tüm';
             const roleText = roleFilter === 'admin' ? 'Yönetici' : 
                             roleFilter === 'packer' ? 'Paketçi' : 
                             roleFilter === 'stower' ? 'Raf Dizen' : 
@@ -3559,6 +3557,9 @@
         btnLogDecrease && (btnLogDecrease.onclick = () => loadLogs('decrease', currentLogRoleFilter));
         btnLogMaterial && (btnLogMaterial.onclick = () => loadLogs('material', currentLogRoleFilter));
         btnLogProduction && (btnLogProduction.onclick = () => loadLogs('production', currentLogRoleFilter));
+        btnLogAccounts && (btnLogAccounts.onclick = () => loadLogs('accounts', currentLogRoleFilter));
+        btnLogPayments && (btnLogPayments.onclick = () => loadLogs('payments', currentLogRoleFilter));
+        btnLogCommission && (btnLogCommission.onclick = () => loadLogs('commission', currentLogRoleFilter));
         btnLogAllActions && (btnLogAllActions.onclick = () => loadLogs('all', currentLogRoleFilter));
         
         btnLogAdmin && (btnLogAdmin.onclick = () => loadLogs(currentLogActionFilter, 'admin'));
@@ -4631,6 +4632,16 @@
               createdAt: serverTimestamp(),
               createdBy: window.__SESSION?.pin || "admin"
             });
+            
+            // Log kaydı ekle
+            const paymentTypeText = type === "salary" ? "Maaş" : "Avans";
+            await writeLog({ 
+              action: "PAYMENT_RECORD", 
+              shelf: "-", 
+              product: personnel.name, 
+              qty: 0, 
+              detail: `${paymentTypeText} Ödeme: ${amount} TL - ${note || '-'}`
+            });
 
             setStatusBox(statusPayment, "Ödeme kaydı başarıyla eklendi.", "ok");
             
@@ -4855,6 +4866,18 @@
             
             setStatusBox(statusAccount, "Kaydediliyor...", "");
             await addDoc(accountCol, transactionData);
+            
+            // Log kaydı ekle
+            const logDetail = transactionType === "purchase" 
+              ? `Mal Alımı: ${itemName} (${quantity} adet) - ${invoiceAmount} TL`
+              : `Ödeme: ${transactionData.paymentAmount} TL`;
+            await writeLog({ 
+              action: "ACCOUNT_TRANSACTION", 
+              shelf: "-", 
+              product: companyName, 
+              qty: 0, 
+              detail: logDetail
+            });
             
             // Formu temizle
             accountCompanyName.value = "";
@@ -5127,6 +5150,16 @@
             });
             
             console.log("Document saved successfully");
+            
+            // Log kaydı ekle
+            const transactionTypeText = transactionType === "income" ? "Gelir" : "Gider";
+            await writeLog({ 
+              action: "COMMISSION_TRANSACTION", 
+              shelf: "-", 
+              product: sellerName, 
+              qty: 0, 
+              detail: `${transactionTypeText}: ${amount} TL - ${note || '-'}`
+            });
             
             // Formu temizle
             commissionTransactionType.value = "income";
@@ -5480,6 +5513,15 @@
               note,
               createdAt: new Date().toISOString(),
               createdBy: window.__SESSION?.pin || "admin"
+            });
+            
+            // Log kaydı ekle
+            await writeLog({ 
+              action: "COMMISSION_COLLECTION", 
+              shelf: "-", 
+              product: sellerName, 
+              qty: 0, 
+              detail: `Tahsilat: ${amount} TL - ${note || '-'}`
             });
             
             // Formu temizle
