@@ -1233,7 +1233,7 @@
             <h4 style="margin:0 0 12px 0;color:var(--text);">Hak Ediş Durumu</h4>
             
             <div id="commissionSummarySection" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:20px;border-radius:8px;margin-bottom:24px;">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
                 <div>
                   <div style="font-size:13px;opacity:0.9;">Toplam Gelir</div>
                   <div style="font-size:24px;font-weight:900;" id="myTotalIncome">0 ₺</div>
@@ -1243,12 +1243,26 @@
                   <div style="font-size:24px;font-weight:900;" id="myTotalExpense">0 ₺</div>
                 </div>
                 <div>
-                  <div style="font-size:13px;opacity:0.9;">Benim Net Payım</div>
-                  <div style="font-size:24px;font-weight:900;" id="myNetAmount">0 ₺</div>
-                </div>
-                <div>
                   <div style="font-size:13px;opacity:0.9;">Benim Payım (Gelir × %20)</div>
                   <div style="font-size:28px;font-weight:900;color:#fbbf24;" id="myCommission">0 ₺</div>
+                </div>
+                <div>
+                  <div style="font-size:13px;opacity:0.9;">Şirkete Ödemem</div>
+                  <div style="font-size:24px;font-weight:900;color:#ef4444;" id="myCompanyPayment">0 ₺</div>
+                </div>
+                <div style="grid-column:span 2;">
+                  <div style="font-size:13px;opacity:0.9;">Esnaf Vergi Muafiyeti (1.900.000 ₺ Sınır)</div>
+                  <div style="display:flex;gap:16px;align-items:center;margin-top:8px;">
+                    <div>
+                      <div style="font-size:12px;opacity:0.8;">Kullanılan</div>
+                      <div style="font-size:20px;font-weight:900;" id="myTaxUsed">0 ₺</div>
+                    </div>
+                    <div style="font-size:24px;opacity:0.5;">→</div>
+                    <div>
+                      <div style="font-size:12px;opacity:0.8;">Kalan</div>
+                      <div style="font-size:24px;font-weight:900;color:#10b981;" id="myTaxRemaining">1.900.000 ₺</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1322,20 +1336,22 @@
           <div class="sectionTitle">Satış Özeti</div>
           
           <div class="card">
-            <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+            <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
               <thead style="background:var(--card);">
                 <tr>
-                  <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">SATICI</th>
-                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">TOPLAM GELİR</th>
-                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">TOPLAM GİDER</th>
-                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">ŞİRKET BRÜT (%80)</th>
-                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">SATICI PAYI (%20)</th>
-                  <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);">ŞİRKET NET</th>
-                  <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);">İŞLEM</th>
+                  <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);font-size:12px;">SATICI</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GELİR</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GİDER</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET BRÜT (%80)</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">SATICI (%20)</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKETE ÖDEME</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">VERGI MUAFİYETİ KALAN</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET NET</th>
+                  <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);font-size:12px;">İŞLEM</th>
                 </tr>
               </thead>
               <tbody id="commissionSummaryBody">
-                <tr><td colspan="7" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
+                <tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
               </tbody>
             </table>
           </div>
@@ -5207,15 +5223,38 @@
             // Tarihe göre sırala (client-side)
             transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
-            // Satıcı payı sadece gelirden hesaplanır (gider satıcıyı etkilemez)
-            const sellerShare = totalIncome * 0.20;
-            const companyGrossShare = totalIncome * 0.80;
-            const companyNetShare = companyGrossShare - totalExpense;
+            // Hesaplamalar
+            const sellerShare = totalIncome * 0.20; // Satıcı payı (gelirin %20'si)
+            const companyGrossShare = totalIncome * 0.80; // Şirket brüt payı (gelirin %80'i)
+            const companyPayment = companyGrossShare - totalExpense; // Şirkete ödenecek tutar (brüt - gider)
+            
+            // Tahsilatları yükle (async)
+            const collectionSnap = await getDocs(query(collectionCol, where("sellerPin", "==", sellerPin)));
+            let totalCollections = 0;
+            collectionSnap.forEach(doc => {
+              totalCollections += doc.data().amount || 0;
+            });
+            
+            // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
+            const TAX_EXEMPTION_LIMIT = 1900000;
+            const taxUsed = totalIncome; // Toplam gelirler vergi muafiyetinden düşer
+            const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed);
             
             myTotalIncome.textContent = totalIncome.toLocaleString('tr-TR') + " ₺";
             myTotalExpense.textContent = totalExpense.toLocaleString('tr-TR') + " ₺ (Şirket Üstlenir)";
-            myNetAmount.textContent = sellerShare.toLocaleString('tr-TR') + " ₺";
             myCommission.textContent = sellerShare.toLocaleString('tr-TR') + " ₺";
+            
+            // Yeni alanlar
+            const myCompanyPayment = document.getElementById('myCompanyPayment');
+            const myTaxUsed = document.getElementById('myTaxUsed');
+            const myTaxRemaining = document.getElementById('myTaxRemaining');
+            
+            if(myCompanyPayment) myCompanyPayment.textContent = companyPayment.toLocaleString('tr-TR') + " ₺";
+            if(myTaxUsed) myTaxUsed.textContent = taxUsed.toLocaleString('tr-TR') + " ₺";
+            if(myTaxRemaining) {
+              myTaxRemaining.textContent = taxRemaining.toLocaleString('tr-TR') + " ₺";
+              myTaxRemaining.style.color = taxRemaining > 0 ? "#10b981" : "#ef4444";
+            }
             
             console.log("Calling displayMyCommissions with", transactions.length, "transactions");
             displayMyCommissions(transactions, "all");
@@ -5350,35 +5389,48 @@
             commissionSummaryBody.innerHTML = "";
             
             if(Object.keys(sellerData).length === 0) {
-              commissionSummaryBody.innerHTML = "<tr><td colspan='7' style='padding:24px;text-align:center;color:var(--muted);'>Henüz komisyon verisi yok.</td></tr>";
+              commissionSummaryBody.innerHTML = "<tr><td colspan='9' style='padding:24px;text-align:center;color:var(--muted);'>Henüz komisyon verisi yok.</td></tr>";
               return;
             }
             
+            const TAX_EXEMPTION_LIMIT = 1900000;
+            
             for(const [pin, data] of Object.entries(sellerData)) {
-              // Satıcı payı = Gelir * %20 (giderden etkilenmez)
-              // Şirket brüt payı = Gelir * %80
-              // Şirket net payı = Brüt pay - Gider - Tahsilat
-              const sellerShare = data.income * 0.20;
-              const companyGrossShare = data.income * 0.80;
-              const companyNetBeforeCollection = companyGrossShare - data.expense;
-              const companyFinalShare = companyNetBeforeCollection - data.collections;
+              // Hesaplamalar
+              const sellerShare = data.income * 0.20; // Satıcı payı
+              const companyGrossShare = data.income * 0.80; // Şirket brüt payı
+              const companyPayment = companyGrossShare - data.expense; // Şirkete ödenecek tutar
+              
+              // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
+              const taxUsed = data.income; // Toplam gelirler
+              const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed); // Kalan muafiyet
+              
+              // Şirket net (tahsilat düştükten sonra)
+              const companyFinalShare = companyPayment - data.collections;
               totalCompanyShare += companyFinalShare;
               totalCollections += data.collections;
               
+              const taxColor = taxRemaining > 0 ? '#10b981' : '#ef4444';
+              
               const tr = document.createElement("tr");
               tr.innerHTML = `
-                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.name}</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${data.income.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">${data.expense.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${companyGrossShare.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${sellerShare.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;">
-                  <div style="color:blue;font-weight:bold;">${companyNetBeforeCollection.toLocaleString('tr-TR')} ₺</div>
-                  ${data.collections > 0 ? `<div style="color:red;font-size:12px;margin-top:4px;">- ${data.collections.toLocaleString('tr-TR')} ₺ (tahsilat)</div>` : ''}
-                  ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:13px;margin-top:2px;font-weight:bold;">${companyFinalShare.toLocaleString('tr-TR')} ₺ (kalan)</div>` : ''}
+                <td style="padding:10px;border-bottom:1px solid var(--border);">${data.name}</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${data.income.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${data.expense.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${companyGrossShare.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${sellerShare.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:#ef4444;font-weight:bold;">${companyPayment.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
+                  <div style="font-size:11px;color:#666;margin-bottom:2px;">Kullanılan: ${taxUsed.toLocaleString('tr-TR')} ₺</div>
+                  <div style="font-weight:bold;color:${taxColor};">${taxRemaining.toLocaleString('tr-TR')} ₺</div>
                 </td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
-                  <button onclick="showSellerDetail('${pin}')" style="padding:8px 14px;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">DETAY</button>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
+                  <div style="color:blue;font-weight:bold;">${companyPayment.toLocaleString('tr-TR')} ₺</div>
+                  ${data.collections > 0 ? `<div style="color:red;font-size:11px;margin-top:2px;">- ${data.collections.toLocaleString('tr-TR')} ₺</div>` : ''}
+                  ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:12px;margin-top:2px;font-weight:bold;">${companyFinalShare.toLocaleString('tr-TR')} ₺</div>` : ''}
+                </td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:center;">
+                  <button onclick="showSellerDetail('${pin}')" style="padding:6px 12px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;">DETAY</button>
                 </td>
               `;
               commissionSummaryBody.appendChild(tr);
@@ -5389,7 +5441,7 @@
             totalTr.style.background = "#e3f2fd";
             totalTr.style.fontWeight = "bold";
             totalTr.innerHTML = `
-              <td colspan="5" style="padding:16px;text-align:right;font-size:16px;">
+              <td colspan="7" style="padding:16px;text-align:right;font-size:16px;">
                 <div>TOPLAM ŞİRKET HAK EDİŞİ</div>
                 ${totalCollections > 0 ? `<div style="color:red;font-size:14px;margin-top:4px;">- ${totalCollections.toLocaleString('tr-TR')} ₺ (tahsilatlar)</div>` : ''}
               </td>
