@@ -461,13 +461,18 @@
 <body>
 
   <!-- LOGIN -->
-  <div class="center" id="loginView">
+  <div class="center" id="loginView" style="display:none;">
     <div class="loginCard">
       <h1 class="title">Depo Paneli</h1>
       <div class="subtitle">Giriş</div>
 
       <div class="fieldLabel">Şifre</div>
       <input id="pwInput" class="input" type="password" placeholder="Şifreyi girin" />
+
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+        <input type="checkbox" id="rememberMe" style="width:auto;cursor:pointer;" />
+        <label for="rememberMe" style="cursor:pointer;color:var(--muted);font-size:14px;">Beni Hatırla</label>
+      </div>
 
       <button class="btn" id="loginBtn" type="button">GİRİŞ YAP</button>
 
@@ -658,6 +663,7 @@
     const loginBtn  = document.getElementById("loginBtn");
     const loginNote = document.getElementById("loginNote");
     const roleLine  = document.getElementById("roleLine");
+    const rememberMe = document.getElementById("rememberMe");
 
     function setLoginNote(msg, type){
       loginNote.className = "note" + (type ? " " + type : "");
@@ -672,7 +678,12 @@
     function showLogin(){
       appView.style.display="none";
       loginView.style.display="flex";
-      pwInput.value="";
+      
+      // "Beni Hatırla" işaretli değilse şifreyi temizle
+      if(!rememberMe || !rememberMe.checked) {
+        pwInput.value="";
+      }
+      
       setLoginNote("Sadece yetkili kullanıcılar erişebilir.", "");
       window.__SESSION = { role: null, pin: null };
     }
@@ -694,6 +705,13 @@
 
       window.__SESSION = { role, pin: v };
 
+      // "Beni Hatırla" işaretliyse localStorage'a kaydet
+      if(rememberMe && rememberMe.checked) {
+        localStorage.setItem('rememberedPin', v);
+      } else {
+        localStorage.removeItem('rememberedPin');
+      }
+
       setLoginNote("Giriş başarılı.", "ok");
       showApp();
 
@@ -710,7 +728,16 @@
     loginBtn.addEventListener("click", doLogin);
     pwInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") doLogin(); });
 
-    showLogin();
+    // Sayfa yüklenirken kaydedilmiş şifreyi yükle ve otomatik giriş yap
+    const rememberedPin = localStorage.getItem('rememberedPin');
+    if(rememberedPin) {
+      pwInput.value = rememberedPin;
+      if(rememberMe) rememberMe.checked = true;
+      // Otomatik giriş yap
+      setTimeout(() => doLogin(), 100);
+    } else {
+      showLogin();
+    }
   </script>
 
   <!-- FIREBASE + UYGULAMA (module) -->
