@@ -1317,7 +1317,7 @@
             </div>
 
             <h4 style="margin:24px 0 12px 0;color:var(--text);">Tahsilat Geçmişi</h4>
-            <div id="myPaymentsWrap" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+            <div id="myPaymentsWrap" style="max-height:400px;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
               <table style="width:100%;border-collapse:collapse;">
                 <thead>
                   <tr style="background:var(--panel1);position:sticky;top:0;">
@@ -1339,47 +1339,51 @@
           <div class="sectionTitle">Satış Özeti</div>
           
           <div class="card">
-            <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
-              <thead style="background:var(--card);">
-                <tr>
-                  <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);font-size:12px;">SATICI</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GELİR</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GİDER</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET BRÜT (%80)</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">SATICI (%20)</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKETE ÖDEME</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">VERGI MUAFİYETİ KALAN</th>
-                  <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET NET</th>
-                  <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);font-size:12px;">İŞLEM</th>
-                </tr>
-              </thead>
-              <tbody id="commissionSummaryBody">
-                <tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
-              </tbody>
-            </table>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
+                <thead style="background:var(--card);">
+                  <tr>
+                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);font-size:12px;">SATICI</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GELİR</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">GİDER</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET BRÜT (%80)</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">SATICI (%20)</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKETE ÖDEME</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">VERGI MUAFİYETİ KALAN</th>
+                    <th style="padding:10px;text-align:right;border-bottom:2px solid var(--border);font-size:12px;">ŞİRKET NET</th>
+                    <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);font-size:12px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="commissionSummaryBody">
+                  <tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card" style="margin-top:24px;">
             <h2>Tahsilat Girişi</h2>
             <p style="color:#666;font-size:14px;margin-top:8px;">Bayilerden yapılan tahsilatları kaydedin. Tahsilatlar şirket hak edişinden düşer.</p>
             
-            <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:12px;margin-top:16px;align-items:end;">
-              <div>
-                <label class="fieldLabel">Satıcı</label>
-                <select id="collectionSellerPin" class="input">
-                  <option value="">Satıcı Seçin</option>
-                </select>
-              </div>
-              <div>
-                <label class="fieldLabel">Tahsilat Tutarı (₺)</label>
-                <input type="number" id="collectionAmount" class="input" placeholder="0.00" step="0.01" />
-              </div>
-              <div>
-                <label class="fieldLabel">Açıklama</label>
-                <input type="text" id="collectionNote" class="input" placeholder="Ödeme açıklaması" />
-              </div>
-              <div>
-                <button id="btnAddCollection" style="padding:12px 24px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">TAHSİLAT KAYDET</button>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:12px;margin-top:16px;align-items:end;min-width:600px;">
+                <div>
+                  <label class="fieldLabel">Satıcı</label>
+                  <select id="collectionSellerPin" class="input">
+                    <option value="">Satıcı Seçin</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel">Tahsilat Tutarı (₺)</label>
+                  <input type="number" id="collectionAmount" class="input" placeholder="0.00" step="0.01" />
+                </div>
+                <div>
+                  <label class="fieldLabel">Açıklama</label>
+                  <input type="text" id="collectionNote" class="input" placeholder="Ödeme açıklaması" />
+                </div>
+                <div>
+                  <button id="btnAddCollection" style="padding:12px 24px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">TAHSİLAT KAYDET</button>
+                </div>
               </div>
             </div>
             <div id="statusCollection" style="margin-top:12px;padding:8px;border-radius:4px;display:none;"></div>
@@ -1435,7 +1439,8 @@
           <!-- Tahsilat Geçmişi -->
           <div class="card" style="margin-top:24px;">
             <h2>Tahsilat Geçmişi</h2>
-            <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table style="width:100%;border-collapse:collapse;margin-top:16px;">
               <thead style="background:var(--card);">
                 <tr>
                   <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);">TARİH</th>
@@ -1449,6 +1454,7 @@
                 <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
