@@ -181,21 +181,22 @@
     }
     .tab{
       flex:1;
-      padding:16px 10px;
+      padding:12px 8px;
       text-align:center;
-      font-weight:1000;
-      letter-spacing:1px;
+      font-weight:600;
+      letter-spacing:0.3px;
       color:var(--muted);
       cursor:pointer;
       user-select:none;
-      font-size:18px;
-      border-right:1px solid var(--border);
+      font-size:13px;
+      border-right:1px solid transparent;
+      transition:all 0.2s ease;
     }
     .tab:last-child{ border-right:0; }
     .tab.active{
-      background:rgba(0,200,83,.14);
+      background:rgba(0,200,83,.06);
       color:#064e3b;
-      box-shadow: inset 0 -3px 0 rgba(0,200,83,.55);
+      box-shadow: inset 0 -2px 0 rgba(0,200,83,.4);
     }
     #logoutBtn:hover{
       background:rgba(239,68,68,.08);
@@ -521,15 +522,16 @@
   <div class="appWrap" id="appView">
     <div class="appPanel">
       <div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:0 18px;">
-        <button id="logoutBtn" style="background:none;border:none;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;" title="Çıkış Yap">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#64748b;">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
+        <button id="logoutBtn" style="background:none;border:none;cursor:pointer;padding:6px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;gap:2px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#64748b;">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <polyline points="17 11 19 13 23 9"></polyline>
           </svg>
+          <span style="font-size:9px;color:#64748b;font-weight:600;letter-spacing:0.3px;">ROL DEĞİŞTİR</span>
         </button>
         <h1 class="appHeader" style="margin:0;text-align:center;">GABYA HOME</h1>
-        <div style="width:44px;"></div>
+        <div style="width:80px;"></div>
       </div>
       <div class="roleLine" id="roleLine"></div>
 
@@ -554,7 +556,7 @@
         <div class="tab" id="tabPayments">PERSONEL ÖDEMELERİ</div>
         <div class="tab" id="tabAccounts">CARİ HESAPLAR</div>
         <div class="tab" id="tabCommissionSummary">ETSY BAYİLERİ</div>
-        <div class="tab" id="tabCommission">KOMİSYONLU SATIŞLAR</div>
+        <div class="tab" id="tabCommission">HAK EDİŞ</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1233,39 +1235,35 @@
         <!-- VIEW: COMMISSION -->
         <div id="viewCommission" style="display:none;">
           <div class="card">
-            <h3 style="margin-top:0;">ETSY Komisyonlu Satışlar</h3>
-            
-            <h4 style="margin:0 0 12px 0;color:var(--text);">Hak Ediş Durumu</h4>
-            
-            <div id="commissionSummarySection" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:20px;border-radius:8px;margin-bottom:24px;">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
-                <div>
-                  <div style="font-size:13px;opacity:0.9;">Toplam Gelir</div>
-                  <div style="font-size:24px;font-weight:900;" id="myTotalIncome">0 ₺</div>
+            <div id="commissionSummarySection" style="background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.2);border-radius:6px;padding:16px;margin-bottom:20px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Toplam Gelir</div>
+                  <div style="font-size:20px;font-weight:700;color:#1e293b;" id="myTotalIncome">0 ₺</div>
                 </div>
-                <div>
-                  <div style="font-size:13px;opacity:0.9;">Toplam Gider (Şirket Üstlenir)</div>
-                  <div style="font-size:24px;font-weight:900;" id="myTotalExpense">0 ₺</div>
+                <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Toplam Gider</div>
+                  <div style="font-size:20px;font-weight:700;color:#1e293b;" id="myTotalExpense">0 ₺</div>
                 </div>
-                <div>
-                  <div style="font-size:13px;opacity:0.9;">Benim Payım (Gelir × %20)</div>
-                  <div style="font-size:28px;font-weight:900;color:#fbbf24;" id="myCommission">0 ₺</div>
+                <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Payım (%20)</div>
+                  <div style="font-size:22px;font-weight:700;color:#f59e0b;" id="myCommission">0 ₺</div>
                 </div>
-                <div>
-                  <div style="font-size:13px;opacity:0.9;">Şirkete Ödemem</div>
-                  <div style="font-size:24px;font-weight:900;color:#ef4444;" id="myCompanyPayment">0 ₺</div>
+                <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Şirkete Ödemem</div>
+                  <div style="font-size:20px;font-weight:700;color:#ef4444;" id="myCompanyPayment">0 ₺</div>
                 </div>
-                <div style="grid-column:span 2;">
-                  <div style="font-size:13px;opacity:0.9;">Esnaf Vergi Muafiyeti (1.900.000 ₺ Sınır)</div>
-                  <div style="display:flex;gap:16px;align-items:center;margin-top:8px;">
+                <div style="grid-column:span 2;padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Vergi Muafiyeti (1.900)</div>
+                  <div style="display:flex;gap:20px;align-items:center;">
                     <div>
-                      <div style="font-size:12px;opacity:0.8;">Kullanılan</div>
-                      <div style="font-size:20px;font-weight:900;" id="myTaxUsed">0 ₺</div>
+                      <div style="font-size:10px;color:#94a3b8;margin-bottom:2px;">Kullanılan</div>
+                      <div style="font-size:16px;font-weight:700;color:#1e293b;" id="myTaxUsed">0 ₺</div>
                     </div>
-                    <div style="font-size:24px;opacity:0.5;">→</div>
+                    <div style="font-size:18px;color:#cbd5e1;">→</div>
                     <div>
-                      <div style="font-size:12px;opacity:0.8;">Kalan</div>
-                      <div style="font-size:24px;font-weight:900;color:#10b981;" id="myTaxRemaining">1.900.000 ₺</div>
+                      <div style="font-size:10px;color:#94a3b8;margin-bottom:2px;">Kalan</div>
+                      <div style="font-size:16px;font-weight:700;color:#10b981;" id="myTaxRemaining">1.900.000 ₺</div>
                     </div>
                   </div>
                 </div>
@@ -1273,7 +1271,7 @@
             </div>
 
             <div id="commissionFormSection" style="margin-bottom:24px;">
-              <h4 style="margin:0 0 12px 0;color:var(--text);">Yeni İşlem Ekle</h4>
+              <h3 style="margin:0 0 12px 0;color:var(--text);font-size:18px;font-weight:700;">Yeni İşlem Ekle</h3>
               <label class="fieldLabel">İşlem Tipi</label>
               <select id="commissionTransactionType" class="input">
                 <option value="income">Gelir (Satış)</option>
@@ -1291,7 +1289,7 @@
               <div class="statusBox" id="statusCommission" style="display:none;margin-top:12px;"></div>
             </div>
 
-            <h4 style="margin:0 0 12px 0;color:var(--text);">İşlem Geçmişi</h4>
+            <h3 style="margin:0 0 12px 0;color:var(--text);font-size:18px;font-weight:700;">İşlem Geçmişi</h3>
             
             <div style="margin-bottom:12px;">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
@@ -1574,7 +1572,7 @@
                   </tr>
                   
                   <tr style="background:rgba(147,51,234,0.05);">
-                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#9333ea;border-bottom:1px solid var(--border);">KOMİSYONLU SATIŞ (ETSY)</td>
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#9333ea;border-bottom:1px solid var(--border);">ETSY SATIŞLARI</td>
                   </tr>
                   <tr>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
@@ -1874,7 +1872,7 @@
       if(role==="stower") return `<span class="badge b-stower">RAF DİZEN</span>`;
       if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
       if(role==="purchase") return `<span class="badge b-admin">SATIN ALMA</span>`;
-      if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">KOMİSYONLU SATIŞ</span>`;
+      if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">ETSY SATIŞLARI</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -1901,7 +1899,22 @@
 
       if(roleLine){
         const userName = getNameByPin(v);
-        roleLine.innerHTML = `${roleBadge(role)} | ${userName}`;
+        if(role === "commission") {
+          // ETSY satıcıları için özel görünüm
+          roleLine.innerHTML = `
+            <span style="display:inline-flex;align-items:center;gap:8px;">
+              <svg width="24" height="24" viewBox="0 0 100 100" style="vertical-align:middle;">
+                <rect width="100" height="100" rx="15" fill="#F1641E"/>
+                <text x="50" y="70" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">E</text>
+              </svg>
+              <span style="font-weight:600;">Seller</span>
+              <span style="opacity:0.6;">|</span>
+              <span>${userName}</span>
+            </span>
+          `;
+        } else {
+          roleLine.innerHTML = `${roleBadge(role)} | ${userName}`;
+        }
       }
 
       if (window.startFirebase) window.startFirebase();
@@ -2580,7 +2593,7 @@
         setActiveTab("admin");
       }else if(r==="commission"){
         tabCommission.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr";
+        tabbar.style.display="none"; // Tab bar'ı gizle
         setActiveTab("commission");
       }else{
         tabbar.style.gridTemplateColumns = "1fr";
@@ -2638,7 +2651,12 @@
         tabCommission && (tabCommission.onclick = ()=>setActiveTab("commission"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
-        logoutBtn.onclick = ()=>location.reload();
+        logoutBtn.onclick = ()=>{
+          // Session ve localStorage temizle, giriş sayfasına yönlendir
+          window.__SESSION = { role: null, pin: null };
+          localStorage.removeItem('rememberedPin');
+          location.reload();
+        };
 
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
@@ -5159,7 +5177,7 @@
         loadAccountTransactions();
 
         // ============================
-        // KOMİSYONLU SATIŞLAR FONKSİYONLARI
+        // ETSY SATIŞLARI FONKSİYONLARI
         // ============================
 
         // Komisyon işlemi ekleme
@@ -5264,22 +5282,22 @@
             
             // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
             const TAX_EXEMPTION_LIMIT = 1900000;
-            const taxUsed = totalIncome; // Toplam gelirler vergi muafiyetinden düşer
+            const taxUsed = totalIncome / 0.96; // Komisyonlu satış geliri 0.96'ya bölünerek vergi muafiyetinden düşer
             const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed);
             
-            myTotalIncome.textContent = totalIncome.toLocaleString('tr-TR') + " ₺";
-            myTotalExpense.textContent = totalExpense.toLocaleString('tr-TR') + " ₺ (Şirket Üstlenir)";
-            myCommission.textContent = sellerShare.toLocaleString('tr-TR') + " ₺";
+            myTotalIncome.textContent = Math.round(totalIncome).toLocaleString('tr-TR') + " ₺";
+            myTotalExpense.textContent = Math.round(totalExpense).toLocaleString('tr-TR') + " ₺";
+            myCommission.textContent = Math.round(sellerShare).toLocaleString('tr-TR') + " ₺";
             
             // Yeni alanlar
             const myCompanyPayment = document.getElementById('myCompanyPayment');
             const myTaxUsed = document.getElementById('myTaxUsed');
             const myTaxRemaining = document.getElementById('myTaxRemaining');
             
-            if(myCompanyPayment) myCompanyPayment.textContent = companyPayment.toLocaleString('tr-TR') + " ₺";
-            if(myTaxUsed) myTaxUsed.textContent = taxUsed.toLocaleString('tr-TR') + " ₺";
+            if(myCompanyPayment) myCompanyPayment.textContent = Math.round(companyPayment).toLocaleString('tr-TR') + " ₺";
+            if(myTaxUsed) myTaxUsed.textContent = Math.round(taxUsed).toLocaleString('tr-TR') + " ₺";
             if(myTaxRemaining) {
-              myTaxRemaining.textContent = taxRemaining.toLocaleString('tr-TR') + " ₺";
+              myTaxRemaining.textContent = Math.round(taxRemaining).toLocaleString('tr-TR') + " ₺";
               myTaxRemaining.style.color = taxRemaining > 0 ? "#10b981" : "#ef4444";
             }
             
@@ -5311,7 +5329,7 @@
             tr.innerHTML = `
               <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
               <td style="padding:12px;border-bottom:1px solid var(--border);color:${typeColor};font-weight:bold;">${typeText}</td>
-              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${t.amount.toLocaleString('tr-TR')} ₺</td>
+              <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${Math.round(t.amount).toLocaleString('tr-TR')} ₺</td>
               <td style="padding:12px;border-bottom:1px solid var(--border);">${t.note || ""}</td>
               <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
                 <button onclick="deleteCommissionTransaction('${t.id}')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;">SİL</button>
@@ -5429,7 +5447,7 @@
               const companyPayment = companyGrossShare - data.expense; // Şirkete ödenecek tutar
               
               // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
-              const taxUsed = data.income; // Toplam gelirler
+              const taxUsed = data.income / 0.96; // Komisyonlu satış geliri 0.96'ya bölünerek vergi muafiyetinden düşer
               const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed); // Kalan muafiyet
               
               // Şirket net (tahsilat düştükten sonra)
@@ -5442,19 +5460,19 @@
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td style="padding:10px;border-bottom:1px solid var(--border);">${data.name}</td>
-                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${data.income.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${data.expense.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${companyGrossShare.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${sellerShare.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:#ef4444;font-weight:bold;">${companyPayment.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${Math.round(data.income).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">${Math.round(data.expense).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">${Math.round(companyGrossShare).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${Math.round(sellerShare).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:#ef4444;font-weight:bold;">${Math.round(companyPayment).toLocaleString('tr-TR')} ₺</td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
-                  <div style="font-size:11px;color:#666;margin-bottom:2px;">Kullanılan: ${taxUsed.toLocaleString('tr-TR')} ₺</div>
-                  <div style="font-weight:bold;color:${taxColor};">${taxRemaining.toLocaleString('tr-TR')} ₺</div>
+                  <div style="font-size:11px;color:#666;margin-bottom:2px;">Kullanılan: ${Math.round(taxUsed).toLocaleString('tr-TR')} ₺</div>
+                  <div style="font-weight:bold;color:${taxColor};">${Math.round(taxRemaining).toLocaleString('tr-TR')} ₺</div>
                 </td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
-                  <div style="color:blue;font-weight:bold;">${companyPayment.toLocaleString('tr-TR')} ₺</div>
-                  ${data.collections > 0 ? `<div style="color:red;font-size:11px;margin-top:2px;">- ${data.collections.toLocaleString('tr-TR')} ₺</div>` : ''}
-                  ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:12px;margin-top:2px;font-weight:bold;">${companyFinalShare.toLocaleString('tr-TR')} ₺</div>` : ''}
+                  <div style="color:blue;font-weight:bold;">${Math.round(companyPayment).toLocaleString('tr-TR')} ₺</div>
+                  ${data.collections > 0 ? `<div style="color:red;font-size:11px;margin-top:2px;">- ${Math.round(data.collections).toLocaleString('tr-TR')} ₺</div>` : ''}
+                  ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:12px;margin-top:2px;font-weight:bold;">${Math.round(companyFinalShare).toLocaleString('tr-TR')} ₺</div>` : ''}
                 </td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:center;">
                   <button onclick="showSellerDetail('${pin}')" style="padding:6px 12px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;">DETAY</button>
