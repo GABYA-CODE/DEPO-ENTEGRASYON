@@ -557,6 +557,7 @@
         <div class="tab" id="tabAccounts">CARİ HESAPLAR</div>
         <div class="tab" id="tabCommissionSummary">ETSY BAYİLERİ</div>
         <div class="tab" id="tabCommission">HAK EDİŞ</div>
+        <div class="tab" id="tabPlatformPayments">AMAZON & SHOPIFY</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1133,8 +1134,12 @@
 
               <label class="fieldLabel" style="margin-top:12px;">İşlem Tipi</label>
               <select id="accountTransactionType" class="input">
-                <option value="purchase">Mal Alımı (Borç)</option>
+                <option value="purchase">Mal Alımı</option>
                 <option value="payment">Ödeme</option>
+                <option value="refundInvoice" style="display:none;">İade Fatura</option>
+                <option value="cargoInvoice" style="display:none;">Kargo Faturası</option>
+                <option value="customsInvoice" style="display:none;">Gümrük Faturası</option>
+                <option value="refund" style="display:none;">İade</option>
               </select>
 
               <div id="purchaseFields" style="display:block;">
@@ -1246,14 +1251,14 @@
                   <div style="font-size:20px;font-weight:700;color:#1e293b;" id="myTotalExpense">0 ₺</div>
                 </div>
                 <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Payım (%20)</div>
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;" id="myCommissionLabel">Payım (%20)</div>
                   <div style="font-size:22px;font-weight:700;color:#f59e0b;" id="myCommission">0 ₺</div>
                 </div>
                 <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                   <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Şirkete Ödemem</div>
                   <div style="font-size:20px;font-weight:700;color:#ef4444;" id="myCompanyPayment">0 ₺</div>
                 </div>
-                <div style="grid-column:span 2;padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div id="myTaxSection" style="grid-column:span 2;padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                   <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Vergi Muafiyeti (1.900)</div>
                   <div style="display:flex;gap:20px;align-items:center;">
                     <div>
@@ -1454,6 +1459,60 @@
                 <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>
               </tbody>
             </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: PLATFORM PAYMENTS (AMAZON & SHOPIFY) -->
+        <div id="viewPlatformPayments" style="display:none;">
+          <div class="card">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
+              <div>
+                <div class="fieldLabel">Platform</div>
+                <select id="platformPaymentPlatform" class="input">
+                  <option value="">Platform Seçin</option>
+                  <option value="Amazon">Amazon</option>
+                  <option value="Shopify">Shopify</option>
+                </select>
+              </div>
+              
+              <div>
+                <div class="fieldLabel">Tutar (USD)</div>
+                <input id="platformPaymentAmount" class="input" type="number" step="0.01" placeholder="Örn: 1250.50" />
+              </div>
+              
+              <div>
+                <div class="fieldLabel">Tarih</div>
+                <input id="platformPaymentDate" class="input" type="date" />
+              </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div class="fieldLabel">Açıklama (Opsiyonel)</div>
+              <textarea id="platformPaymentNote" class="input" rows="2" placeholder="Örn: Ocak ayı ödemesi, Transfer numarası vb."></textarea>
+            </div>
+
+            <button class="actionBtn" id="btnAddPlatformPayment" type="button">ÖDEME KAYDET</button>
+
+            <div class="statusBox" id="statusPlatformPayment" style="display:none;margin-top:12px;"></div>
+
+            <h4 style="margin-top:24px;margin-bottom:12px;">Ödeme Geçmişi</h4>
+
+            <div style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TARİH</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">PLATFORM</th>
+                    <th style="padding:12px;text-align:right;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">TUTAR (USD)</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">AÇIKLAMA</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="platformPaymentsBody">
+                  <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);">Henüz ödeme kaydı yok.</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1769,6 +1828,7 @@
               </table>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -1978,6 +2038,7 @@
     const tabAccounts= document.getElementById("tabAccounts");
     const tabCommissionSummary= document.getElementById("tabCommissionSummary");
     const tabCommission= document.getElementById("tabCommission");
+    const tabPlatformPayments= document.getElementById("tabPlatformPayments");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -1996,6 +2057,7 @@
     const viewAccounts= document.getElementById("viewAccounts");
     const viewCommissionSummary= document.getElementById("viewCommissionSummary");
     const viewCommission= document.getElementById("viewCommission");
+    const viewPlatformPayments= document.getElementById("viewPlatformPayments");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -2168,6 +2230,18 @@
     const statusLogs = document.getElementById("statusLogs");
     const logsWrap = document.getElementById("logsWrap");
     const logsBody = document.getElementById("logsBody");
+
+    // Amazon & Shopify Ödemeleri
+    const platformPaymentPlatform = document.getElementById("platformPaymentPlatform");
+    const platformPaymentAmount = document.getElementById("platformPaymentAmount");
+    const platformPaymentDate = document.getElementById("platformPaymentDate");
+    const platformPaymentNote = document.getElementById("platformPaymentNote");
+    const btnAddPlatformPayment = document.getElementById("btnAddPlatformPayment");
+    const statusPlatformPayment = document.getElementById("statusPlatformPayment");
+    const platformPaymentsBody = document.getElementById("platformPaymentsBody");
+    const totalAmazon = document.getElementById("totalAmazon");
+    const totalShopify = document.getElementById("totalShopify");
+    const totalPlatformPayments = document.getElementById("totalPlatformPayments");
 
     const welderCode = document.getElementById("welderCode");
     const welderQty = document.getElementById("welderQty");
@@ -2458,7 +2532,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -2478,6 +2552,7 @@
         viewAccounts && (viewAccounts.style.display="none");
         viewCommissionSummary && (viewCommissionSummary.style.display="none");
         viewCommission && (viewCommission.style.display="none");
+        viewPlatformPayments && (viewPlatformPayments.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -2518,7 +2593,32 @@
         
         setTimeout(()=>{ try{ commissionTransactionType.focus(); }catch(e){} },50); 
       }
-      if(target==="admin"){ tabAdmin?.classList.add("active"); viewAdmin.style.display="block"; setTimeout(()=>{ try{ if(typeof loadCommissionSummary === "function"){ loadCommissionSummary(); } }catch(e){console.error(e);} },100); }
+      if(target==="platformPayments"){ 
+        tabPlatformPayments?.classList.add("active"); 
+        viewPlatformPayments.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof loadPlatformPayments === "function"){ loadPlatformPayments(); }
+            // Bugünün tarihini otomatik doldur
+            if(platformPaymentDate && !platformPaymentDate.value) {
+              const today = new Date();
+              const yyyy = today.getFullYear();
+              const mm = String(today.getMonth() + 1).padStart(2, '0');
+              const dd = String(today.getDate()).padStart(2, '0');
+              platformPaymentDate.value = `${yyyy}-${mm}-${dd}`;
+            }
+          }catch(e){console.error(e);} 
+        },100); 
+      }
+      if(target==="admin"){ 
+        tabAdmin?.classList.add("active"); 
+        viewAdmin.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof loadCommissionSummary === "function"){ loadCommissionSummary(); }
+          }catch(e){console.error(e);} 
+        },100); 
+      }
     }
 
     function setTabsByRole(r){
@@ -2539,6 +2639,7 @@
         [tabAccounts, viewAccounts],
         [tabCommissionSummary, viewCommissionSummary],
         [tabCommission, viewCommission],
+        [tabPlatformPayments, viewPlatformPayments],
         [tabAdmin, viewAdmin]
       ];
 
@@ -2594,8 +2695,9 @@
         tabPayments.style.display="block";
         tabAccounts.style.display="block";
         tabCommissionSummary.style.display="block";
+        tabPlatformPayments.style.display="block";
         tabAdmin.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
         setActiveTab("admin");
       }else if(r==="commission"){
         tabCommission.style.display="block";
@@ -2655,6 +2757,7 @@
         tabAccounts && (tabAccounts.onclick = ()=>setActiveTab("accounts"));
         tabCommissionSummary && (tabCommissionSummary.onclick = ()=>setActiveTab("commissionSummary"));
         tabCommission && (tabCommission.onclick = ()=>setActiveTab("commission"));
+        tabPlatformPayments && (tabPlatformPayments.onclick = ()=>setActiveTab("platformPayments"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>{
@@ -2680,6 +2783,7 @@
         const accountCol = collection(db, "accountTransactions");
         const commissionCol = collection(db, "commissionSales");
         const collectionCol = collection(db, "commissionCollections");
+        const platformPaymentsCol = collection(db, "platformPayments");
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -4866,12 +4970,71 @@
 
         // İşlem tipi değiştiğinde alanları göster/gizle
         accountTransactionType && accountTransactionType.addEventListener("change", (e) => {
+          const isFedex = accountCompanyName.value.trim().toUpperCase() === "FEDEX";
+          
           if(e.target.value === "purchase") {
-            purchaseFields.style.display = "block";
-            paymentFields.style.display = "none";
-          } else {
+            // FEDEX için hiçbir zaman purchase fields gösterme
+            if(isFedex) {
+              purchaseFields.style.display = "none";
+              paymentFields.style.display = "block";
+            } else {
+              purchaseFields.style.display = "block";
+              paymentFields.style.display = "none";
+            }
+          } else if(["payment", "refundInvoice", "cargoInvoice", "customsInvoice", "refund"].includes(e.target.value)) {
             purchaseFields.style.display = "none";
             paymentFields.style.display = "block";
+          }
+        });
+        
+        // Firma adı değiştiğinde FEDEX kontrolü yap
+        accountCompanyName && accountCompanyName.addEventListener("input", (e) => {
+          const companyName = e.target.value.trim().toUpperCase();
+          const refundInvoiceOption = accountTransactionType.querySelector('option[value="refundInvoice"]');
+          const cargoInvoiceOption = accountTransactionType.querySelector('option[value="cargoInvoice"]');
+          const customsInvoiceOption = accountTransactionType.querySelector('option[value="customsInvoice"]');
+          const refundOption = accountTransactionType.querySelector('option[value="refund"]');
+          const purchaseOption = accountTransactionType.querySelector('option[value="purchase"]');
+          const paymentOption = accountTransactionType.querySelector('option[value="payment"]');
+          
+          if(companyName === "FEDEX") {
+            // FEDEX özel seçeneklerini göster
+            if(cargoInvoiceOption) cargoInvoiceOption.style.display = "block";
+            if(customsInvoiceOption) customsInvoiceOption.style.display = "block";
+            if(refundOption) refundOption.style.display = "block";
+            if(paymentOption) paymentOption.style.display = "block";
+            // Normal seçenekleri gizle
+            if(purchaseOption) purchaseOption.style.display = "none";
+            if(refundInvoiceOption) refundInvoiceOption.style.display = "none";
+            
+            // Eğer Mal Alımı seçiliyse, Kargo Faturası'na geç
+            if(accountTransactionType.value === "purchase") {
+              accountTransactionType.value = "cargoInvoice";
+            }
+            
+            // FEDEX yazıldığında mevcut işlem tipine bakılmaksızın purchase fields'ı gizle
+            purchaseFields.style.display = "none";
+            paymentFields.style.display = "block";
+          } else {
+            // Normal firma seçeneklerini göster
+            if(purchaseOption) purchaseOption.style.display = "block";
+            if(paymentOption) paymentOption.style.display = "block";
+            // FEDEX özel seçeneklerini gizle
+            if(cargoInvoiceOption) cargoInvoiceOption.style.display = "none";
+            if(customsInvoiceOption) customsInvoiceOption.style.display = "none";
+            if(refundOption) refundOption.style.display = "none";
+            if(refundInvoiceOption) refundInvoiceOption.style.display = "none";
+            
+            // Eğer FEDEX özel seçeneklerinden biri seçiliyse, Mal Alımı'na döndür
+            if(["cargoInvoice", "customsInvoice", "refund", "refundInvoice"].includes(accountTransactionType.value)) {
+              accountTransactionType.value = "purchase";
+              purchaseFields.style.display = "block";
+              paymentFields.style.display = "none";
+            } else if(accountTransactionType.value === "purchase") {
+              // Normal firma için purchase fields'ı göster
+              purchaseFields.style.display = "block";
+              paymentFields.style.display = "none";
+            }
           }
         });
 
@@ -4897,7 +5060,9 @@
               createdBy: window.__SESSION?.pin || "admin"
             };
             
-            if(transactionType === "purchase") {
+            const isFedex = companyName.toUpperCase() === "FEDEX";
+            
+            if(transactionType === "purchase" && !isFedex) {
               const itemName = accountItemName.value.trim();
               const quantity = accountItemQuantity.value.trim();
               const invoiceAmount = Number(accountInvoiceAmount.value);
@@ -4920,7 +5085,19 @@
               transactionData.itemName = itemName;
               transactionData.quantity = quantity;
               transactionData.invoiceAmount = invoiceAmount;
-            } else {
+            } else if(transactionType === "purchase" && isFedex) {
+              // FEDEX için Mal Alımı seçilse bile sadece tutar alanını kullan
+              const paymentAmount = Number(accountPaymentAmount.value);
+              
+              if(!paymentAmount || paymentAmount <= 0) {
+                setStatusBox(statusAccount, "Tutar geçersiz.", "error");
+                return;
+              }
+              
+              transactionData.invoiceAmount = paymentAmount;
+              transactionData.itemName = "FEDEX İşlemi";
+              transactionData.quantity = "1";
+            } else if(["payment", "refundInvoice", "cargoInvoice", "customsInvoice", "refund"].includes(transactionType)) {
               const paymentAmount = Number(accountPaymentAmount.value);
               
               if(!paymentAmount || paymentAmount <= 0) {
@@ -4935,9 +5112,20 @@
             await addDoc(accountCol, transactionData);
             
             // Log kaydı ekle
-            const logDetail = transactionType === "purchase" 
-              ? `Mal Alımı: ${itemName} (${quantity} adet) - ${invoiceAmount} TL`
-              : `Ödeme: ${transactionData.paymentAmount} TL`;
+            let logDetail;
+            if(transactionType === "purchase") {
+              logDetail = `Mal Alımı: ${transactionData.itemName} (${transactionData.quantity} adet) - ${transactionData.invoiceAmount || transactionData.paymentAmount} TL`;
+            } else if(transactionType === "refundInvoice") {
+              logDetail = `İade Fatura: ${transactionData.paymentAmount} TL`;
+            } else if(transactionType === "cargoInvoice") {
+              logDetail = `Kargo Faturası: ${transactionData.paymentAmount} TL`;
+            } else if(transactionType === "customsInvoice") {
+              logDetail = `Gümrük Faturası: ${transactionData.paymentAmount} TL`;
+            } else if(transactionType === "refund") {
+              logDetail = `İade: ${transactionData.paymentAmount} TL`;
+            } else {
+              logDetail = `Ödeme: ${transactionData.paymentAmount} TL`;
+            }
             await writeLog({ 
               action: "ACCOUNT_TRANSACTION", 
               shelf: "-", 
@@ -4985,7 +5173,11 @@
               
               if(t.transactionType === "purchase") {
                 companyBalances[t.companyName].purchases += t.invoiceAmount || 0;
-              } else {
+              } else if(t.transactionType === "cargoInvoice" || t.transactionType === "customsInvoice") {
+                // FEDEX için Kargo ve Gümrük Faturası → Borç
+                companyBalances[t.companyName].purchases += t.paymentAmount || 0;
+              } else if(["payment", "refundInvoice", "refund"].includes(t.transactionType)) {
+                // Ödeme, İade Fatura ve İade → Alacak
                 companyBalances[t.companyName].payments += t.paymentAmount || 0;
               }
             });
@@ -5039,13 +5231,33 @@
           
           filtered.forEach(t => {
             const tr = document.createElement("tr");
-            const typeText = t.transactionType === "purchase" ? "MAL ALIMI" : "ÖDEME";
-            const amount = t.transactionType === "purchase" 
-              ? `${(t.invoiceAmount || 0).toLocaleString('tr-TR')} ₺`
-              : `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
-            const details = t.transactionType === "purchase"
-              ? `${t.itemName || ""} (${t.quantity || ""})`
-              : "";
+            let typeText, amount, details;
+            
+            if(t.transactionType === "purchase") {
+              typeText = "MAL ALIMI";
+              amount = `${(t.invoiceAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = `${t.itemName || ""} (${t.quantity || ""})`;
+            } else if(t.transactionType === "refundInvoice") {
+              typeText = "İADE FATURA";
+              amount = `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = "";
+            } else if(t.transactionType === "cargoInvoice") {
+              typeText = "KARGO FATURASI";
+              amount = `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = "";
+            } else if(t.transactionType === "customsInvoice") {
+              typeText = "GÜMRÜK FATURASI";
+              amount = `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = "";
+            } else if(t.transactionType === "refund") {
+              typeText = "İADE";
+              amount = `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = "";
+            } else {
+              typeText = "ÖDEME";
+              amount = `${(t.paymentAmount || 0).toLocaleString('tr-TR')} ₺`;
+              details = "";
+            }
             
             tr.innerHTML = `
               <td style="padding:12px;border-bottom:1px solid var(--border);">${new Date(t.transactionDate).toLocaleDateString('tr-TR')}</td>
@@ -5275,8 +5487,10 @@
             transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             // Hesaplamalar
-            const sellerShare = totalIncome * 0.20; // Satıcı payı (gelirin %20'si)
-            const companyGrossShare = totalIncome * 0.80; // Şirket brüt payı (gelirin %80'i)
+            // Ömer Faruk A. (9301) için %10, diğerleri için %20 komisyon
+            const commissionRate = sellerPin === "9301" ? 0.10 : 0.20;
+            const sellerShare = totalIncome * commissionRate; // Satıcı payı
+            const companyGrossShare = totalIncome * (1 - commissionRate); // Şirket brüt payı
             const companyPayment = companyGrossShare - totalExpense; // Şirkete ödenecek tutar (brüt - gider)
             
             // Tahsilatları yükle (async)
@@ -5294,6 +5508,17 @@
             myTotalIncome.textContent = Math.round(totalIncome).toLocaleString('tr-TR') + " ₺";
             myTotalExpense.textContent = Math.round(totalExpense).toLocaleString('tr-TR') + " ₺";
             myCommission.textContent = Math.round(sellerShare).toLocaleString('tr-TR') + " ₺";
+            
+            // Komisyon oranı etiketini güncelle ve vergi muafiyeti alanını ayarla
+            const myCommissionLabel = document.getElementById('myCommissionLabel');
+            const myTaxSection = document.getElementById('myTaxSection');
+            if(sellerPin === "9301") {
+              if(myCommissionLabel) myCommissionLabel.textContent = "Payım (%10)";
+              if(myTaxSection) myTaxSection.style.display = "none"; // Vergi muafiyeti alanını gizle
+            } else {
+              if(myCommissionLabel) myCommissionLabel.textContent = "Payım (%20)";
+              if(myTaxSection) myTaxSection.style.display = "block"; // Vergi muafiyeti alanını göster
+            }
             
             // Yeni alanlar
             const myCompanyPayment = document.getElementById('myCompanyPayment');
@@ -5448,8 +5673,10 @@
             
             for(const [pin, data] of Object.entries(sellerData)) {
               // Hesaplamalar
-              const sellerShare = data.income * 0.20; // Satıcı payı
-              const companyGrossShare = data.income * 0.80; // Şirket brüt payı
+              // Ömer Faruk A. (9301) için %10, diğerleri için %20 komisyon
+              const commissionRate = pin === "9301" ? 0.10 : 0.20;
+              const sellerShare = data.income * commissionRate; // Satıcı payı
+              const companyGrossShare = data.income * (1 - commissionRate); // Şirket brüt payı
               const companyPayment = companyGrossShare - data.expense; // Şirkete ödenecek tutar
               
               // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
@@ -5530,11 +5757,13 @@
               }
             });
             
-            // Satıcı payı = Gelir * %20
-            // Şirket brüt payı = Gelir * %80
+            // Ömer Faruk A. (9301) için %10, diğerleri için %20 komisyon
+            const commissionRate = sellerPin === "9301" ? 0.10 : 0.20;
+            // Satıcı payı = Gelir * komisyon oranı
+            // Şirket brüt payı = Gelir * (1 - komisyon oranı)
             // Şirket net payı = Brüt pay - Gider
-            const sellerShare = totalIncome * 0.20;
-            const companyGrossShare = totalIncome * 0.80;
+            const sellerShare = totalIncome * commissionRate;
+            const companyGrossShare = totalIncome * (1 - commissionRate);
             const companyNetShare = companyGrossShare - totalExpense;
             const sellerName = transactions.length > 0 ? transactions[0].sellerName : "Satıcı";
             
@@ -5742,6 +5971,153 @@
           loadCommissionSummary();
           loadPaymentsHistory();
         }
+
+        // ====== AMAZON & SHOPIFY ÖDEMELERI ======
+        
+        // Platform ödemelerini yükle
+        async function loadPlatformPayments() {
+          try {
+            console.log("🔄 Platform ödemeleri yükleniyor...");
+            const snap = await getDocs(query(platformPaymentsCol, orderBy("paymentDate", "desc")));
+            
+            let totalAmazonAmount = 0;
+            let totalShopifyAmount = 0;
+            const payments = [];
+            
+            snap.forEach(doc => {
+              const data = doc.data();
+              payments.push({ id: doc.id, ...data });
+              
+              if(data.platform === "Amazon") {
+                totalAmazonAmount += data.amount || 0;
+              } else if(data.platform === "Shopify") {
+                totalShopifyAmount += data.amount || 0;
+              }
+            });
+            
+            // Toplamları güncelle
+            if(totalAmazon) totalAmazon.textContent = "$" + totalAmazonAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if(totalShopify) totalShopify.textContent = "$" + totalShopifyAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if(totalPlatformPayments) totalPlatformPayments.textContent = "$" + (totalAmazonAmount + totalShopifyAmount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Tabloyu doldur
+            if(platformPaymentsBody) {
+              if(payments.length === 0) {
+                platformPaymentsBody.innerHTML = "<tr><td colspan='5' style='padding:24px;text-align:center;color:var(--muted);'>Henüz ödeme kaydı yok.</td></tr>";
+              } else {
+                platformPaymentsBody.innerHTML = "";
+                payments.forEach(payment => {
+                  const tr = document.createElement("tr");
+                  const date = payment.paymentDate || "";
+                  const platformColor = payment.platform === "Amazon" ? "#FF9900" : "#96BF48";
+                  
+                  tr.innerHTML = `
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);color:${platformColor};font-weight:bold;">${payment.platform}</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;">$${payment.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">${payment.note || ""}</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                      <button onclick="deletePlatformPayment('${payment.id}')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:11px;">SİL</button>
+                    </td>
+                  `;
+                  platformPaymentsBody.appendChild(tr);
+                });
+              }
+            }
+            
+            console.log("✅ Platform ödemeleri yüklendi");
+          } catch(e) {
+            console.error("❌ Platform ödemeleri yüklenemedi:", e);
+            if(platformPaymentsBody) {
+              platformPaymentsBody.innerHTML = `<tr><td colspan='5' style='padding:24px;text-align:center;color:red;'>Hata: ${e.message}</td></tr>`;
+            }
+          }
+        }
+        
+        // Platform ödemesi ekle
+        btnAddPlatformPayment && (btnAddPlatformPayment.onclick = async () => {
+          try {
+            const platform = platformPaymentPlatform.value.trim();
+            const amount = parseFloat(platformPaymentAmount.value);
+            const date = platformPaymentDate.value;
+            const note = platformPaymentNote.value.trim();
+            
+            if(!platform) {
+              setStatusBox(statusPlatformPayment, "Lütfen platform seçin.", "error");
+              return;
+            }
+            
+            if(!amount || amount <= 0) {
+              setStatusBox(statusPlatformPayment, "Lütfen geçerli bir tutar girin.", "error");
+              return;
+            }
+            
+            if(!date) {
+              setStatusBox(statusPlatformPayment, "Lütfen tarih seçin.", "error");
+              return;
+            }
+            
+            setStatusBox(statusPlatformPayment, "Kaydediliyor...", "info");
+            
+            const paymentData = {
+              platform: platform,
+              amount: amount,
+              paymentDate: date,
+              note: note,
+              createdAt: new Date().toISOString(),
+              createdBy: window.__SESSION?.pin || "unknown"
+            };
+            
+            await addDoc(platformPaymentsCol, paymentData);
+            
+            // Log kaydı
+            await addDoc(logsCol, {
+              timestamp: new Date().toISOString(),
+              action: "platformPayment",
+              pin: window.__SESSION?.pin || "unknown",
+              role: window.__SESSION?.role || "unknown",
+              details: `${platform} - $${amount.toFixed(2)}`
+            });
+            
+            setStatusBox(statusPlatformPayment, "Ödeme kaydedildi.", "ok");
+            
+            // Formu temizle
+            platformPaymentPlatform.value = "";
+            platformPaymentAmount.value = "";
+            platformPaymentDate.value = "";
+            platformPaymentNote.value = "";
+            
+            // Listeyi güncelle
+            loadPlatformPayments();
+            
+          } catch(e) {
+            console.error("Platform ödemesi eklenemedi:", e);
+            setStatusBox(statusPlatformPayment, "Hata: " + e.message, "error");
+          }
+        });
+        
+        // Platform ödemesi sil
+        window.deletePlatformPayment = async function(docId) {
+          if(!confirm("Bu ödeme kaydını silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await deleteDoc(doc(db, "platformPayments", docId));
+            
+            // Log kaydı
+            await addDoc(logsCol, {
+              timestamp: new Date().toISOString(),
+              action: "deletePlatformPayment",
+              pin: window.__SESSION?.pin || "unknown",
+              role: window.__SESSION?.role || "unknown",
+              details: `Payment ID: ${docId}`
+            });
+            
+            alert("Ödeme kaydı silindi.");
+            loadPlatformPayments();
+          } catch(e) {
+            alert("Hata: " + e.message);
+          }
+        };
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
       }catch(e){
