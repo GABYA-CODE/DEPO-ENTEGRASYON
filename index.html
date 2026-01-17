@@ -86,6 +86,44 @@
       border-color:rgba(0,200,83,.55);
       box-shadow:0 0 0 3px rgba(0,200,83,.15);
     }
+    select.input{
+      cursor:pointer;
+      padding-right:30px;
+      position:relative;
+    }
+    .subBox{
+      position:relative;
+      overflow:visible !important;
+    }
+
+    .product-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:6px;
+    }
+    .product-item{
+      padding:10px 16px;
+      border:2px solid var(--border);
+      border-radius:10px;
+      background:var(--panel);
+      cursor:pointer;
+      font-weight:800;
+      font-size:16px;
+      color:var(--text);
+      transition:all 0.2s ease;
+      user-select:none;
+    }
+    .product-item:hover{
+      border-color:rgba(0,200,83,.4);
+      background:rgba(0,200,83,.05);
+    }
+    .product-item.selected{
+      border-color:rgba(0,200,83,.7);
+      background:rgba(0,200,83,.15);
+      color:#065f46;
+      font-weight:900;
+    }
 
     .btn{
       width:100%;
@@ -229,8 +267,11 @@
       border:1px solid var(--border);
       border-radius:16px;
       padding:16px;
+      padding-bottom:200px;
       box-shadow:var(--shadow2);
       height:100%;
+      min-height:600px;
+      overflow:visible;
     }
     .card h3{
       margin:0 0 12px;
@@ -328,6 +369,7 @@
       border:1px solid var(--border);
       background:var(--panel2);
       display:none;
+      overflow:visible;
     }
     .subTitle{
       font-weight:1000;
@@ -576,7 +618,8 @@
             <input id="inShelfNum" class="input" type="number" min="1" />
 
             <label class="fieldLabel">Adet</label>
-            <input id="inQty" class="input" type="number" min="1" value="1" />
+            <select id="inQty" class="input">
+            </select>
 
             <button class="actionBtn" id="btnPut" type="button">ÜRÜNÜ RAFA KOY</button>
 
@@ -594,19 +637,18 @@
             <input id="outShelfNum" class="input" type="number" min="1" />
 
             <div class="subBox" id="clearProductBox">
-              <div class="subTitle" id="clearBoxTitle">Bu rafta birden fazla ürün var</div>
 
-              <label class="fieldLabel">Ürün Kodu</label>
-              <input id="outProductCode" class="input" />
+              <label class="fieldLabel">Ürün</label>
+              <div id="productListContainer" class="product-list"></div>
+              <input type="hidden" id="outProductCode" />
 
-              <!-- ✅ Adet azalt (sadece gerekli olduğunda açılır) -->
-              <div id="clearQtyBox" style="display:none; margin-top:10px;">
+              <!-- ✅ Adet azalt (her zaman görünür) -->
+              <div id="clearQtyBox" style="margin-top:10px;">
                 <label class="fieldLabel">Adet (Azalt)</label>
-                <input id="outReduceQty" class="input" type="number" min="1" value="1" />
-                <div class="hintLine" id="clearQtyHint"></div>
+                <select id="outReduceQty" class="input">
+                  <option value="1">1</option>
+                </select>
               </div>
-
-              <div class="hintLine" id="clearHint"></div>
             </div>
 
             <button class="actionBtn red" id="btnClear" type="button">RAFI BOŞALT</button>
@@ -2068,16 +2110,14 @@
 
     const outShelfNum     = document.getElementById("outShelfNum");
     const outProductCode  = document.getElementById("outProductCode");
+    const productListContainer = document.getElementById("productListContainer");
     const clearProductBox = document.getElementById("clearProductBox");
-    const clearHint       = document.getElementById("clearHint");
     const btnClear        = document.getElementById("btnClear");
     const statusClear     = document.getElementById("statusClear");
 
     // ✅ yeni alanlar (adet azalt)
-    const clearBoxTitle  = document.getElementById("clearBoxTitle");
     const clearQtyBox    = document.getElementById("clearQtyBox");
     const outReduceQty   = document.getElementById("outReduceQty");
-    const clearQtyHint   = document.getElementById("clearQtyHint");
 
     const searchCode   = document.getElementById("searchCode");
     const btnSearch    = document.getElementById("btnSearch");
@@ -2295,6 +2335,17 @@
     const btnBulkUploadPackaging = document.getElementById("btnBulkUploadPackaging");
     const statusBulkPackaging = document.getElementById("statusBulkPackaging");
 
+    // Adet dropdown'ını doldur (1-100 arası)
+    if(inQty){
+      for(let i = 1; i <= 100; i++){
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        inQty.appendChild(opt);
+      }
+      inQty.value = "1"; // Varsayılan değer 1
+    }
+
     let shelvesCache = {};
     let role = null;
     let sessionPin = null;
@@ -2378,8 +2429,7 @@
       const nStr = (outShelfNum.value || "").trim();
       if(!nStr){
         clearProductBox.style.display="none";
-        clearHint.textContent="";
-        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(productListContainer) productListContainer.innerHTML = "";
         if(outProductCode) outProductCode.value="";
         if(outReduceQty) outReduceQty.value="1";
         return;
@@ -2388,8 +2438,7 @@
       const n = Number(nStr);
       if(!n || n < 1){
         clearProductBox.style.display="none";
-        clearHint.textContent="";
-        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(productListContainer) productListContainer.innerHTML = "";
         if(outReduceQty) outReduceQty.value="1";
         return;
       }
@@ -2398,8 +2447,7 @@
       const shelfData = shelvesCache[shelfName];
       if(!shelfData){
         clearProductBox.style.display="none";
-        clearHint.textContent="";
-        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(productListContainer) productListContainer.innerHTML = "";
         if(outReduceQty) outReduceQty.value="1";
         return;
       }
@@ -2410,76 +2458,83 @@
 
       if(pcount === 0){
         clearProductBox.style.display="none";
-        clearHint.textContent="";
-        if(clearQtyBox) clearQtyBox.style.display="none";
+        if(productListContainer) productListContainer.innerHTML = "";
         if(outReduceQty) outReduceQty.value="1";
         return;
       }
 
-      // Tek ürün varsa
-      if(pcount === 1){
-        const onlyCode = keys[0];
-        const onlyQty  = Number(products[onlyCode] || 0);
-
-        // sadece 1 adet => adet kutusu açılmasın, ürün bilgisi göster
-        if(onlyQty === 1){
-          clearProductBox.style.display="block";
-          if(clearBoxTitle) clearBoxTitle.textContent = "Raftaki Ürün";
-          outProductCode.value = onlyCode;
-          outProductCode.readOnly = true;
-          clearHint.textContent = `${onlyCode} x${onlyQty}`;
-          if(clearQtyBox) clearQtyBox.style.display="none";
-          if(outReduceQty) outReduceQty.value="1";
-          return;
-        }
-
-        // 2+ adet => ürün kodu kilitli + adet kutusu açık
-        clearProductBox.style.display="block";
-        if(clearBoxTitle) clearBoxTitle.textContent = "Bu rafta aynı üründen birden fazla adet var";
-        outProductCode.value = onlyCode;
-        outProductCode.readOnly = true;
-
-        clearHint.textContent = `${onlyCode} x${onlyQty}`;
-
-        if(clearQtyBox) clearQtyBox.style.display="block";
-        if(outReduceQty){
-          outReduceQty.value = "1";
-          outReduceQty.max = String(onlyQty);
-        }
-        if(clearQtyHint) clearQtyHint.textContent = `Mevcut: ${onlyQty} adet (Max: ${onlyQty})`;
-        return;
-      }
-
-      // Birden fazla ürün varsa
+      // Ürünleri listele
       clearProductBox.style.display="block";
-      if(clearBoxTitle) clearBoxTitle.textContent = "Bu rafta birden fazla ürün var";
-      outProductCode.readOnly = false;
-
-      clearHint.textContent = keys.map(k=>`${k} x${products[k]}`).join(" , ");
-
-      const selected = (outProductCode.value || "").trim();
-      const selQty = Number(products[selected] || 0);
-
-      if(selected && selQty > 1){
-        if(clearQtyBox) clearQtyBox.style.display="block";
-        if(outReduceQty){
-          outReduceQty.value = "1";
-          outReduceQty.max = String(selQty);
+      
+      // Mevcut seçimi kaydet
+      const currentSelection = outProductCode.value || "";
+      
+      // Ürün listesini oluştur
+      if(productListContainer){
+        productListContainer.innerHTML = "";
+        keys.forEach(k => {
+          const div = document.createElement('div');
+          div.className = 'product-item';
+          div.textContent = k;
+          div.dataset.productCode = k;
+          
+          // Eğer bu ürün seçiliyse selected class ekle
+          if(k === currentSelection){
+            div.classList.add('selected');
+          }
+          
+          // Tıklama event'i
+          div.addEventListener('click', () => {
+            // Tüm seçimleri kaldır
+            productListContainer.querySelectorAll('.product-item').forEach(item => {
+              item.classList.remove('selected');
+            });
+            
+            // Bu ürünü seç
+            div.classList.add('selected');
+            outProductCode.value = k;
+            
+            // Adet dropdown'ını güncelle
+            const qty = Number(products[k] || 0);
+            if(outReduceQty && qty >= 1){
+              outReduceQty.innerHTML = '';
+              for(let i = 1; i <= qty; i++){
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                outReduceQty.appendChild(opt);
+              }
+              outReduceQty.value = "1";
+            }
+          });
+          
+          productListContainer.appendChild(div);
+        });
+        
+        // Eğer seçili ürün varsa adet dropdown'ını doldur
+        if(currentSelection && products[currentSelection]){
+          const selQty = Number(products[currentSelection] || 0);
+          if(outReduceQty && selQty >= 1){
+            outReduceQty.innerHTML = '';
+            for(let i = 1; i <= selQty; i++){
+              const opt = document.createElement('option');
+              opt.value = i;
+              opt.textContent = i;
+              outReduceQty.appendChild(opt);
+            }
+            outReduceQty.value = "1";
+          }
+        }else{
+          // Seçili ürün yoksa varsayılan 1
+          if(outReduceQty){
+            outReduceQty.innerHTML = '<option value="1">1</option>';
+            outReduceQty.value = "1";
+          }
         }
-        if(clearQtyHint) clearQtyHint.textContent = `Mevcut: ${selQty} adet (Max: ${selQty})`;
-      }else{
-        if(clearQtyBox) clearQtyBox.style.display="none";
-        if(outReduceQty) outReduceQty.value = "1";
-        if(clearQtyHint) clearQtyHint.textContent = "";
       }
     }
 
     outShelfNum?.addEventListener("input", refreshClearMode);
-    outProductCode?.addEventListener("input", refreshClearMode);
-    outReduceQty?.addEventListener("input", ()=>{
-      const v = Number(outReduceQty.value || 1);
-      if(v < 1) outReduceQty.value = "1";
-    });
 
     function runSearch(){
       setStatusBox(statusSearch, "Aranıyor...", "");
