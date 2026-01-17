@@ -247,15 +247,23 @@
     /* Gruplandırılmış Tabbar */
     .tabbar-grouped{
       display:flex;
-      gap:0;
+      gap:8px;
       border-top:1px solid var(--border);
       border-bottom:1px solid var(--border);
       background:var(--panel2);
       padding:8px 12px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,0,0,.12) transparent;
     }
+    .tabbar-grouped::-webkit-scrollbar{ height:6px; }
+    .tabbar-grouped::-webkit-scrollbar-track{ background: transparent; }
+    .tabbar-grouped::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.12); border-radius:4px; }
     .tab-group{
       position:relative;
-      margin-right:4px;
+      flex:1;
+      min-width:200px;
     }
     .tab-group-header{
       display:flex;
@@ -268,6 +276,8 @@
       cursor:pointer;
       font-weight:700;
       font-size:13px;
+      white-space:nowrap;
+      width:100%;
       color:#064e3b;
       transition:all 0.2s ease;
       user-select:none;
@@ -292,15 +302,15 @@
     }
     .tab-group-content{
       display:none;
-      position:absolute;
-      top:100%;
-      left:0;
-      min-width:100%;
+      position:fixed;
+      min-width:220px;
+      width:max-content;
+      max-width:calc(100vw - 32px);
       background:var(--panel);
       border:1px solid var(--border);
-      border-radius:0 8px 8px 8px;
-      box-shadow:0 4px 12px rgba(0,0,0,.1);
-      z-index:1000;
+      border-radius:8px;
+      box-shadow:0 6px 20px rgba(0,0,0,.15);
+      z-index:10001;
       padding:4px;
     }
     .tab-group-content.open{
@@ -701,12 +711,6 @@
               <path d="M4 6l4 4 4-4"/>
             </svg>
           </div>
-          <div class="tab-group-content" id="group-raf">
-            <div class="tab-sub" data-target="put">Rafa Ürün Koy</div>
-            <div class="tab-sub" data-target="clear">Raf Boşalt</div>
-            <div class="tab-sub" data-target="rack">Raf Durumu</div>
-            <div class="tab-sub" data-target="search">Ürün Ara</div>
-          </div>
         </div>
 
         <!-- Grup 2: Talep-Satın Alma -->
@@ -721,11 +725,6 @@
             <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4 6l4 4 4-4"/>
             </svg>
-          </div>
-          <div class="tab-group-content" id="group-talep">
-            <div class="tab-sub" data-target="request">Ürün Talep</div>
-            <div class="tab-sub" data-target="materialRequest">Malzeme Talep</div>
-            <div class="tab-sub" data-target="purchase">Satın Alma</div>
           </div>
         </div>
 
@@ -744,10 +743,6 @@
               <path d="M4 6l4 4 4-4"/>
             </svg>
           </div>
-          <div class="tab-group-content" id="group-talimat">
-            <div class="tab-sub" data-target="instructions">Üretim Talimatları</div>
-            <div class="tab-sub" data-target="packaging">Paketleme Talimatları</div>
-          </div>
         </div>
 
         <!-- Grup 4: Finans -->
@@ -762,12 +757,6 @@
               <path d="M4 6l4 4 4-4"/>
             </svg>
           </div>
-          <div class="tab-group-content" id="group-finans">
-            <div class="tab-sub" data-target="payments">Personel Ödemeleri</div>
-            <div class="tab-sub" data-target="accounts">Cari Hesaplar</div>
-            <div class="tab-sub" data-target="commissionSummary">Etsy Bayileri</div>
-            <div class="tab-sub" data-target="platformPayments">Amazon & Shopify</div>
-          </div>
         </div>
 
         <!-- Grup 5: Kayıtlar -->
@@ -781,11 +770,34 @@
               <path d="M4 6l4 4 4-4"/>
             </svg>
           </div>
-          <div class="tab-group-content" id="group-kayit">
-            <div class="tab-sub" data-target="admin">Yönetici</div>
-            <div class="tab-sub" data-target="production">Üretim Kayıtları</div>
-          </div>
         </div>
+      </div>
+
+      <!-- Dropdown İçerikleri (Body'de) -->
+      <div class="tab-group-content" id="group-raf">
+        <div class="tab-sub" data-target="put">Rafa Ürün Koy</div>
+        <div class="tab-sub" data-target="clear">Raf Boşalt</div>
+        <div class="tab-sub" data-target="rack">Raf Durumu</div>
+        <div class="tab-sub" data-target="search">Ürün Ara</div>
+      </div>
+      <div class="tab-group-content" id="group-talep">
+        <div class="tab-sub" data-target="request">Ürün Talep</div>
+        <div class="tab-sub" data-target="materialRequest">Malzeme Talep</div>
+        <div class="tab-sub" data-target="purchase">Satın Alma</div>
+      </div>
+      <div class="tab-group-content" id="group-talimat">
+        <div class="tab-sub" data-target="instructions">Üretim Talimatları</div>
+        <div class="tab-sub" data-target="packaging">Paketleme Talimatları</div>
+      </div>
+      <div class="tab-group-content" id="group-finans">
+        <div class="tab-sub" data-target="payments">Personel Ödemeleri</div>
+        <div class="tab-sub" data-target="accounts">Cari Hesaplar</div>
+        <div class="tab-sub" data-target="commissionSummary">Etsy Bayileri</div>
+        <div class="tab-sub" data-target="platformPayments">Amazon & Shopify</div>
+      </div>
+      <div class="tab-group-content" id="group-kayit">
+        <div class="tab-sub" data-target="admin">Yönetici</div>
+        <div class="tab-sub" data-target="production">Üretim Kayıtları</div>
       </div>
 
       <div class="content">
@@ -3011,6 +3023,19 @@
           if(!isOpen){
             content.classList.add('open');
             header.classList.add('open');
+            
+            // Pozisyonu dinamik olarak ayarla
+            const rect = header.getBoundingClientRect();
+            content.style.top = `${rect.bottom + 2}px`;
+            content.style.left = `${rect.left}px`;
+            
+            // Sağa taşarsa sola yasla
+            setTimeout(() => {
+              const contentRect = content.getBoundingClientRect();
+              if(contentRect.right > window.innerWidth - 16){
+                content.style.left = `${window.innerWidth - contentRect.width - 16}px`;
+              }
+            }, 0);
           }
         });
       });
@@ -3043,6 +3068,16 @@
           document.querySelectorAll('.tab-group-header').forEach(h => h.classList.remove('open'));
         }
       });
+      
+      // Scroll yapınca dropdown'ları kapat
+      let scrollTimeout;
+      window.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          document.querySelectorAll('.tab-group-content').forEach(c => c.classList.remove('open'));
+          document.querySelectorAll('.tab-group-header').forEach(h => h.classList.remove('open'));
+        }, 50);
+      }, true);
     }
 
     function playBeep(){
@@ -3273,6 +3308,7 @@
             }
           }
 
+          populateShelfDropdown(); // Raf dropdown'ını güncelle
           refreshClearMode();
           if(role==="admin") computeSummary();
         });
