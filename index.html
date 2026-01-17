@@ -98,11 +98,12 @@
 
     .product-list{
       display:flex;
-      flex-wrap:wrap;
+      flex-direction:column;
       gap:8px;
       margin-top:6px;
     }
     .product-item{
+      width:100%;
       padding:10px 16px;
       border:2px solid var(--border);
       border-radius:10px;
@@ -615,7 +616,8 @@
             <input id="inProduct" class="input" />
 
             <label class="fieldLabel">Raf Numarası</label>
-            <input id="inShelfNum" class="input" type="number" min="1" />
+            <select id="inShelfNum" class="input">
+            </select>
 
             <label class="fieldLabel">Adet</label>
             <select id="inQty" class="input">
@@ -634,7 +636,9 @@
             <h3></h3>
 
             <label class="fieldLabel">Raf Numarası</label>
-            <input id="outShelfNum" class="input" type="number" min="1" />
+            <select id="outShelfNum" class="input">
+              <option value="">-- Raf seçiniz --</option>
+            </select>
 
             <div class="subBox" id="clearProductBox">
 
@@ -2346,6 +2350,17 @@
       inQty.value = "1"; // Varsayılan değer 1
     }
 
+    // Raf numarası dropdown'ını doldur (1-300 arası)
+    if(inShelfNum){
+      inShelfNum.innerHTML = '<option value="">Seçiniz</option>';
+      for(let i = 1; i <= 300; i++){
+        const opt = document.createElement('option');
+        opt.value = padShelf(i); // R001, R002, vb.
+        opt.textContent = i; // Sadece sayı göster: 1, 2, vb.
+        inShelfNum.appendChild(opt);
+      }
+    }
+
     let shelvesCache = {};
     let role = null;
     let sessionPin = null;
@@ -2425,6 +2440,31 @@
       return Object.keys(p).length===0;
     }
 
+    function populateShelfDropdown(){
+      if(!outShelfNum) return;
+      
+      // Dolu rafları bul ve sırala
+      const fullShelves = [];
+      for(const [shelfName, shelfData] of Object.entries(shelvesCache)){
+        if(!isEmpty(shelfData)){
+          fullShelves.push(shelfName);
+        }
+      }
+      
+      fullShelves.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      
+      // Dropdown'ı doldur
+      outShelfNum.innerHTML = '<option value="">Seçiniz</option>';
+      fullShelves.forEach(shelfName => {
+        const opt = document.createElement('option');
+        opt.value = shelfName;
+        // R001 -> 1, R012 -> 12 gibi göster
+        const displayNumber = shelfName.replace(/^R0*/, '');
+        opt.textContent = displayNumber;
+        outShelfNum.appendChild(opt);
+      });
+    }
+
     function refreshClearMode(){
       const nStr = (outShelfNum.value || "").trim();
       if(!nStr){
@@ -2435,15 +2475,7 @@
         return;
       }
 
-      const n = Number(nStr);
-      if(!n || n < 1){
-        clearProductBox.style.display="none";
-        if(productListContainer) productListContainer.innerHTML = "";
-        if(outReduceQty) outReduceQty.value="1";
-        return;
-      }
-
-      const shelfName = padShelf(n);
+      const shelfName = nStr; // Artık direkt raf ismi geliyor (örn: R001)
       const shelfData = shelvesCache[shelfName];
       if(!shelfData){
         clearProductBox.style.display="none";
@@ -2534,6 +2566,7 @@
       }
     }
 
+    outShelfNum?.addEventListener("change", refreshClearMode);
     outShelfNum?.addEventListener("input", refreshClearMode);
 
     function runSearch(){
@@ -2614,7 +2647,12 @@
       hideAll();
 
       if(target==="put"){ tabPut?.classList.add("active"); viewPut.style.display="block"; setTimeout(()=>{ try{ inProduct.focus(); inProduct.select && inProduct.select(); }catch(e){} },50); }
-      if(target==="clear"){ tabClear?.classList.add("active"); viewClear.style.display="block"; setTimeout(()=>{ try{ outShelfNum.focus(); outShelfNum.select && outShelfNum.select(); }catch(e){} },50); }
+      if(target==="clear"){ 
+        tabClear?.classList.add("active"); 
+        viewClear.style.display="block"; 
+        populateShelfDropdown(); // Dolu rafları dropdown'a doldur
+        setTimeout(()=>{ try{ outShelfNum.focus(); }catch(e){} },50); 
+      }
       if(target==="search"){ tabSearch?.classList.add("active"); viewSearch.style.display="block"; setTimeout(()=>{ try{ searchCode.focus(); searchCode.select && searchCode.select(); }catch(e){} },50); }
       if(target==="rack"){ tabRack?.classList.add("active"); viewRack.style.display="block"; setTimeout(()=>{ try{ rackBody && rackBody.scrollIntoView && rackBody.scrollIntoView(); }catch(e){} },50); }
       if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
@@ -3115,17 +3153,13 @@
           setStatusBox(statusPut, "İşlem yapılıyor...", "");
 
           const code = (inProduct.value || "").trim();
-          const nStr = (inShelfNum.value || "").trim();
+          const shelfName = (inShelfNum.value || "").trim();
           const qty  = Number(inQty.value || 0);
 
           if(!code) return setStatusBox(statusPut, "Ürün kodu boş olamaz.", "error");
-          if(!nStr) return setStatusBox(statusPut, "Raf numarası boş olamaz.", "error");
+          if(!shelfName) return setStatusBox(statusPut, "Lütfen bir raf seçiniz.", "error");
           if(!qty || qty < 1) return setStatusBox(statusPut, "Adet en az 1 olmalı.", "error");
 
-          const n = Number(nStr);
-          if(!n || n < 1) return setStatusBox(statusPut, "Raf numarası 1 veya daha büyük olmalı.", "error");
-
-          const shelfName = padShelf(n);
           const shelfData = shelvesCache[shelfName];
           if(!shelfData) return setStatusBox(statusPut, "Bu raf yok: " + shelfName, "error");
 
@@ -3174,13 +3208,9 @@
         btnClear && (btnClear.onclick = async () => {
           setStatusBox(statusClear, "İşlem yapılıyor...", "");
 
-          const nStr = (outShelfNum.value || "").trim();
-          if(!nStr) return setStatusBox(statusClear, "Raf numarası boş olamaz.", "error");
+          const shelfName = (outShelfNum.value || "").trim();
+          if(!shelfName) return setStatusBox(statusClear, "Lütfen bir raf seçiniz.", "error");
 
-          const n = Number(nStr);
-          if(!n || n < 1) return setStatusBox(statusClear, "Raf numarası 1 veya daha büyük olmalı.", "error");
-
-          const shelfName = padShelf(n);
           const shelfData = shelvesCache[shelfName];
           if(!shelfData) return setStatusBox(statusClear, "Bu raf yok: " + shelfName, "error");
           if(isEmpty(shelfData)) return setStatusBox(statusClear, "Raf zaten boş.", "error");
