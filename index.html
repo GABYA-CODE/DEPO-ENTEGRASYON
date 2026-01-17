@@ -2236,7 +2236,6 @@
     if(rememberedPin) {
       pwInput.value = rememberedPin;
       if(rememberMe) rememberMe.checked = true;
-      // Otomatik giriş yap
       setTimeout(() => doLogin(), 100);
     } else {
       showLogin();
@@ -2470,6 +2469,17 @@
     const statusLogs = document.getElementById("statusLogs");
     const logsWrap = document.getElementById("logsWrap");
     const logsBody = document.getElementById("logsBody");
+
+    // Şifre Yönetimi
+    const pwdRole = document.getElementById("pwdRole");
+    const pwdUserSelectBox = document.getElementById("pwdUserSelectBox");
+    const pwdUserSelect = document.getElementById("pwdUserSelect");
+    const pwdChangeBox = document.getElementById("pwdChangeBox");
+    const pwdCurrentPin = document.getElementById("pwdCurrentPin");
+    const pwdNewPin = document.getElementById("pwdNewPin");
+    const pwdUserName = document.getElementById("pwdUserName");
+    const btnUpdatePassword = document.getElementById("btnUpdatePassword");
+    const statusPwdUpdate = document.getElementById("statusPwdUpdate");
 
     // Amazon & Shopify Ödemeleri
     const platformPaymentPlatform = document.getElementById("platformPaymentPlatform");
@@ -6483,6 +6493,207 @@
             alert("Hata: " + e.message);
           }
         };
+
+        // ========== ŞİFRE YÖNETİMİ ==========
+        if(role === "admin"){
+          console.log("Şifre yönetimi yükleniyor...", {
+            pwdRole: !!pwdRole,
+            pwdUserSelectBox: !!pwdUserSelectBox,
+            pwdUserSelect: !!pwdUserSelect,
+            pwdChangeBox: !!pwdChangeBox,
+            ADMIN_PINS: window.ADMIN_PINS?.size
+          });
+
+          if(!pwdRole || !pwdUserSelectBox || !pwdUserSelect || !pwdChangeBox){
+            console.error("Şifre yönetimi elementleri bulunamadı!");
+            return;
+          }
+
+          // Rol seçildiğinde
+          pwdRole.addEventListener("change", () => {
+            console.log("Rol değişti:", pwdRole.value);
+            const selectedRole = pwdRole.value;
+            if(!selectedRole){
+              pwdUserSelectBox.style.display = "none";
+              pwdChangeBox.style.display = "none";
+              return;
+            }
+
+            // Kullanıcıları listele
+            pwdUserSelect.innerHTML = '<option value="">Seçiniz</option>';
+            
+            const users = [];
+            if(selectedRole === "admin"){
+              window.ADMIN_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "packer"){
+              window.PACKER_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "stower"){
+              window.STOWER_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "welder"){
+              window.WELDER_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "laser"){
+              window.LASER_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "purchase"){
+              window.PURCHASE_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            } else if(selectedRole === "commission"){
+              window.COMMISSION_PINS.forEach(pin => users.push({pin, name: window.PIN_NAMES[pin] || pin}));
+            }
+
+            console.log("Bulunan kullanıcılar:", users.length);
+
+            users.forEach(u => {
+              const opt = document.createElement('option');
+              opt.value = u.pin;
+              opt.textContent = `${u.pin} - ${u.name}`;
+              pwdUserSelect.appendChild(opt);
+            });
+
+            pwdUserSelectBox.style.display = "block";
+            pwdChangeBox.style.display = "none";
+          });
+
+          // Kullanıcı seçildiğinde
+          pwdUserSelect?.addEventListener("change", () => {
+            const selectedPin = pwdUserSelect.value;
+            if(!selectedPin){
+              pwdChangeBox.style.display = "none";
+              return;
+            }
+
+            pwdCurrentPin.value = selectedPin;
+            pwdNewPin.value = "";
+            pwdUserName.value = window.PIN_NAMES[selectedPin] || "";
+            pwdChangeBox.style.display = "block";
+            statusPwdUpdate.style.display = "none";
+          });
+
+          // Şifre güncelle
+          btnUpdatePassword?.addEventListener("click", async () => {
+            const currentPin = pwdCurrentPin.value.trim();
+            const newPin = pwdNewPin.value.trim();
+            const userName = pwdUserName.value.trim();
+            const selectedRole = pwdRole.value;
+
+            if(!currentPin || !newPin || !userName){
+              setStatusBox(statusPwdUpdate, "Tüm alanları doldurun.", "error");
+              return;
+            }
+
+            if(newPin === currentPin){
+              setStatusBox(statusPwdUpdate, "Yeni şifre eskisiyle aynı olamaz.", "error");
+              return;
+            }
+
+            if(!confirm(`${userName} kullanıcısının şifresini değiştirmek istediğinizden emin misiniz?\n\nEski: ${currentPin}\nYeni: ${newPin}`)){
+              return;
+            }
+
+            setStatusBox(statusPwdUpdate, "Güncelleniyor...", "");
+
+            try {
+              // JavaScript kodunda PIN'leri güncelle (sayfa yenilenmeden önce geçerli olacak)
+              let pinSet;
+              if(selectedRole === "admin") pinSet = window.ADMIN_PINS;
+              else if(selectedRole === "packer") pinSet = window.PACKER_PINS;
+              else if(selectedRole === "stower") pinSet = window.STOWER_PINS;
+              else if(selectedRole === "welder") pinSet = window.WELDER_PINS;
+              else if(selectedRole === "laser") pinSet = window.LASER_PINS;
+              else if(selectedRole === "purchase") pinSet = window.PURCHASE_PINS;
+              else if(selectedRole === "commission") pinSet = window.COMMISSION_PINS;
+
+              if(pinSet){
+                pinSet.delete(currentPin);
+                pinSet.add(newPin);
+              }
+
+              // İsim güncellemesi
+              delete window.PIN_NAMES[currentPin];
+              window.PIN_NAMES[newPin] = userName;
+
+              // Firebase'e kaydet
+              await setDoc(doc(db, "config", "pins"), {
+                admin: Array.from(window.ADMIN_PINS),
+                packer: Array.from(window.PACKER_PINS),
+                stower: Array.from(window.STOWER_PINS),
+                welder: Array.from(window.WELDER_PINS),
+                laser: Array.from(window.LASER_PINS),
+                purchase: Array.from(window.PURCHASE_PINS),
+                commission: Array.from(window.COMMISSION_PINS),
+                names: window.PIN_NAMES,
+                updatedAt: serverTimestamp()
+              });
+
+              // Log kaydı
+              await addDoc(logsCol, {
+                timestamp: new Date().toISOString(),
+                action: "PASSWORD_UPDATE",
+                pin: window.__SESSION?.pin || "admin",
+                role: "admin",
+                shelf: "-",
+                product: "-",
+                qty: 0,
+                detail: `${selectedRole.toUpperCase()}: ${userName} (${currentPin} → ${newPin})`
+              });
+
+              setStatusBox(statusPwdUpdate, "Şifre başarıyla güncellendi. Sayfa yenilenecek...", "ok");
+
+              // 2 saniye sonra sayfayı yenile
+              setTimeout(() => {
+                location.reload();
+              }, 2000);
+
+            } catch(e){
+              console.error("Şifre güncellenemedi:", e);
+              setStatusBox(statusPwdUpdate, "Hata: " + e.message, "error");
+            }
+          });
+
+          // Sayfa yüklendiğinde Firebase'den PIN'leri yükle
+          try {
+            const pinsDoc = await getDoc(doc(db, "config", "pins"));
+            if(pinsDoc.exists()){
+              const data = pinsDoc.data();
+              
+              // Set'leri güncelle
+              if(data.admin) {
+                window.ADMIN_PINS.clear();
+                data.admin.forEach(pin => window.ADMIN_PINS.add(pin));
+              }
+              if(data.packer) {
+                window.PACKER_PINS.clear();
+                data.packer.forEach(pin => window.PACKER_PINS.add(pin));
+              }
+              if(data.stower) {
+                window.STOWER_PINS.clear();
+                data.stower.forEach(pin => window.STOWER_PINS.add(pin));
+              }
+              if(data.welder) {
+                window.WELDER_PINS.clear();
+                data.welder.forEach(pin => window.WELDER_PINS.add(pin));
+              }
+              if(data.laser) {
+                window.LASER_PINS.clear();
+                data.laser.forEach(pin => window.LASER_PINS.add(pin));
+              }
+              if(data.purchase) {
+                window.PURCHASE_PINS.clear();
+                data.purchase.forEach(pin => window.PURCHASE_PINS.add(pin));
+              }
+              if(data.commission) {
+                window.COMMISSION_PINS.clear();
+                data.commission.forEach(pin => window.COMMISSION_PINS.add(pin));
+              }
+              
+              // İsimleri güncelle
+              if(data.names){
+                Object.keys(window.PIN_NAMES).forEach(key => delete window.PIN_NAMES[key]);
+                Object.assign(window.PIN_NAMES, data.names);
+              }
+            }
+          } catch(e){
+            console.error("PIN'ler yüklenemedi:", e);
+          }
+        }
 
         setStatusBox(statusReqList, "Yükleniyor...", "");
       }catch(e){
