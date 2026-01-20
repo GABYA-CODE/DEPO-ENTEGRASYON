@@ -1499,6 +1499,7 @@
                 <div style="padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                   <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Şirkete Ödemem</div>
                   <div style="font-size:20px;font-weight:700;color:#ef4444;" id="myCompanyPayment">0 ₺</div>
+                  <div style="font-size:10px;color:#10b981;margin-top:4px;display:none;" id="myCollectionInfo">Tahsilat: 0 ₺</div>
                 </div>
                 <div id="myTaxSection" style="grid-column:span 2;padding:10px;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                   <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Vergi Muafiyeti (1.900)</div>
@@ -1948,12 +1949,12 @@
                   </tr>
                   <tr>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
-                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">59182</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">190706</td>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">Aykut P.</td>
                   </tr>
                   <tr>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
-                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">87425</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">190707</td>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">Öznur P.</td>
                   </tr>
                   <tr>
@@ -2152,7 +2153,7 @@
 
     const PURCHASE_PINS = new Set(["41927","68503"]);
 
-    const COMMISSION_PINS = new Set(["23764","59182","87425","14698","76312","31849","62957","48731","95126","52384"]);
+    const COMMISSION_PINS = new Set(["23764","190706","190707","14698","76312","31849","62957","48731","95126","52384"]);
 
     window.__SESSION = { role: null, pin: null };
 
@@ -2184,8 +2185,8 @@
       "41927": "Satın Alma 1",
       "68503": "Satın Alma 2",
       "23764": "Murat O.",
-      "59182": "Aykut P.",
-      "87425": "Öznur P.",
+      "190706": "Aykut P.",
+      "190707": "Öznur P.",
       "14698": "Ömer Faruk A.",
       "76312": "Hasibe G.",
       "31849": "Burak A.",
@@ -2260,6 +2261,9 @@
 
       if(!role){
         setLoginNote("Şifre yanlış.", "error");
+        // Yanlış şifre kaydedilmişse temizle
+        localStorage.removeItem('rememberedPin');
+        if(rememberMe) rememberMe.checked = false;
         return;
       }
 
@@ -5905,45 +5909,65 @@
         async function loadMyCommissions() {
           try {
             const sellerPin = window.__SESSION?.pin;
-            console.log("Loading commissions for PIN:", sellerPin);
+            const sellerName = window.PIN_NAMES[sellerPin];
+            console.log("Loading commissions for PIN:", sellerPin, "Name:", sellerName);
             
-            // orderBy kaldırıldı - Firebase index gerektirebilir
-            const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
-            
-            console.log("Found documents:", snap.size);
+            // İSME GÖRE TÜM KAYITLARI ÇEK (hem eski hem yeni PIN'lerle yapılanlar)
+            const allSnap = await getDocs(commissionCol);
             
             let totalIncome = 0;
             let totalExpense = 0;
             const transactions = [];
+            const seenTransactions = new Set(); // Mükerrer kayıtları önlemek için
             
-            snap.forEach(docSnap => {
+            allSnap.forEach(docSnap => {
               const data = docSnap.data();
-              console.log("Transaction data:", data);
-              transactions.push({ id: docSnap.id, ...data });
               
-              if(data.transactionType === "income") {
-                totalIncome += data.amount || 0;
-              } else {
-                totalExpense += data.amount || 0;
+              // Sadece bu kullanıcının ismindeki kayıtları al
+              if(data.sellerName === sellerName) {
+                // Mükerrer kayıt kontrolü (aynı tarih, tutar ve tip)
+                const transactionKey = `${data.createdAt}_${data.amount}_${data.transactionType}_${data.description || ''}`;
+                
+                if(!seenTransactions.has(transactionKey)) {
+                  seenTransactions.add(transactionKey);
+                  console.log("Transaction data:", data, "(PIN:", data.sellerPin, ")");
+                  transactions.push({ id: docSnap.id, ...data });
+                  
+                  if(data.transactionType === "income") {
+                    totalIncome += data.amount || 0;
+                  } else {
+                    totalExpense += data.amount || 0;
+                  }
+                } else {
+                  console.log("⚠️ Mükerrer kayıt atlandı:", data);
+                }
               }
             });
+            
+            console.log("Found documents:", transactions.length, "(Mükerrer olmayan)");
             
             // Tarihe göre sırala (client-side)
             transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             // Hesaplamalar
-            // Ömer Faruk A. (9301) için %10, diğerleri için %20 komisyon
-            const commissionRate = sellerPin === "9301" ? 0.10 : 0.20;
+            // Ömer Faruk A. (14698) için %10, diğerleri için %20 komisyon
+            const commissionRate = sellerPin === "14698" ? 0.10 : 0.20;
             const sellerShare = totalIncome * commissionRate; // Satıcı payı
             const companyGrossShare = totalIncome * (1 - commissionRate); // Şirket brüt payı
-            const companyPayment = companyGrossShare - totalExpense; // Şirkete ödenecek tutar (brüt - gider)
+            const companyPaymentBeforeCollection = companyGrossShare - totalExpense; // Şirkete ödenecek tutar (brüt - gider)
             
-            // Tahsilatları yükle (async)
-            const collectionSnap = await getDocs(query(collectionCol, where("sellerPin", "==", sellerPin)));
+            // Tahsilatları yükle - İSME GÖRE TÜM TAHSİLATLARI ÇEK
+            const allCollectionSnap = await getDocs(collectionCol);
             let totalCollections = 0;
-            collectionSnap.forEach(doc => {
-              totalCollections += doc.data().amount || 0;
+            allCollectionSnap.forEach(doc => {
+              const data = doc.data();
+              if(data.sellerName === sellerName) {
+                totalCollections += data.amount || 0;
+              }
             });
+            
+            // Tahsilatlar düşüldükten sonra kalan borç
+            const companyPayment = companyPaymentBeforeCollection - totalCollections;
             
             // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
             const TAX_EXEMPTION_LIMIT = 1900000;
@@ -5957,7 +5981,7 @@
             // Komisyon oranı etiketini güncelle ve vergi muafiyeti alanını ayarla
             const myCommissionLabel = document.getElementById('myCommissionLabel');
             const myTaxSection = document.getElementById('myTaxSection');
-            if(sellerPin === "9301") {
+            if(sellerPin === "14698") {
               if(myCommissionLabel) myCommissionLabel.textContent = "Payım (%10)";
               if(myTaxSection) myTaxSection.style.display = "none"; // Vergi muafiyeti alanını gizle
             } else {
@@ -5967,10 +5991,22 @@
             
             // Yeni alanlar
             const myCompanyPayment = document.getElementById('myCompanyPayment');
+            const myCollectionInfo = document.getElementById('myCollectionInfo');
             const myTaxUsed = document.getElementById('myTaxUsed');
             const myTaxRemaining = document.getElementById('myTaxRemaining');
             
             if(myCompanyPayment) myCompanyPayment.textContent = Math.round(companyPayment).toLocaleString('tr-TR') + " ₺";
+            
+            // Tahsilat bilgisini göster
+            if(myCollectionInfo) {
+              if(totalCollections > 0) {
+                myCollectionInfo.textContent = "Tahsilat: -" + Math.round(totalCollections).toLocaleString('tr-TR') + " ₺";
+                myCollectionInfo.style.display = "block";
+              } else {
+                myCollectionInfo.style.display = "none";
+              }
+            }
+            
             if(myTaxUsed) myTaxUsed.textContent = Math.round(taxUsed).toLocaleString('tr-TR') + " ₺";
             if(myTaxRemaining) {
               myTaxRemaining.textContent = Math.round(taxRemaining).toLocaleString('tr-TR') + " ₺";
@@ -6033,27 +6069,45 @@
 
         btnFilterAllCommission && (btnFilterAllCommission.onclick = async () => {
           const sellerPin = window.__SESSION?.pin;
-          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const sellerName = window.PIN_NAMES[sellerPin];
+          const allSnap = await getDocs(commissionCol);
           const transactions = [];
-          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          allSnap.forEach(doc => {
+            const data = doc.data();
+            if(data.sellerName === sellerName) {
+              transactions.push({ id: doc.id, ...data });
+            }
+          });
           transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           displayMyCommissions(transactions, "all");
         });
 
         btnFilterIncome && (btnFilterIncome.onclick = async () => {
           const sellerPin = window.__SESSION?.pin;
-          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const sellerName = window.PIN_NAMES[sellerPin];
+          const allSnap = await getDocs(commissionCol);
           const transactions = [];
-          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          allSnap.forEach(doc => {
+            const data = doc.data();
+            if(data.sellerName === sellerName) {
+              transactions.push({ id: doc.id, ...data });
+            }
+          });
           transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           displayMyCommissions(transactions, "income");
         });
 
         btnFilterExpense && (btnFilterExpense.onclick = async () => {
           const sellerPin = window.__SESSION?.pin;
-          const snap = await getDocs(query(commissionCol, where("sellerPin", "==", sellerPin)));
+          const sellerName = window.PIN_NAMES[sellerPin];
+          const allSnap = await getDocs(commissionCol);
           const transactions = [];
-          snap.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
+          allSnap.forEach(doc => {
+            const data = doc.data();
+            if(data.sellerName === sellerName) {
+              transactions.push({ id: doc.id, ...data });
+            }
+          });
           transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           displayMyCommissions(transactions, "expense");
         });
@@ -6069,12 +6123,38 @@
             let totalCompanyShare = 0;
             let totalCollections = 0;
             
-            // Komisyon işlemlerini topla
+            // PIN_NAMES'den isim->PIN haritası oluştur (güncel PIN'ler)
+            const nameToCurrentPin = {};
+            for(const [pin, name] of Object.entries(window.PIN_NAMES || {})) {
+              nameToCurrentPin[name] = pin;
+            }
+            
+            // Komisyon işlemlerini topla - İSME GÖRE GRUPLA (hem eski hem yeni PIN'lerle yapılan kayıtlar)
+            const seenTransactions = new Set(); // Mükerrer kayıt kontrolü
+            
             snap.forEach(doc => {
               const data = doc.data();
-              if(!sellerData[data.sellerPin]) {
-                sellerData[data.sellerPin] = {
-                  name: data.sellerName,
+              const sellerName = data.sellerName;
+              const currentPin = nameToCurrentPin[sellerName]; // Bu isim için güncel PIN
+              
+              if(!currentPin) {
+                console.log("⚠️ PIN_NAMES'de bulunamayan isim:", sellerName);
+                return; // Bu isim için güncel PIN yok, atla
+              }
+              
+              // Mükerrer kayıt kontrolü
+              const transactionKey = `${data.createdAt}_${data.amount}_${data.transactionType}_${data.description || ''}`;
+              if(seenTransactions.has(transactionKey)) {
+                console.log("⚠️ Mükerrer kayıt atlandı:", data);
+                return;
+              }
+              seenTransactions.add(transactionKey);
+              
+              // İsme göre grupla (her isim için tek kayıt)
+              if(!sellerData[sellerName]) {
+                sellerData[sellerName] = {
+                  name: sellerName,
+                  pin: currentPin, // Güncel PIN'i kullan
                   income: 0,
                   expense: 0,
                   collections: 0
@@ -6082,26 +6162,28 @@
               }
               
               if(data.transactionType === "income") {
-                sellerData[data.sellerPin].income += data.amount || 0;
+                sellerData[sellerName].income += data.amount || 0;
               } else {
-                sellerData[data.sellerPin].expense += data.amount || 0;
+                sellerData[sellerName].expense += data.amount || 0;
               }
             });
             
-            // Tahsilatları topla
+            // Tahsilatları topla - İSME GÖRE
             collectionSnap.forEach(doc => {
               const data = doc.data();
-              if(sellerData[data.sellerPin]) {
-                sellerData[data.sellerPin].collections += data.amount || 0;
+              const sellerName = data.sellerName;
+              
+              if(sellerData[sellerName]) {
+                sellerData[sellerName].collections += data.amount || 0;
               }
             });
             
             // Satıcı seçim listesini güncelle
             if(collectionSellerPin) {
               collectionSellerPin.innerHTML = "<option value=''>Satıcı Seçin</option>";
-              for(const [pin, data] of Object.entries(sellerData)) {
+              for(const [sellerName, data] of Object.entries(sellerData)) {
                 const option = document.createElement("option");
-                option.value = pin;
+                option.value = data.pin;
                 option.textContent = data.name;
                 collectionSellerPin.appendChild(option);
               }
@@ -6116,10 +6198,10 @@
             
             const TAX_EXEMPTION_LIMIT = 1900000;
             
-            for(const [pin, data] of Object.entries(sellerData)) {
+            for(const [sellerName, data] of Object.entries(sellerData)) {
               // Hesaplamalar
-              // Ömer Faruk A. (9301) için %10, diğerleri için %20 komisyon
-              const commissionRate = pin === "9301" ? 0.10 : 0.20;
+              // Ömer Faruk A. (PIN 14698) için %10, diğerleri için %20 komisyon
+              const commissionRate = data.pin === "14698" ? 0.10 : 0.20;
               const sellerShare = data.income * commissionRate; // Satıcı payı
               const companyGrossShare = data.income * (1 - commissionRate); // Şirket brüt payı
               const companyPayment = companyGrossShare - data.expense; // Şirkete ödenecek tutar
@@ -6153,7 +6235,7 @@
                   ${data.collections > 0 ? `<div style="color:#0d47a1;font-size:12px;margin-top:2px;font-weight:bold;">${Math.round(companyFinalShare).toLocaleString('tr-TR')} ₺</div>` : ''}
                 </td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:center;">
-                  <button onclick="showSellerDetail('${pin}')" style="padding:6px 12px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;">DETAY</button>
+                  <button onclick="showSellerDetail('${data.pin}')" style="padding:6px 12px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;">DETAY</button>
                 </td>
               `;
               commissionSummaryBody.appendChild(tr);
@@ -6367,24 +6449,37 @@
         async function loadMyPayments() {
           try {
             const sellerPin = window.__SESSION?.pin;
-            const snap = await getDocs(query(collectionCol, where("sellerPin", "==", sellerPin), orderBy("createdAt", "desc")));
+            const sellerName = window.PIN_NAMES[sellerPin];
+            
+            // İSME GÖRE TÜM TAHSİLATLARI ÇEK (eski ve yeni PIN'lerle yapılanlar)
+            const allSnap = await getDocs(collectionCol);
+            const payments = [];
+            
+            allSnap.forEach(doc => {
+              const data = doc.data();
+              if(data.sellerName === sellerName) {
+                payments.push({ id: doc.id, ...data });
+              }
+            });
+            
+            // Tarihe göre sırala
+            payments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             myPaymentsBody.innerHTML = "";
             
-            if(snap.empty) {
+            if(payments.length === 0) {
               myPaymentsBody.innerHTML = "<tr><td colspan='3' style='padding:24px;text-align:center;color:var(--muted);'>Henüz tahsilat kaydı yok.</td></tr>";
               return;
             }
             
-            snap.forEach(doc => {
-              const data = doc.data();
-              const date = new Date(data.createdAt).toLocaleDateString('tr-TR');
+            payments.forEach(payment => {
+              const date = new Date(payment.createdAt).toLocaleDateString('tr-TR');
               
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td style="padding:12px;border-bottom:1px solid var(--border);">${date}</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:#28a745;">${data.amount.toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.note || ""}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:bold;color:#28a745;">${payment.amount.toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${payment.note || ""}</td>
               `;
               myPaymentsBody.appendChild(tr);
             });
