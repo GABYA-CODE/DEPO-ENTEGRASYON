@@ -5949,12 +5949,31 @@
             // Tarihe göre sırala (client-side)
             transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
+            // Vergi muafiyeti olan satıcılar (Murat O., Aykut P., Öznur P.)
+            const taxExemptPins = new Set(["23764", "190706", "190707"]);
+            const hasTaxExemption = taxExemptPins.has(sellerPin);
+            
             // Hesaplamalar
             // Ömer Faruk A. (14698) için %10, diğerleri için %20 komisyon
             const commissionRate = sellerPin === "14698" ? 0.10 : 0.20;
-            const sellerShare = totalIncome * commissionRate; // Satıcı payı
-            const companyGrossShare = totalIncome * (1 - commissionRate); // Şirket brüt payı
-            const companyPaymentBeforeCollection = companyGrossShare - totalExpense; // Şirkete ödenecek tutar (brüt - gider)
+            
+            let netIncome, sellerShare, companyGrossShare;
+            
+            if(hasTaxExemption) {
+              // VERGİ MUAFİYETİ OLAN SATICILAR - Gelir üzerinden hesaplama
+              sellerShare = totalIncome * commissionRate; // Satıcı payı
+              companyGrossShare = totalIncome * (1 - commissionRate); // Şirket brüt payı
+              netIncome = totalIncome;
+            } else {
+              // VERGİ MUAFİYETİ OLMAYAN SATICILAR - Net gelir üzerinden hesaplama
+              netIncome = totalIncome - totalExpense; // Net gelir (gider düşülmüş)
+              sellerShare = netIncome * commissionRate; // Satıcı payı net gelirden
+              companyGrossShare = netIncome * (1 - commissionRate); // Şirket payı net gelirden
+            }
+            
+            const companyPaymentBeforeCollection = hasTaxExemption 
+              ? companyGrossShare - totalExpense  // Vergi muafiyeti varsa gideri düş
+              : companyGrossShare; // Vergi muafiyeti yoksa zaten net gelirden hesaplandı
             
             // Tahsilatları yükle - İSME GÖRE TÜM TAHSİLATLARI ÇEK
             const allCollectionSnap = await getDocs(collectionCol);
@@ -5969,10 +5988,15 @@
             // Tahsilatlar düşüldükten sonra kalan borç
             const companyPayment = companyPaymentBeforeCollection - totalCollections;
             
-            // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
+            // Esnaf vergi muafiyeti hesaplama - SADECE MUAFİYETİ OLAN SATICILAR İÇİN
+            let taxUsed = 0;
+            let taxRemaining = 0;
             const TAX_EXEMPTION_LIMIT = 1900000;
-            const taxUsed = totalIncome / 0.96; // Komisyonlu satış geliri 0.96'ya bölünerek vergi muafiyetinden düşer
-            const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed);
+            
+            if(hasTaxExemption) {
+              taxUsed = totalIncome / 0.96; // Komisyonlu satış geliri 0.96'ya bölünerek vergi muafiyetinden düşer
+              taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed);
+            }
             
             myTotalIncome.textContent = Math.round(totalIncome).toLocaleString('tr-TR') + " ₺";
             myTotalExpense.textContent = Math.round(totalExpense).toLocaleString('tr-TR') + " ₺";
@@ -5981,12 +6005,20 @@
             // Komisyon oranı etiketini güncelle ve vergi muafiyeti alanını ayarla
             const myCommissionLabel = document.getElementById('myCommissionLabel');
             const myTaxSection = document.getElementById('myTaxSection');
+            
             if(sellerPin === "14698") {
               if(myCommissionLabel) myCommissionLabel.textContent = "Payım (%10)";
-              if(myTaxSection) myTaxSection.style.display = "none"; // Vergi muafiyeti alanını gizle
             } else {
               if(myCommissionLabel) myCommissionLabel.textContent = "Payım (%20)";
-              if(myTaxSection) myTaxSection.style.display = "block"; // Vergi muafiyeti alanını göster
+            }
+            
+            // Vergi muafiyeti alanını sadece muafiyeti olan satıcılara göster
+            if(myTaxSection) {
+              if(hasTaxExemption) {
+                myTaxSection.style.display = "block";
+              } else {
+                myTaxSection.style.display = "none";
+              }
             }
             
             // Yeni alanlar
@@ -6197,18 +6229,38 @@
             }
             
             const TAX_EXEMPTION_LIMIT = 1900000;
+            const taxExemptPins = new Set(["23764", "190706", "190707"]); // Murat O., Aykut P., Öznur P.
             
             for(const [sellerName, data] of Object.entries(sellerData)) {
+              const hasTaxExemption = taxExemptPins.has(data.pin);
+              
               // Hesaplamalar
               // Ömer Faruk A. (PIN 14698) için %10, diğerleri için %20 komisyon
               const commissionRate = data.pin === "14698" ? 0.10 : 0.20;
-              const sellerShare = data.income * commissionRate; // Satıcı payı
-              const companyGrossShare = data.income * (1 - commissionRate); // Şirket brüt payı
-              const companyPayment = companyGrossShare - data.expense; // Şirkete ödenecek tutar
               
-              // Esnaf vergi muafiyeti hesaplama - GELİRLER limitten düşer
-              const taxUsed = data.income / 0.96; // Komisyonlu satış geliri 0.96'ya bölünerek vergi muafiyetinden düşer
-              const taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed); // Kalan muafiyet
+              let sellerShare, companyGrossShare, companyPayment;
+              
+              if(hasTaxExemption) {
+                // VERGİ MUAFİYETİ OLAN SATICILAR - Gelir üzerinden hesaplama
+                sellerShare = data.income * commissionRate;
+                companyGrossShare = data.income * (1 - commissionRate);
+                companyPayment = companyGrossShare - data.expense;
+              } else {
+                // VERGİ MUAFİYETİ OLMAYAN SATICILAR - Net gelir üzerinden hesaplama
+                const netIncome = data.income - data.expense;
+                sellerShare = netIncome * commissionRate;
+                companyGrossShare = netIncome * (1 - commissionRate);
+                companyPayment = companyGrossShare;
+              }
+              
+              // Esnaf vergi muafiyeti hesaplama - SADECE MUAFİYETİ OLAN SATICILAR İÇİN
+              let taxUsed = 0;
+              let taxRemaining = 0;
+              
+              if(hasTaxExemption) {
+                taxUsed = data.income / 0.96;
+                taxRemaining = Math.max(0, TAX_EXEMPTION_LIMIT - taxUsed);
+              }
               
               // Şirket net (tahsilat düştükten sonra)
               const companyFinalShare = companyPayment - data.collections;
@@ -6226,8 +6278,10 @@
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:green;font-weight:bold;">${Math.round(sellerShare).toLocaleString('tr-TR')} ₺</td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;color:#ef4444;font-weight:bold;">${Math.round(companyPayment).toLocaleString('tr-TR')} ₺</td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
-                  <div style="font-size:11px;color:#666;margin-bottom:2px;">Kullanılan: ${Math.round(taxUsed).toLocaleString('tr-TR')} ₺</div>
-                  <div style="font-weight:bold;color:${taxColor};">${Math.round(taxRemaining).toLocaleString('tr-TR')} ₺</div>
+                  ${hasTaxExemption ? `
+                    <div style="font-size:11px;color:#666;margin-bottom:2px;">Kullanılan: ${Math.round(taxUsed).toLocaleString('tr-TR')} ₺</div>
+                    <div style="font-weight:bold;color:${taxColor};">${Math.round(taxRemaining).toLocaleString('tr-TR')} ₺</div>
+                  ` : `<div style="font-size:12px;color:#94a3b8;">Muafiyet Yok</div>`}
                 </td>
                 <td style="padding:10px;border-bottom:1px solid var(--border);text-align:right;">
                   <div style="color:blue;font-weight:bold;">${Math.round(companyPayment).toLocaleString('tr-TR')} ₺</div>
