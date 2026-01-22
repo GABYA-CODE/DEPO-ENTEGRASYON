@@ -983,6 +983,7 @@
                   <tr>
                     <th>Tarih & Saat</th>
                     <th>Ürün Kodu</th>
+                    <th>Durum</th>
                     <th>Adet</th>
                     <th>Üretim</th>
                   </tr>
@@ -1006,8 +1007,19 @@
             </div>
 
             <div class="formRow">
+              <label>Durum</label>
+              <select id="welderStatus" class="input" style="padding:10px;font-weight:600;">
+                <option value="KESİLDİ">KESİLDİ</option>
+                <option value="PUNTALANDI">PUNTALANDI</option>
+                <option value="KAYNATILDI">KAYNATILDI</option>
+                <option value="ÜRETİLDİ" selected>ÜRETİLDİ</option>
+              </select>
+            </div>
+
+            <div class="formRow">
               <label>Adet</label>
-              <input id="welderQty" class="input" type="number" min="1" placeholder="Adet giriniz" />
+              <select id="welderQty" class="input" style="padding:10px;font-weight:600;">
+              </select>
             </div>
 
             <button class="btn" id="welderSave">KAYDET</button>
@@ -1024,7 +1036,9 @@
                   <tr>
                     <th>Saat</th>
                     <th>Ürün Kodu</th>
+                    <th>Durum</th>
                     <th>Adet</th>
+                    <th>İşlem</th>
                   </tr>
                 </thead>
                 <tbody id="welderTodayBody"></tbody>
@@ -2042,6 +2056,46 @@
           </div>
 
           <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Önemli Mail ve Şifre Yönetimi</h3>
+            
+            <div style="margin-bottom:20px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:10px;align-items:end;">
+                <div>
+                  <label style="display:block;font-weight:700;font-size:13px;color:var(--muted);margin-bottom:6px;">SERVİS ADI</label>
+                  <input id="credentialService" class="input" type="text" placeholder="Örn: Gmail, AWS, Shopify" style="margin:0;" />
+                </div>
+                <div>
+                  <label style="display:block;font-weight:700;font-size:13px;color:var(--muted);margin-bottom:6px;">E-MAIL / KULLANICI ADI</label>
+                  <input id="credentialEmail" class="input" type="text" placeholder="email@example.com" style="margin:0;" />
+                </div>
+                <div>
+                  <label style="display:block;font-weight:700;font-size:13px;color:var(--muted);margin-bottom:6px;">ŞİFRE</label>
+                  <input id="credentialPassword" class="input" type="text" placeholder="••••••••" style="margin:0;" />
+                </div>
+                <button class="actionBtn" id="btnAddCredential" type="button" style="margin:0;height:42px;display:flex;align-items:center;justify-content:center;">EKLE</button>
+              </div>
+            </div>
+
+            <div class="statusBox" id="statusCredentials" style="display:none;margin-bottom:12px;"></div>
+
+            <div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--panel2);">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--panel1);position:sticky;top:0;">
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">SERVİS</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">E-MAIL / KULLANICI</th>
+                    <th style="padding:12px;text-align:left;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">ŞİFRE</th>
+                    <th style="padding:12px;text-align:center;border-bottom:2px solid var(--border);font-weight:900;font-size:13px;">İŞLEM</th>
+                  </tr>
+                </thead>
+                <tbody id="credentialsBody">
+                  <tr><td colspan="4" style="padding:24px;text-align:center;color:var(--muted);">Henüz kayıt yok.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
             <h3 style="margin-top:0;">Toplu Üretim Talimatı Yükleme</h3>
             
             <div style="margin-bottom:12px;color:var(--muted);font-size:14px;font-weight:800;">
@@ -2568,6 +2622,7 @@
     const totalPlatformPayments = document.getElementById("totalPlatformPayments");
 
     const welderCode = document.getElementById("welderCode");
+    const welderStatus = document.getElementById("welderStatus");
     const welderQty = document.getElementById("welderQty");
     const welderSave = document.getElementById("welderSave");
     const statusWelder = document.getElementById("statusWelder");
@@ -2618,6 +2673,13 @@
     const bulkPackagingInput = document.getElementById("bulkPackagingInput");
     const btnBulkUploadPackaging = document.getElementById("btnBulkUploadPackaging");
     const statusBulkPackaging = document.getElementById("statusBulkPackaging");
+
+    const credentialService = document.getElementById("credentialService");
+    const credentialEmail = document.getElementById("credentialEmail");
+    const credentialPassword = document.getElementById("credentialPassword");
+    const btnAddCredential = document.getElementById("btnAddCredential");
+    const statusCredentials = document.getElementById("statusCredentials");
+    const credentialsBody = document.getElementById("credentialsBody");
 
     // Adet dropdown'ını doldur (1-100 arası)
     if(inQty){
@@ -2986,10 +3048,29 @@
       if(target==="admin"){ 
         tabAdmin?.classList.add("active"); 
         viewAdmin.style.display="block"; 
+        
+        // loadCredentials'ı bekleyen bir fonksiyon
+        function waitForLoadCredentials(attempts = 0) {
+          if(typeof window.loadCredentials === "function") {
+            console.log("🔑 window.loadCredentials çağrılıyor...");
+            window.loadCredentials();
+          } else if(attempts < 10) {
+            console.log(`⏳ window.loadCredentials bekleniyor... (${attempts + 1}/10)`);
+            setTimeout(() => waitForLoadCredentials(attempts + 1), 100);
+          } else {
+            console.error("❌ window.loadCredentials 1 saniye sonra bile bulunamadı!");
+          }
+        }
+        
         setTimeout(()=>{ 
           try{ 
-            if(typeof loadCommissionSummary === "function"){ loadCommissionSummary(); }
-          }catch(e){console.error(e);} 
+            console.log("🔧 Admin sekmesi açılıyor...");
+            if(typeof loadCommissionSummary === "function"){ 
+              console.log("📊 loadCommissionSummary çağrılıyor...");
+              loadCommissionSummary(); 
+            }
+            waitForLoadCredentials();
+          }catch(e){console.error("❌ Admin sekmesi yükleme hatası:", e);} 
         },100); 
       }
     }
@@ -3227,6 +3308,15 @@
         window.db = getFirestore(app);
         const db = window.db;
 
+        // Firebase fonksiyonlarını global scope'a taşı
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.collection = collection;
+        window.serverTimestamp = serverTimestamp;
+
         const shelvesCol = collection(db, "shelves");
         const logsCol = collection(db, "logs");
         const reqCol = collection(db, "requests");
@@ -3240,6 +3330,10 @@
         const commissionCol = collection(db, "commissionSales");
         const collectionCol = collection(db, "commissionCollections");
         const platformPaymentsCol = collection(db, "platformPayments");
+        const credentialsCol = collection(db, "credentials");
+        
+        // Global erişim için
+        window.credentialsCol = credentialsCol;
 
         const initRef = doc(db, "system", "shelves_init");
 
@@ -4190,8 +4284,87 @@
         btnLogAllRoles && (btnLogAllRoles.onclick = () => loadLogs(currentLogActionFilter, 'all'));
 
         // Welder (Kaynak İmalat) functionality
+        // Adet dropdown'ını doldur (1-40 arası)
+        if(welderQty){
+          for(let i = 1; i <= 40; i++){
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            welderQty.appendChild(opt);
+          }
+          welderQty.value = "1"; // Varsayılan değer 1
+        }
+
+        let editingProductionId = null;
+
+        window.editProduction = function(docId, productCode, status, quantity) {
+          console.log("🔧 editProduction çağrıldı:", docId);
+          
+          if(!welderCode || !welderStatus || !welderQty || !welderSave) {
+            console.error("❌ Form elementleri bulunamadı!");
+            return;
+          }
+          
+          editingProductionId = docId;
+          welderCode.value = productCode;
+          welderStatus.value = status;
+          welderQty.value = quantity;
+          
+          welderSave.textContent = "GÜNCELLE";
+          welderSave.style.background = "#0891b2";
+          
+          setStatusBox(statusWelder, "Düzenleme modu - değişiklikleri yapın ve GÜNCELLE'ye tıklayın.", "info");
+          
+          // İptal butonu ekle
+          if(!document.getElementById("btnCancelProductionEdit")) {
+            const cancelBtn = document.createElement("button");
+            cancelBtn.id = "btnCancelProductionEdit";
+            cancelBtn.textContent = "İPTAL";
+            cancelBtn.className = "btn";
+            cancelBtn.style.background = "#6c757d";
+            cancelBtn.style.marginLeft = "10px";
+            cancelBtn.onclick = cancelProductionEdit;
+            welderSave.parentNode.insertBefore(cancelBtn, welderSave.nextSibling);
+          }
+          
+          // Formu scroll
+          welderCode.focus();
+          welderCode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          console.log("✅ Düzenleme modu aktif");
+        };
+
+        window.deleteProduction = async function(docId) {
+          if(!confirm("Bu üretim kaydını silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await deleteDoc(doc(db, "production", docId));
+            setStatusBox(statusWelderToday, "✓ Kayıt silindi.", "ok");
+            playBeep();
+            loadTodayProduction();
+          } catch(e) {
+            setStatusBox(statusWelderToday, "Hata: " + e.message, "error");
+          }
+        };
+
+        function cancelProductionEdit() {
+          editingProductionId = null;
+          welderCode.value = "";
+          welderQty.value = "1";
+          welderStatus.value = "ÜRETİLDİ";
+          welderSave.textContent = "KAYDET";
+          welderSave.style.background = "";
+          
+          const cancelBtn = document.getElementById("btnCancelProductionEdit");
+          if(cancelBtn) cancelBtn.remove();
+          
+          setStatusBox(statusWelder, "", "");
+          statusWelder.style.display = "none";
+        }
+
         async function saveProduction(){
           const code = (welderCode.value || "").trim();
+          const status = welderStatus.value || "ÜRETİLDİ";
           const qty = parseInt(welderQty.value || "0", 10);
 
           if(!code){
@@ -4204,17 +4377,36 @@
           }
 
           try{
-            setStatusBox(statusWelder, "Kaydediliyor...", "");
-            await addDoc(productionCol, {
-              productCode: code,
-              quantity: qty,
-              welderPin: sessionPin,
-              createdAt: serverTimestamp()
-            });
+            if(editingProductionId) {
+              // GÜNCELLEME MODU
+              setStatusBox(statusWelder, "Güncelleniyor...", "info");
+              
+              await updateDoc(doc(db, "production", editingProductionId), {
+                productCode: code,
+                productionStatus: status,
+                quantity: qty,
+                updatedAt: serverTimestamp()
+              });
+              
+              setStatusBox(statusWelder, "✓ Başarıyla güncellendi.", "ok");
+              cancelProductionEdit();
+              
+            } else {
+              // YENİ KAYIT MODU
+              setStatusBox(statusWelder, "Kaydediliyor...", "");
+              await addDoc(productionCol, {
+                productCode: code,
+                productionStatus: status,
+                quantity: qty,
+                welderPin: sessionPin,
+                createdAt: serverTimestamp()
+              });
 
-            setStatusBox(statusWelder, "Üretim kaydedildi!", "ok");
-            welderCode.value = "";
-            welderQty.value = "";
+              setStatusBox(statusWelder, "Üretim kaydedildi!", "ok");
+              welderCode.value = "";
+              welderQty.value = "1";
+              welderStatus.value = "ÜRETİLDİ";
+            }
             
             playBeep();
             setTimeout(()=>welderCode.focus(), 100);
@@ -4246,18 +4438,51 @@
               return;
             }
 
-            snap.forEach(doc => {
-              const d = doc.data();
+            snap.forEach(docSnap => {
+              const d = docSnap.data();
               const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
               const timeStr = dt ? dt.toLocaleTimeString("tr-TR") : "-";
+              
+              const statusBadge = d.productionStatus || "ÜRETİLDİ";
+              let statusColor = "#10b981"; // Yeşil
+              if(statusBadge === "KESİLDİ") statusColor = "#f59e0b"; // Turuncu
+              else if(statusBadge === "PUNTALANDI") statusColor = "#3b82f6"; // Mavi
+              else if(statusBadge === "KAYNATILDI") statusColor = "#8b5cf6"; // Mor
+              
+              // Güvenli veri
+              const safeProductCode = (d.productCode || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+              const safeStatus = (statusBadge || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
               
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${timeStr}</td>
                 <td>${d.productCode || "-"}</td>
+                <td><span style="background:${statusColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;">${statusBadge}</span></td>
                 <td>${d.quantity || 0}</td>
+                <td style="text-align:center;">
+                  <button data-id="${docSnap.id}" data-code="${safeProductCode}" data-status="${safeStatus}" data-qty="${d.quantity || 1}" class="btn-edit-production" style="background:#0891b2;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:700;font-size:11px;margin-right:4px;">DÜZENLE</button>
+                  <button data-id="${docSnap.id}" class="btn-delete-production" style="background:#dc2626;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:700;font-size:11px;">SİL</button>
+                </td>
               `;
               welderTodayBody.appendChild(tr);
+            });
+            
+            // Event listener'ları ekle
+            document.querySelectorAll('.btn-edit-production').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const code = this.getAttribute('data-code').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                const status = this.getAttribute('data-status').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                const qty = parseInt(this.getAttribute('data-qty') || "1", 10);
+                window.editProduction(id, code, status, qty);
+              });
+            });
+            
+            document.querySelectorAll('.btn-delete-production').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                window.deleteProduction(id);
+              });
             });
 
             welderTodayWrap.style.display = "block";
@@ -4430,10 +4655,17 @@
               
               const welderName = getNameByPin(d.welderPin);
               
+              const statusBadge = d.productionStatus || "ÜRETİLDİ";
+              let statusColor = "#10b981"; // Yeşil
+              if(statusBadge === "KESİLDİ") statusColor = "#f59e0b"; // Turuncu
+              else if(statusBadge === "PUNTALANDI") statusColor = "#3b82f6"; // Mavi
+              else if(statusBadge === "KAYNATILDI") statusColor = "#8b5cf6"; // Mor
+              
               const tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${dateStr}</td>
                 <td>${d.productCode || "-"}</td>
+                <td><span style="background:${statusColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;">${statusBadge}</span></td>
                 <td>${d.quantity || 0}</td>
                 <td>${welderName}</td>
               `;
@@ -4651,6 +4883,209 @@
         }
 
         btnBulkUploadInstructions && (btnBulkUploadInstructions.onclick = bulkUploadInstructions);
+
+        // Mail ve şifre yönetimi fonksiyonları - GLOBAL SCOPE
+        window.loadCredentials = async function() {
+          try {
+            console.log("🔑 loadCredentials çağrıldı");
+            
+            // Koleksiyon kontrolü
+            if(!window.credentialsCol) {
+              console.error("❌ credentialsCol tanımlı değil, bekliyor...");
+              setTimeout(() => window.loadCredentials(), 200);
+              return;
+            }
+            
+            // Firebase fonksiyonu kontrolü
+            if(!window.getDocs) {
+              console.error("❌ getDocs tanımlı değil, bekliyor...");
+              setTimeout(() => window.loadCredentials(), 200);
+              return;
+            }
+            
+            const snap = await window.getDocs(window.credentialsCol);
+            
+            const credentialsBody = document.getElementById("credentialsBody");
+            if(!credentialsBody) {
+              console.error("❌ credentialsBody elementi bulunamadı");
+              return;
+            }
+            
+            credentialsBody.innerHTML = "";
+            
+            if(snap.empty) {
+              console.log("ℹ️ Henüz kimlik bilgisi kaydı yok");
+              credentialsBody.innerHTML = "<tr><td colspan='4' style='padding:24px;text-align:center;color:var(--muted);'>Henüz kayıt yok.</td></tr>";
+              return;
+            }
+            
+            console.log("✅ Kimlik bilgileri yükleniyor:", snap.size, "kayıt");
+            
+            snap.forEach(docSnap => {
+              const data = docSnap.data();
+              const tr = document.createElement("tr");
+              
+              // Güvenli veri
+              const safeService = (data.service || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+              const safeEmail = (data.email || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+              const safePassword = (data.password || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+              
+              tr.innerHTML = `
+                <td style="padding:12px;border-bottom:1px solid var(--border);font-weight:700;">${data.service || ""}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${data.email || ""}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);font-family:monospace;">${data.password || ""}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;">
+                  <button data-id="${docSnap.id}" data-service="${safeService}" data-email="${safeEmail}" data-password="${safePassword}" class="btn-edit-credential" style="background:#0891b2;color:#fff;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;margin-right:6px;">DÜZENLE</button>
+                  <button data-id="${docSnap.id}" class="btn-delete-credential" style="background:#dc2626;color:#fff;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px;">SİL</button>
+                </td>
+              `;
+              credentialsBody.appendChild(tr);
+            });
+            
+            // Event listener'ları ekle
+            document.querySelectorAll('.btn-edit-credential').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const service = this.getAttribute('data-service').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                const email = this.getAttribute('data-email').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                const password = this.getAttribute('data-password').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                window.editCredential(id, service, email, password);
+              });
+            });
+            
+            document.querySelectorAll('.btn-delete-credential').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                window.deleteCredential(id);
+              });
+            });
+            
+            console.log("✅ Kimlik bilgileri başarıyla yüklendi");
+          } catch(e) {
+            console.error("❌ Kimlik bilgileri yüklenemedi:", e);
+            if(credentialsBody) {
+              credentialsBody.innerHTML = `<tr><td colspan='4' style='padding:24px;text-align:center;color:red;'>Hata: ${e.message}</td></tr>`;
+            }
+          }
+        };
+
+        let editingCredentialId = null;
+
+        // DÜZENLE fonksiyonu - hem window hem global scope'ta
+        window.editCredential = function(docId, service, email, password) {
+          console.log("🔧 editCredential çağrıldı:", docId);
+          
+          if(!credentialService || !credentialEmail || !credentialPassword || !btnAddCredential) {
+            console.error("❌ Form elementleri bulunamadı!");
+            return;
+          }
+          
+          editingCredentialId = docId;
+          credentialService.value = service;
+          credentialEmail.value = email;
+          credentialPassword.value = password;
+          
+          btnAddCredential.textContent = "GÜNCELLE";
+          btnAddCredential.style.background = "#0891b2";
+          
+          setStatusBox(statusCredentials, "Düzenleme modu - değişiklikleri yapın ve GÜNCELLE'ye tıklayın.", "info");
+          
+          // İptal butonu ekle
+          if(!document.getElementById("btnCancelEdit")) {
+            const cancelBtn = document.createElement("button");
+            cancelBtn.id = "btnCancelEdit";
+            cancelBtn.textContent = "İPTAL";
+            cancelBtn.className = "actionBtn";
+            cancelBtn.style.background = "#6c757d";
+            cancelBtn.style.marginLeft = "10px";
+            cancelBtn.onclick = cancelEdit;
+            btnAddCredential.parentNode.appendChild(cancelBtn);
+          }
+          
+          console.log("✅ Düzenleme modu aktif");
+        };
+
+        function cancelEdit() {
+          editingCredentialId = null;
+          credentialService.value = "";
+          credentialEmail.value = "";
+          credentialPassword.value = "";
+          btnAddCredential.textContent = "EKLE";
+          btnAddCredential.style.background = "";
+          
+          const cancelBtn = document.getElementById("btnCancelEdit");
+          if(cancelBtn) cancelBtn.remove();
+          
+          setStatusBox(statusCredentials, "", "");
+          statusCredentials.style.display = "none";
+        }
+
+        async function addCredential() {
+          try {
+            const service = (credentialService.value || "").trim();
+            const email = (credentialEmail.value || "").trim();
+            const password = (credentialPassword.value || "").trim();
+            
+            if(!service || !email || !password) {
+              setStatusBox(statusCredentials, "Tüm alanları doldurun.", "error");
+              return;
+            }
+            
+            if(editingCredentialId) {
+              // GÜNCELLEME MODU
+              setStatusBox(statusCredentials, "Güncelleniyor...", "info");
+              
+              await window.updateDoc(window.doc(window.db, "credentials", editingCredentialId), {
+                service,
+                email,
+                password,
+                updatedAt: new Date().toISOString(),
+                updatedBy: window.__SESSION?.pin || "unknown"
+              });
+              
+              setStatusBox(statusCredentials, "✓ Başarıyla güncellendi.", "ok");
+              cancelEdit();
+              
+            } else {
+              // YENİ KAYIT MODU
+              setStatusBox(statusCredentials, "Kaydediliyor...", "info");
+              
+              await window.addDoc(window.credentialsCol, {
+                service,
+                email,
+                password,
+                createdAt: new Date().toISOString(),
+                createdBy: window.__SESSION?.pin || "unknown"
+              });
+              
+              credentialService.value = "";
+              credentialEmail.value = "";
+              credentialPassword.value = "";
+              
+              setStatusBox(statusCredentials, "✓ Başarıyla kaydedildi.", "ok");
+            }
+            
+            window.loadCredentials();
+            
+          } catch(e) {
+            console.error("Kimlik bilgisi işlemi başarısız:", e);
+            setStatusBox(statusCredentials, "Hata: " + e.message, "error");
+          }
+        }
+
+        window.deleteCredential = async function(docId) {
+          if(!confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
+          
+          try {
+            await window.deleteDoc(window.doc(window.db, "credentials", docId));
+            setStatusBox(statusCredentials, "✓ Kayıt silindi.", "ok");
+            window.loadCredentials();
+          } catch(e) {
+            setStatusBox(statusCredentials, "Hata: " + e.message, "error");
+          }
+        };
+
+        btnAddCredential && (btnAddCredential.onclick = addCredential);
 
         // Paketleme talimatlarını yükleme fonksiyonu
         async function loadPackagingInstructions() {
