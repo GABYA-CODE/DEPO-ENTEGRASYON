@@ -630,6 +630,109 @@
     .context-menu-item.danger:hover {
       background: rgba(239,68,68,.08);
     }
+
+    /* Role Switch Modal */
+    .role-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20000;
+    }
+    .role-modal-overlay.active {
+      display: flex;
+    }
+    .role-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: min(420px, 90vw);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .role-modal h3 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .role-modal #roleOptions {
+      overflow-y: auto;
+      flex: 1;
+      margin-bottom: 12px;
+      padding-right: 8px;
+    }
+    .role-modal #roleOptions::-webkit-scrollbar {
+      width: 6px;
+    }
+    .role-modal #roleOptions::-webkit-scrollbar-track {
+      background: var(--panel2);
+      border-radius: 3px;
+    }
+    .role-modal #roleOptions::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    .role-modal #roleOptions::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+    .role-option {
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .role-option:hover {
+      border-color: var(--green);
+      background: rgba(0,200,83,0.05);
+    }
+    .role-option .role-badge-preview {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+    }
+    .role-option .role-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .role-modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    .role-modal-buttons button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .role-modal-buttons .btn-cancel {
+      background: var(--panel2);
+      color: var(--muted);
+    }
+    .role-modal-buttons .btn-cancel:hover {
+      background: var(--border);
+    }
   </style>
 </head>
 
@@ -675,6 +778,17 @@
         <div class="context-menu-item danger" id="contextMenuDelete">Talebi Sil</div>
       </div>
 
+      <!-- Role Switch Modal -->
+      <div id="roleSwitchModal" class="role-modal-overlay">
+        <div class="role-modal">
+          <h3>Hangi Role Geçmek İstersiniz?</h3>
+          <div id="roleOptions"></div>
+          <div class="role-modal-buttons">
+            <button class="btn-cancel" id="btnCancelRoleSwitch">İptal</button>
+          </div>
+        </div>
+      </div>
+
       <div class="tabbar" id="tabbar">
         <div class="tab" id="tabPut">RAFA ÜRÜN KOY</div>
         <div class="tab" id="tabClear">RAF BOŞALT</div>
@@ -693,6 +807,7 @@
         <div class="tab" id="tabCommissionSummary">ETSY BAYİLERİ</div>
         <div class="tab" id="tabCommission">HAK EDİŞ</div>
         <div class="tab" id="tabPlatformPayments">AMAZON & SHOPIFY</div>
+        <div class="tab" id="tabAttendance">PUANTAJ</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1774,9 +1889,106 @@
           </div>
         </div>
 
+        <!-- VIEW: PUANTAJ -->
+        <div id="viewAttendance" style="display:none;">
+          <div class="card">
+            <h2 style="margin:0 0 20px 0;">Puantaj Sistemi</h2>
+            
+            <!-- Giriş-Çıkış Formu -->
+            <div style="background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+              <h3 style="margin:0 0 16px 0;font-size:18px;">Bugünkü Çalışma Kaydı</h3>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;">
+                <div>
+                  <div class="fieldLabel">GİRİŞ SAATİ</div>
+                  <input id="attendanceCheckIn" class="input" type="time" />
+                </div>
+                <div>
+                  <div class="fieldLabel">ÇIKIŞ SAATİ</div>
+                  <input id="attendanceCheckOut" class="input" type="time" />
+                </div>
+                <div>
+                  <div class="fieldLabel">İZİN SÜRESİ (DK)</div>
+                  <input id="attendanceBreak" class="input" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+              
+              <div style="margin-bottom:12px;">
+                <div class="fieldLabel">NOT (OPSİYONEL)</div>
+                <input id="attendanceNote" class="input" type="text" placeholder="Örn: Öğle arası izin" />
+              </div>
+              
+              <button class="actionBtn" id="btnSaveAttendance" type="button">KAYDET</button>
+              
+              <div class="statusBox" id="statusAttendance" style="display:none;margin-top:12px;"></div>
+            </div>
+
+            <!-- Filtreler -->
+            <div style="margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                <div>
+                  <div class="fieldLabel">BAŞLANGIÇ TARİHİ</div>
+                  <input id="attendanceStartDate" class="input" type="date" />
+                </div>
+                <div>
+                  <div class="fieldLabel">BİTİŞ TARİHİ</div>
+                  <input id="attendanceEndDate" class="input" type="date" />
+                </div>
+                <div id="attendanceUserFilterDiv" style="display:none;">
+                  <div class="fieldLabel">KULLANICI</div>
+                  <select id="attendanceUserFilter" class="input">
+                    <option value="">Tüm Kullanıcılar</option>
+                  </select>
+                </div>
+              </div>
+              <button class="searchBtn" id="btnLoadAttendance" type="button" style="margin-top:12px;">KAYITLARI YÜKLE</button>
+            </div>
+
+            <!-- İstatistikler -->
+            <div id="attendanceStats" style="display:none;margin-bottom:20px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:12px;padding:16px;">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:4px;">TOPLAM GÜN</div>
+                  <div id="statTotalDays" style="font-size:28px;font-weight:900;color:#065f46;">0</div>
+                </div>
+                <div style="background:rgba(33,150,243,0.1);border:1px solid rgba(33,150,243,0.3);border-radius:12px;padding:16px;">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:4px;">TOPLAM SAAT</div>
+                  <div id="statTotalHours" style="font-size:28px;font-weight:900;color:#1565c0;">0</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:16px;">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:4px;">ORT. GÜNLÜK SAAT</div>
+                  <div id="statAvgHours" style="font-size:28px;font-weight:900;color:#d97706;">0</div>
+                </div>
+                <div style="background:rgba(156,39,176,0.1);border:1px solid rgba(156,39,176,0.3);border-radius:12px;padding:16px;">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:4px;">TOPLAM İZİN (DK)</div>
+                  <div id="statTotalBreak" style="font-size:28px;font-weight:900;color:#7b1fa2;">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kayıt Listesi -->
+            <div class="tableWrap" id="attendanceTableWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Kullanıcı</th>
+                    <th>Giriş</th>
+                    <th>Çıkış</th>
+                    <th>Çalışma Süresi</th>
+                    <th>İzin (DK)</th>
+                    <th>Not</th>
+                    <th>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
-        <div id="viewAdmin" style="display:none;">
-          <div class="sectionTitle">Yönetici Paneli</div>
+        <div id="viewAdmin" style="display:none;">\n          <div class="sectionTitle">Yönetici Paneli</div>
 
           <div class="card">
             <h3 style="margin-top:0;">Özet Panel</h3>
@@ -2196,18 +2408,21 @@
   <script>
     // ====== PINLER ======
     const ADMIN_PINS = new Set(["67431","99999","91683"]);
-
     const PACKER_PINS = new Set(["45823","73621","29847","58392","61704","83195","42076","95318","17863"]);
-
     const STOWER_PINS = new Set(["34562","78914","52938","19247"]);
-
     const WELDER_PINS = new Set(["64829","28573","91346","53018"]);
-
     const LASER_PINS = new Set(["72541","39874","86253"]);
-
     const PURCHASE_PINS = new Set(["41927","68503"]);
-
     const COMMISSION_PINS = new Set(["23764","190706","190707","14698","76312","31849","62957","48731","95126","52384"]);
+
+    // PIN setlerini global scope'a ekle
+    window.ADMIN_PINS = ADMIN_PINS;
+    window.PACKER_PINS = PACKER_PINS;
+    window.STOWER_PINS = STOWER_PINS;
+    window.WELDER_PINS = WELDER_PINS;
+    window.LASER_PINS = LASER_PINS;
+    window.PURCHASE_PINS = PURCHASE_PINS;
+    window.COMMISSION_PINS = COMMISSION_PINS;
 
     window.__SESSION = { role: null, pin: null };
 
@@ -2408,6 +2623,7 @@
     const tabCommissionSummary= document.getElementById("tabCommissionSummary");
     const tabCommission= document.getElementById("tabCommission");
     const tabPlatformPayments= document.getElementById("tabPlatformPayments");
+    const tabAttendance= document.getElementById("tabAttendance");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -2427,6 +2643,7 @@
     const viewCommissionSummary= document.getElementById("viewCommissionSummary");
     const viewCommission= document.getElementById("viewCommission");
     const viewPlatformPayments= document.getElementById("viewPlatformPayments");
+    const viewAttendance= document.getElementById("viewAttendance");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -2962,7 +3179,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -2983,6 +3200,7 @@
         viewCommissionSummary && (viewCommissionSummary.style.display="none");
         viewCommission && (viewCommission.style.display="none");
         viewPlatformPayments && (viewPlatformPayments.style.display="none");
+        viewAttendance && (viewAttendance.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -3045,6 +3263,15 @@
           }catch(e){console.error(e);} 
         },100); 
       }
+      if(target==="attendance"){ 
+        tabAttendance?.classList.add("active"); 
+        viewAttendance.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            initAttendance();
+          }catch(e){console.error(e);} 
+        },50); 
+      }
       if(target==="admin"){ 
         tabAdmin?.classList.add("active"); 
         viewAdmin.style.display="block"; 
@@ -3097,6 +3324,7 @@
         [tabCommissionSummary, viewCommissionSummary],
         [tabCommission, viewCommission],
         [tabPlatformPayments, viewPlatformPayments],
+        [tabAttendance, viewAttendance],
         [tabAdmin, viewAdmin]
       ];
 
@@ -3113,15 +3341,16 @@
         tabSearch.style.display="block";
         tabRack.style.display="block";
         tabPackaging.style.display="block";
+        tabAttendance.style.display="block";
         
-        // Sadece 2001 şifresi ile giriş yapan paketçi talep sekmelerini görebilir
+        // Sadece 2001 ve 45823 (Gökmen) şifresi ile giriş yapan paketçi talep sekmelerini görebilir
         const currentPin = window.__SESSION?.pin;
-        if(currentPin === "2001"){
+        if(currentPin === "2001" || currentPin === "45823"){
           tabRequest.style.display="block";
           tabMaterialRequest.style.display="block";
-          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
+          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr";
         } else {
-          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+          tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
         }
         
         setActiveTab("clear");
@@ -3131,7 +3360,8 @@
         
         tabPut.style.display="block";
         tabPackaging.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr";
+        tabAttendance.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
         setActiveTab("put");
       }else if(r==="welder"){
         tabbar.style.display="flex";
@@ -3141,14 +3371,16 @@
         tabWelderRequests.style.display="block";
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        tabAttendance.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
         setActiveTab("welder");
       }else if(r==="purchase"){
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
         
         tabPurchase.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr";
+        tabAttendance.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr";
         setActiveTab("purchase");
       }else if(r==="admin"){
         // Admin için gruplandırılmış menü kullan
@@ -3295,14 +3527,86 @@
         tabCommissionSummary && (tabCommissionSummary.onclick = ()=>setActiveTab("commissionSummary"));
         tabCommission && (tabCommission.onclick = ()=>setActiveTab("commission"));
         tabPlatformPayments && (tabPlatformPayments.onclick = ()=>setActiveTab("platformPayments"));
+        tabAttendance && (tabAttendance.onclick = ()=>setActiveTab("attendance"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>{
-          // Session ve localStorage temizle, giriş sayfasına yönlendir
-          window.__SESSION = { role: null, pin: null };
-          localStorage.removeItem('rememberedPin');
-          location.reload();
+          const currentRole = window.__SESSION?.role;
+          
+          // Admin rolündeyse rol seçim modal'ını göster
+          if(currentRole === "admin") {
+            showRoleSwitchModal();
+          } else {
+            // Diğer roller için direkt çıkış yap
+            window.__SESSION = { role: null, pin: null };
+            localStorage.removeItem('rememberedPin');
+            location.reload();
+          }
         };
+
+        // Rol değiştirme modal fonksiyonları
+        function showRoleSwitchModal() {
+          const modal = document.getElementById('roleSwitchModal');
+          const roleOptions = document.getElementById('roleOptions');
+          
+          const roles = [
+            { id: 'admin', name: 'Yönetici', badge: 'YÖNETİCİ', color: '#00c853' },
+            { id: 'packer', name: 'Paketçi', badge: 'PAKETÇİ', color: '#2196f3' },
+            { id: 'stower', name: 'Stokçu / Raf Dizen', badge: 'RAF DİZEN', color: '#ff9800' },
+            { id: 'welder', name: 'Üretim', badge: 'ÜRETİM', color: '#9c27b0' },
+            { id: 'purchase', name: 'Satın Alma', badge: 'SATIN ALMA', color: '#00c853' },
+            { id: 'commission', name: 'Etsy Satışları', badge: 'ETSY SATIŞLARI', color: '#9333ea' },
+            { id: 'logout', name: 'Çıkış Yap', badge: 'ÇIKIŞ', color: '#ef4444' }
+          ];
+          
+          roleOptions.innerHTML = roles.map(role => `
+            <div class="role-option" data-role="${role.id}">
+              <span class="role-badge-preview" style="background:${role.color};color:#fff;">${role.badge}</span>
+              <span class="role-name">${role.name}</span>
+            </div>
+          `).join('');
+          
+          // Rol seçeneklerine tıklama event'i
+          roleOptions.querySelectorAll('.role-option').forEach(option => {
+            option.addEventListener('click', () => {
+              const selectedRole = option.dataset.role;
+              
+              if(selectedRole === 'logout') {
+                // Çıkış yap
+                window.__SESSION = { role: null, pin: null };
+                localStorage.removeItem('rememberedPin');
+                location.reload();
+              } else {
+                // Seçilen role geç
+                window.__SESSION.role = selectedRole;
+                modal.classList.remove('active');
+                
+                // UI'ı güncelle
+                setTabsByRole(selectedRole);
+                
+                // Rol bilgisini güncelle
+                const userName = getNameByPin(window.__SESSION.pin);
+                if(roleLine) {
+                  roleLine.innerHTML = `${roleBadge(selectedRole)} | ${userName}`;
+                }
+              }
+            });
+          });
+          
+          modal.classList.add('active');
+        }
+        
+        // Modal'ı kapatma
+        document.getElementById('btnCancelRoleSwitch')?.addEventListener('click', () => {
+          document.getElementById('roleSwitchModal').classList.remove('active');
+        });
+        
+        // Modal dışına tıklayınca kapat
+        document.getElementById('roleSwitchModal')?.addEventListener('click', (e) => {
+          if(e.target.id === 'roleSwitchModal') {
+            e.target.classList.remove('active');
+          }
+        });
 
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
@@ -4364,7 +4668,8 @@
 
         async function saveProduction(){
           const code = (welderCode.value || "").trim();
-          const status = welderStatus.value || "ÜRETİLDİ";
+          // Lazerci için varsayılan durum "KESİLDİ", diğerleri için seçilen durum
+          const status = LASER_PINS.has(sessionPin) ? "KESİLDİ" : (welderStatus.value || "ÜRETİLDİ");
           const qty = parseInt(welderQty.value || "0", 10);
 
           if(!code){
@@ -4493,6 +4798,14 @@
         }
 
         welderSave && (welderSave.onclick = saveProduction);
+        
+        // Lazerci rolü için durum alanını gizle
+        if(role === "welder" && LASER_PINS.has(sessionPin)) {
+          const welderStatusRow = welderStatus?.closest('.formRow');
+          if(welderStatusRow) {
+            welderStatusRow.style.display = 'none';
+          }
+        }
         
         if(role === "welder"){
           loadTodayProduction();
@@ -7359,6 +7672,304 @@
         setStatusBox(statusLogs, "Firebase yüklenemedi: " + e.message, "error");
       }
     };
+
+    // ============================================
+    // PUANTAJ SİSTEMİ FONKSİYONLARI
+    // ============================================
+    
+    async function initAttendance() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      
+      // Bugünün tarihini başlangıç ve bitiş olarak ayarla
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      document.getElementById('attendanceStartDate').value = todayStr;
+      document.getElementById('attendanceEndDate').value = todayStr;
+      
+      // Admin ise kullanıcı filtresi göster
+      const currentRole = window.__SESSION?.role;
+      if(currentRole === 'admin') {
+        document.getElementById('attendanceUserFilterDiv').style.display = 'block';
+        populateUserFilter();
+      }
+      
+      // Bugünkü kaydı yükle (varsa otomatik doldur)
+      await loadTodayAttendance();
+      
+      // Kaydet butonuna event listener
+      document.getElementById('btnSaveAttendance').onclick = saveAttendance;
+      document.getElementById('btnLoadAttendance').onclick = loadAttendanceRecords;
+    }
+    
+    function populateUserFilter() {
+      const select = document.getElementById('attendanceUserFilter');
+      const allUsers = [
+        ...Array.from(window.ADMIN_PINS || []),
+        ...Array.from(window.PACKER_PINS || []),
+        ...Array.from(window.STOWER_PINS || []),
+        ...Array.from(window.WELDER_PINS || []),
+        ...Array.from(window.LASER_PINS || []),
+        ...Array.from(window.PURCHASE_PINS || [])
+      ];
+      
+      select.innerHTML = '<option value="">Tüm Kullanıcılar</option>';
+      allUsers.forEach(pin => {
+        const name = window.PIN_NAMES?.[pin] || pin;
+        select.innerHTML += `<option value="${pin}">${name}</option>`;
+      });
+    }
+    
+    async function loadTodayAttendance() {
+      try {
+        const currentPin = window.__SESSION?.pin;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const attendanceCol = window.collection(window.db, 'attendance');
+        const q = window.query(
+          attendanceCol,
+          window.where('pin', '==', currentPin),
+          window.where('date', '==', today)
+        );
+        
+        const snapshot = await window.getDocs(q);
+        
+        if (!snapshot.empty) {
+          const data = snapshot.docs[0].data();
+          document.getElementById('attendanceCheckIn').value = data.checkIn || '';
+          document.getElementById('attendanceCheckOut').value = data.checkOut || '';
+          document.getElementById('attendanceBreak').value = data.breakMinutes || 0;
+          document.getElementById('attendanceNote').value = data.note || '';
+        }
+      } catch (e) {
+        console.error('Bugünkü kayıt yüklenirken hata:', e);
+      }
+    }
+    
+    async function saveAttendance() {
+      const statusBox = document.getElementById('statusAttendance');
+      const currentPin = window.__SESSION?.pin;
+      const currentRole = window.__SESSION?.role;
+      const userName = window.PIN_NAMES?.[currentPin] || currentPin;
+      
+      const checkIn = document.getElementById('attendanceCheckIn').value;
+      const checkOut = document.getElementById('attendanceCheckOut').value;
+      const breakMinutes = parseInt(document.getElementById('attendanceBreak').value) || 0;
+      const note = document.getElementById('attendanceNote').value.trim();
+      
+      if (!checkIn) {
+        setStatusBox(statusBox, 'Giriş saati zorunludur.', 'error');
+        return;
+      }
+      
+      if (checkOut && checkOut < checkIn) {
+        setStatusBox(statusBox, 'Çıkış saati giriş saatinden önce olamaz.', 'error');
+        return;
+      }
+      
+      try {
+        setStatusBox(statusBox, 'Kaydediliyor...', '');
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        const attendanceData = {
+          pin: currentPin,
+          userName: userName,
+          role: currentRole,
+          date: today,
+          checkIn: checkIn,
+          checkOut: checkOut || null,
+          breakMinutes: breakMinutes,
+          note: note,
+          timestamp: window.serverTimestamp()
+        };
+        
+        // Bugün için kayıt var mı kontrol et
+        const attendanceCol = window.collection(window.db, 'attendance');
+        const q = window.query(
+          attendanceCol,
+          window.where('pin', '==', currentPin),
+          window.where('date', '==', today)
+        );
+        
+        const snapshot = await window.getDocs(q);
+        
+        if (!snapshot.empty) {
+          // Güncelle
+          const docId = snapshot.docs[0].id;
+          await window.updateDoc(window.doc(window.db, 'attendance', docId), attendanceData);
+          setStatusBox(statusBox, 'Kayıt güncellendi!', 'ok');
+        } else {
+          // Yeni kayıt
+          await window.addDoc(attendanceCol, attendanceData);
+          setStatusBox(statusBox, 'Kayıt oluşturuldu!', 'ok');
+        }
+        
+        // Listeyi yenile
+        await loadAttendanceRecords();
+        
+      } catch (e) {
+        console.error('Kayıt hatası:', e);
+        setStatusBox(statusBox, 'Hata: ' + e.message, 'error');
+      }
+    }
+    
+    async function loadAttendanceRecords() {
+      try {
+        const currentPin = window.__SESSION?.pin;
+        const currentRole = window.__SESSION?.role;
+        const startDate = document.getElementById('attendanceStartDate').value;
+        const endDate = document.getElementById('attendanceEndDate').value;
+        const userFilter = document.getElementById('attendanceUserFilter')?.value || '';
+        
+        if (!startDate || !endDate) {
+          alert('Başlangıç ve bitiş tarihlerini seçin.');
+          return;
+        }
+        
+        const attendanceCol = window.collection(window.db, 'attendance');
+        let q;
+        
+        if (currentRole === 'admin' && userFilter) {
+          // Admin - belirli kullanıcı
+          q = window.query(
+            attendanceCol,
+            window.where('pin', '==', userFilter),
+            window.where('date', '>=', startDate),
+            window.where('date', '<=', endDate),
+            window.orderBy('date', 'desc')
+          );
+        } else if (currentRole === 'admin') {
+          // Admin - tüm kullanıcılar
+          q = window.query(
+            attendanceCol,
+            window.where('date', '>=', startDate),
+            window.where('date', '<=', endDate),
+            window.orderBy('date', 'desc')
+          );
+        } else {
+          // Normal kullanıcı - sadece kendi kayıtları
+          q = window.query(
+            attendanceCol,
+            window.where('pin', '==', currentPin),
+            window.where('date', '>=', startDate),
+            window.where('date', '<=', endDate),
+            window.orderBy('date', 'desc')
+          );
+        }
+        
+        const snapshot = await window.getDocs(q);
+        const records = [];
+        
+        snapshot.forEach(doc => {
+          records.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderAttendanceTable(records);
+        calculateAttendanceStats(records);
+        
+      } catch (e) {
+        console.error('Kayıtlar yüklenirken hata:', e);
+        alert('Hata: ' + e.message);
+      }
+    }
+    
+    function renderAttendanceTable(records) {
+      const tbody = document.getElementById('attendanceTableBody');
+      const tableWrap = document.getElementById('attendanceTableWrap');
+      
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">Kayıt bulunamadı.</td></tr>';
+        tableWrap.style.display = 'block';
+        return;
+      }
+      
+      const currentRole = window.__SESSION?.role;
+      const currentPin = window.__SESSION?.pin;
+      
+      tbody.innerHTML = records.map(rec => {
+        const workHours = calculateWorkHours(rec.checkIn, rec.checkOut, rec.breakMinutes);
+        const canDelete = currentRole === 'admin' || rec.pin === currentPin;
+        
+        return `
+          <tr>
+            <td>${formatDate(rec.date)}</td>
+            <td>${rec.userName || rec.pin}</td>
+            <td>${rec.checkIn}</td>
+            <td>${rec.checkOut || '-'}</td>
+            <td style="font-weight:700;color:${workHours > 0 ? '#065f46' : 'var(--muted)'};">${workHours > 0 ? workHours.toFixed(2) + ' saat' : '-'}</td>
+            <td>${rec.breakMinutes || 0} dk</td>
+            <td>${rec.note || '-'}</td>
+            <td>
+              ${canDelete ? `<button onclick="deleteAttendance('${rec.id}')" style="background:#ef4444;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;">SİL</button>` : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      tableWrap.style.display = 'block';
+    }
+    
+    function calculateWorkHours(checkIn, checkOut, breakMinutes) {
+      if (!checkIn || !checkOut) return 0;
+      
+      const [h1, m1] = checkIn.split(':').map(Number);
+      const [h2, m2] = checkOut.split(':').map(Number);
+      
+      const totalMinutes = (h2 * 60 + m2) - (h1 * 60 + m1);
+      const workMinutes = totalMinutes - (breakMinutes || 0);
+      
+      return workMinutes / 60;
+    }
+    
+    function calculateAttendanceStats(records) {
+      const statsDiv = document.getElementById('attendanceStats');
+      
+      if (records.length === 0) {
+        statsDiv.style.display = 'none';
+        return;
+      }
+      
+      let totalDays = 0;
+      let totalHours = 0;
+      let totalBreak = 0;
+      
+      records.forEach(rec => {
+        if (rec.checkIn && rec.checkOut) {
+          totalDays++;
+          totalHours += calculateWorkHours(rec.checkIn, rec.checkOut, rec.breakMinutes);
+          totalBreak += rec.breakMinutes || 0;
+        }
+      });
+      
+      const avgHours = totalDays > 0 ? totalHours / totalDays : 0;
+      
+      document.getElementById('statTotalDays').textContent = totalDays;
+      document.getElementById('statTotalHours').textContent = totalHours.toFixed(2);
+      document.getElementById('statAvgHours').textContent = avgHours.toFixed(2);
+      document.getElementById('statTotalBreak').textContent = totalBreak;
+      
+      statsDiv.style.display = 'block';
+    }
+    
+    window.deleteAttendance = async function(recordId) {
+      if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
+      
+      try {
+        await window.deleteDoc(window.doc(window.db, 'attendance', recordId));
+        await loadAttendanceRecords();
+        alert('Kayıt silindi.');
+      } catch (e) {
+        console.error('Silme hatası:', e);
+        alert('Hata: ' + e.message);
+      }
+    };
+    
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${d}.${m}.${y}`;
+    }
   </script>
 
 </body>
