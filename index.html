@@ -9319,7 +9319,7 @@
       }
     };
 
-    // Telegram Test butonu
+    // iOS Test butonu -> Telegram Test
     window.testIOSNotification = async function() {
       const statusDiv = document.getElementById('notificationTestStatus');
       statusDiv.style.display = 'block';
@@ -9328,34 +9328,6 @@
       try {
         // Firestore'a test bildirimi ekle - Cloud Function otomatik Telegram'a gönderecek
         const notificationData = {
-          title: '🧪 Test Bildirimi',
-          body: 'Bu bir test bildirimidir. Telegram bildirimleriniz çalışıyor! 🎉',
-          targetRoles: ['admin', 'packer', 'welder', 'laser', 'stower', 'purchase', 'painter'],
-          timestamp: Date.now(),
-          createdAt: new Date().toISOString(),
-          type: 'test',
-          eventType: 'test'
-        };
-        
-        const notifRef = await window.addDoc(
-          window.collection(window.db, 'notifications'),
-          notificationData
-        );
-        
-        statusDiv.innerHTML = '✅ Test bildirimi gönderildi! Notification ID: ' + notifRef.id + 
-          '<br><br>📱 Telegram\'ınıza mesaj gelecek.<br>💻 Cloud Function işliyor...';
-        
-        console.log('Test bildirimi oluşturuldu:', notifRef.id);
-        
-        setTimeout(() => {
-          statusDiv.style.display = 'none';
-        }, 5000);
-      } catch (error) {
-        console.error('Test bildirimi hatası:', error);
-        statusDiv.innerHTML = '❌ Hata: ' + error.message;
-      }
-    };
-
 
     // Kullanıcı Telegram listesini doldur
     async function populateTelegramUsersTable() {
@@ -9485,6 +9457,35 @@
     if (window.__SESSION?.role === 'admin') {
       setTimeout(populateTelegramUsersTable, 500);
     }
+          title: '🧪 Test Bildirimi',
+          body: 'Telegram bot çalışıyor! Bu bir test mesajıdır. 🎉',
+          targetRoles: ['admin', 'packer', 'welder', 'laser', 'stower', 'purchase', 'painter'],
+          timestamp: Date.now(),
+          createdAt: new Date().toISOString(),
+          type: 'test'
+        };
+        
+        const notifRef = await window.addDoc(
+          window.collection(window.db, 'notifications'),
+          notificationData
+        );
+        
+        statusDiv.innerHTML = '✅ Test bildirimi oluşturuldu!<br><br>' +
+          '📱 Telegram\'a mesaj gönderiliyor...<br>' +
+          '🆔 Notification ID: ' + notifRef.id +
+          '<br><br>💡 Telegram\'ınızı kontrol edin!';
+        
+        console.log('Test bildirimi oluşturuldu:', notifRef.id);
+        
+        // 8 saniye sonra durumu temizle
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 8000);
+      } catch (error) {
+        console.error('Test bildirimi hatası:', error);
+        statusDiv.innerHTML = '❌ Hata: ' + error.message;
+      }
+    };
     
     // sendNotification'ı kuralları kontrol edecek şekilde güncelle
     const originalSendNotification = sendNotification;
