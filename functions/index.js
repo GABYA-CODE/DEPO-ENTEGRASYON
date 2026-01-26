@@ -116,33 +116,47 @@ exports.createNotificationRequest = functions.firestore
         const configDoc = await db.collection('config').doc('telegram').get();
         if (configDoc.exists && configDoc.data().botToken) {
           const botToken = configDoc.data().botToken;
+          console.log('Bot token bulundu, bildirim gönderiliyor...');
+          console.log('targetPins:', targetPins);
+          console.log('targetRoles:', targetRoles);
           
           // Hedef kullanıcıları belirle
-          let telegramQuery;
-          if (targetPins && targetPins.length > 0) {
-            telegramQuery = db.collection('telegramUsers').where('pin', 'in', targetPins);
-          } else if (targetRoles && targetRoles.length > 0) {
-            telegramQuery = db.collection('telegramUsers').where('role', 'in', targetRoles);
-          }
+          const telegramPromises = [];
           
-          if (telegramQuery) {
-            const telegramSnapshot = await telegramQuery.get();
-            const telegramPromises = [];
-            
-            telegramSnapshot.forEach(doc => {
-              const chatId = doc.data().chatId;
-              if (chatId) {
+          if (targetPins && targetPins.length > 0) {
+            // PIN'lere göre gönder - Array olduğu için döngü ile işle
+            const usersSnapshot = await db.collection('telegramUsers').get();
+            usersSnapshot.forEach(doc => {
+              const userData = doc.data();
+              if (targetPins.includes(userData.pin) && userData.chatId) {
                 const message = `<b>${title}</b>\n\n${body}`;
-                telegramPromises.push(sendTelegramMessage(botToken, chatId, message));
+                console.log(`Mesaj gönderiliyor: ${userData.name} (${userData.pin}) -> ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
               }
             });
-            
-            if (telegramPromises.length > 0) {
-              const telegramResults = await Promise.allSettled(telegramPromises);
-              const telegramSuccess = telegramResults.filter(r => r.status === 'fulfilled' && r.value === true).length;
-              console.log(`Telegram: ${telegramSuccess}/${telegramPromises.length} gönderildi`);
-            }
+          } else if (targetRoles && targetRoles.length > 0) {
+            // Role'lere göre gönder
+            const usersSnapshot = await db.collection('telegramUsers').get();
+            usersSnapshot.forEach(doc => {
+              const userData = doc.data();
+              if (targetRoles.includes(userData.role) && userData.chatId) {
+                const message = `<b>${title}</b>\n\n${body}`;
+                console.log(`Mesaj gönderiliyor: ${userData.name} (${userData.role}) -> ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
+              }
+            });
           }
+          
+          if (telegramPromises.length > 0) {
+            console.log(`${telegramPromises.length} Telegram mesajı gönderiliyor...`);
+            const telegramResults = await Promise.allSettled(telegramPromises);
+            const telegramSuccess = telegramResults.filter(r => r.status === 'fulfilled' && r.value === true).length;
+            console.log(`Telegram: ${telegramSuccess}/${telegramPromises.length} başarıyla gönderildi`);
+          } else {
+            console.log('Telegram bildirim alacak kullanıcı bulunamadı');
+          }
+        } else {
+          console.log('Bot token bulunamadı');
         }
       } catch (telegramError) {
         console.error('Telegram bildirim hatası:', telegramError);
