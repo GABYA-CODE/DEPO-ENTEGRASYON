@@ -737,6 +737,89 @@
     .role-modal-buttons .btn-cancel:hover {
       background: var(--border);
     }
+    
+    /* Raf Grid Kartları */
+    .rack-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+    .rack-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-color: rgba(0,200,83,0.2);
+    }
+    .rack-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .rack-card-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+    .rack-card-status {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .rack-card-status.empty {
+      background: rgba(100,116,139,0.1);
+      color: var(--muted);
+    }
+    .rack-card-status.full {
+      background: rgba(239,68,68,0.1);
+      color: #ef4444;
+    }
+    .rack-card-products {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .product-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(0,200,83,0.08);
+      border: 1px solid rgba(0,200,83,0.2);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .product-tag-code {
+      color: #00c853;
+      font-weight: 700;
+    }
+    .product-tag-qty {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .rack-card.empty .rack-card-products {
+      color: var(--muted);
+      font-style: italic;
+    }
+    .rack-filter-btn:hover {
+      background: var(--panel2);
+      border-color: var(--green);
+    }
+    .rack-filter-btn.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
   </style>
 </head>
 
@@ -1025,27 +1108,34 @@
 
         <!-- VIEW: RACK STATUS -->
         <div id="viewRack" style="display:none;">
-          <div class="sectionTitle"></div>
+          <div style="padding:16px 20px;background:var(--panel);border-bottom:1px solid var(--border);">
+            <div id="rackHint" style="font-size:14px;color:var(--muted);font-weight:600;"></div>
+          </div>
 
-          <div class="card">
-            <h3 style="margin-top:0;"></h3>
-
-            <div class="hintLine" id="rackHint"></div>
-
-            <div class="tableWrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Raf</th>
-                    <th>Durum</th>
-                    <th>Ürünler</th>
-                  </tr>
-                </thead>
-                <tbody id="rackBody"></tbody>
-              </table>
+          <div style="padding:20px;">
+            <!-- Dolu Raflar -->
+            <div style="margin-bottom:32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:#00c853;font-size:18px;">●</span>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text);">DOLU RAFLAR</h3>
+                <span id="fullRackCount" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
+              </div>
+              <div id="rackGridFull" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+              <div id="rackFullEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Dolu raf yok</div>
             </div>
-
-            <div class="setupBox" id="setupBox">
+            
+            <!-- Boş Raflar (Sadece Admin) -->
+            <div id="emptyRacksSection" style="margin-bottom:32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:var(--muted);font-size:18px;">●</span>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text);">BOŞ RAFLAR</h3>
+                <span id="emptyRackCount" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
+              </div>
+              <div id="rackGridEmpty" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+              <div id="rackEmptyEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Boş raf yok</div>
+            </div>
+            
+            <div class="setupBox" id="setupBox" style="margin-top:20px;">
               <div class="setupTitle">İlk Kurulum</div>
               <div class="setupRow">
                 <input id="setupCount" class="input" type="number" min="1" value="300" style="margin:0;" />
@@ -2035,12 +2125,52 @@
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
           
-          <!-- Test Notification Button -->
-          <div class="card" style="margin-bottom:14px;">
-            <h3 style="margin-top:0;">🔔 Bildirim Testi</h3>
-            <button onclick="testNotification()" class="actionBtn" style="margin-right:10px;">Test Bildirimi Gönder</button>
-            <button onclick="checkNotificationStatus()" class="searchBtn">Bildirim Durumunu Kontrol Et</button>
-            <div id="notificationStatus" style="margin-top:12px;padding:12px;background:#f0f0f0;border-radius:8px;font-family:monospace;font-size:13px;display:none;"></div>
+          <!-- Konum Ayarları -->
+          <div class="card">
+            <h3 style="margin-top:0;">📍 İşyeri Konum Ayarları</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+              Çalışanlar giriş/çıkış yaparken bu konumun belirtilen mesafe sınırı içinde olmalıdır.
+            </p>
+            
+            <div style="margin-bottom:16px;">
+              <label class="fieldLabel">GOOGLE MAPS LİNKİ</label>
+              <input id="workplaceMapsLink" class="input" type="text" placeholder="https://maps.app.goo.gl/... veya tam link" />
+              <button class="searchBtn" id="btnParseMapsLink" style="margin-top:8px;width:100%;">LİNKTEN KOORDİNATLARI ÇEK</button>
+            </div>
+            
+            <div style="text-align:center;margin:16px 0;color:var(--muted);font-weight:700;">─── VEYA ───</div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label class="fieldLabel">ENLEM (Latitude)</label>
+                <input id="workplaceLat" class="input" type="number" step="0.000001" placeholder="41.0082" />
+              </div>
+              <div>
+                <label class="fieldLabel">BOYLAM (Longitude)</label>
+                <input id="workplaceLng" class="input" type="number" step="0.000001" placeholder="28.9784" />
+              </div>
+              <div>
+                <label class="fieldLabel">MAX MESAFE (metre)</label>
+                <input id="workplaceMaxDistance" class="input" type="number" min="10" max="500" value="50" />
+              </div>
+            </div>
+            
+            <div style="display:flex;gap:8px;">
+              <button class="actionBtn" id="btnSaveWorkplaceLocation" style="flex:1;">KONUMU KAYDET</button>
+              <button class="searchBtn" id="btnGetCurrentLocation" style="flex:1;">MEVCUT KONUMU AL</button>
+            </div>
+            
+            <div class="statusBox" id="statusWorkplaceLocation" style="display:none;margin-top:12px;"></div>
+            
+            <div style="margin-top:12px;padding:12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;">
+              <div style="font-size:12px;font-weight:700;color:#d97706;margin-bottom:4px;">💡 Google Maps Linkini Nasıl Alırım?</div>
+              <div style="font-size:12px;color:var(--muted);">
+                1. Google Maps'te işyerinizi bulun<br>
+                2. "Paylaş" butonuna tıklayın<br>
+                3. "Link kopyala" dedikten sonra buraya yapıştırın<br>
+                4. "Linkten Koordinatları Çek" butonuna basın
+              </div>
+            </div>
           </div>
 
           <div class="card">
@@ -2462,7 +2592,7 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_shelf_product_added" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('shelf_product_added', this)">
+                  <select multiple id="notify_shelf_product_added" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                     <!-- JavaScript ile doldurulacak -->
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
@@ -2483,7 +2613,7 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_production_request" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('production_request', this)">
+                  <select multiple id="notify_production_request" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
@@ -2503,7 +2633,7 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_production_completed" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('production_completed', this)">
+                  <select multiple id="notify_production_completed" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
@@ -2523,7 +2653,7 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_material_request" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('material_request', this)">
+                  <select multiple id="notify_material_request" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
@@ -2543,7 +2673,7 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_material_completed" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('material_completed', this)">
+                  <select multiple id="notify_material_completed" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
@@ -2563,12 +2693,18 @@
                 </div>
                 <div style="margin-top:12px;">
                   <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Bildirim Alacak Kullanıcılar:</label>
-                  <select multiple id="notify_attendance" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" onchange="saveNotificationRecipients('attendance', this)">
+                  <select multiple id="notify_attendance" style="width:100%;min-height:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   </select>
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
               </div>
             </div>
+
+            <!-- Kaydet Butonu -->
+            <button onclick="saveAllNotificationRecipients()" style="margin-top:16px;width:100%;padding:14px;background:#4CAF50;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(76,175,80,0.3);">
+              💾 Bildirim Alıcılarını Kaydet
+            </button>
+            <div id="notificationSaveStatus" style="display:none;margin-top:12px;padding:12px;border-radius:8px;font-size:13px;"></div>
 
             <div style="margin-top:16px;padding:12px;background:rgba(33,150,243,0.1);border-radius:8px;font-size:13px;">
               💡 <strong>Bilgi:</strong> Bildirimler Firebase Cloud Messaging ile gönderilir. Mobil ve masaüstünde çalışır.
@@ -2915,6 +3051,14 @@
 
     const rackHint  = document.getElementById("rackHint");
     const rackBody  = document.getElementById("rackBody");
+    const rackGrid  = document.getElementById("rackGrid");
+    const rackGridFull = document.getElementById("rackGridFull");
+    const rackGridEmpty = document.getElementById("rackGridEmpty");
+    const emptyRacksSection = document.getElementById("emptyRacksSection");
+    const fullRackCount = document.getElementById("fullRackCount");
+    const emptyRackCount = document.getElementById("emptyRackCount");
+    const rackFullEmpty = document.getElementById("rackFullEmpty");
+    const rackEmptyEmpty = document.getElementById("rackEmptyEmpty");
 
     const setupBox    = document.getElementById("setupBox");
     const setupCount  = document.getElementById("setupCount");
@@ -3237,6 +3381,19 @@
       if(!products || Object.keys(products).length===0) return "-";
       return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
     }
+    
+    function productsHTML(products){
+      if(!products || Object.keys(products).length===0) {
+        return '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>';
+      }
+      return Object.entries(products)
+        .map(([code, qty]) => `
+          <div class="product-tag">
+            <span class="product-tag-code">${code}</span>
+            <span class="product-tag-qty">×${qty}</span>
+          </div>
+        `).join('');
+    }
 
     function isEmpty(data){
       const p = data?.products || {};
@@ -3458,7 +3615,16 @@
         setTimeout(()=>{ try{ outShelfNum.focus(); }catch(e){} },50); 
       }
       if(target==="search"){ tabSearch?.classList.add("active"); viewSearch.style.display="block"; setTimeout(()=>{ try{ searchCode.focus(); searchCode.select && searchCode.select(); }catch(e){} },50); }
-      if(target==="rack"){ tabRack?.classList.add("active"); viewRack.style.display="block"; setTimeout(()=>{ try{ rackBody && rackBody.scrollIntoView && rackBody.scrollIntoView(); }catch(e){} },50); }
+      if(target==="rack"){ 
+        tabRack?.classList.add("active"); 
+        viewRack.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            const scrollTarget = rackGrid || rackBody;
+            scrollTarget && scrollTarget.scrollIntoView && scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+          }catch(e){} 
+        },50); 
+      }
       if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
       if(target==="materialRequest"){ tabMaterialRequest?.classList.add("active"); viewMaterialRequest.style.display="block"; setTimeout(()=>{ try{ matReqName.focus(); matReqName.select && matReqName.select(); }catch(e){} },50); }
       if(target==="welder"){ tabWelder?.classList.add("active"); viewWelder.style.display="block"; setTimeout(()=>{ try{ welderCode.focus(); welderCode.select && welderCode.select(); }catch(e){} },50); }
@@ -3520,6 +3686,9 @@
         tabAdmin?.classList.add("active"); 
         viewAdmin.style.display="block"; 
         
+        // Sayfayı en üste kaydır
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
         // loadCredentials'ı bekleyen bir fonksiyon
         function waitForLoadCredentials(attempts = 0) {
           if(typeof window.loadCredentials === "function") {
@@ -3541,6 +3710,28 @@
               loadCommissionSummary(); 
             }
             waitForLoadCredentials();
+            
+            // Konum ayarlarını yükle
+            if(typeof loadWorkplaceLocation === "function") {
+              console.log("📍 Konum ayarları yükleniyor...");
+              loadWorkplaceLocation();
+            }
+            if(typeof setupLocationButtons === "function") {
+              console.log("🔘 Konum butonları ayarlanıyor...");
+              setupLocationButtons();
+            }
+            
+            // Telegram kullanıcı tablosunu doldur
+            if(typeof populateTelegramUsersTable === "function") {
+              console.log("👥 Telegram kullanıcı tablosu dolduruluyor...");
+              populateTelegramUsersTable();
+            }
+            
+            // Bildirim ayarları kullanıcı listesini doldur
+            if(typeof populateNotificationRecipients === "function") {
+              console.log("🔔 Bildirim ayarları kullanıcı listesi dolduruluyor...");
+              populateNotificationRecipients();
+            }
           }catch(e){console.error("❌ Admin sekmesi yükleme hatası:", e);} 
         },100); 
       }
@@ -3638,10 +3829,12 @@
         tabbar.style.display="none";
         tabbarGrouped.style.display="flex";
         
-        // Grup açma/kapama event listener'ları
-        initGroupedTabbar();
-        
         setActiveTab("admin");
+        
+        // Sayfayı en üste kaydır
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
       }else if(r==="commission"){
         tabbar.style.display="none";
         tabbarGrouped.style.display="none";
@@ -3654,7 +3847,12 @@
       }
     }
 
+    let groupedTabbarInitialized = false;
+    
     function initGroupedTabbar(){
+      if(groupedTabbarInitialized) return; // Sadece bir kez çalıştır
+      groupedTabbarInitialized = true;
+      
       // Grup başlıklarına tıklama
       document.querySelectorAll('.tab-group-header').forEach(header => {
         header.addEventListener('click', (e) => {
@@ -3760,6 +3958,9 @@
         sessionPin = sess.pin || null;
 
         setTabsByRole(role);
+        
+        // Grouped tabbar'ı başlat (sadece bir kez çalışacak)
+        initGroupedTabbar();
         
         // Admin kullanıcıları için notification permission iste
         if(role === 'admin') {
@@ -3896,6 +4097,28 @@
         window.orderBy = orderBy;
         window.limit = limit;
         window.onSnapshot = onSnapshot;
+        
+        // Firebase hazır olduğunda bildirim ayarlarını yükle
+        console.log('🔥 Firebase başlatıldı, bildirim ayarları yükleniyor...');
+        setTimeout(async () => {
+          try {
+            // Bildirim alıcılarını yükle
+            const configDoc = await getDoc(doc(db, 'config', 'notificationRecipients'));
+            if (configDoc.exists()) {
+              Object.assign(window.notificationRecipients, configDoc.data());
+              console.log('✅ Bildirim alıcıları yüklendi:', window.notificationRecipients);
+            }
+            
+            // Event durumlarını yükle
+            const statusDoc = await getDoc(doc(db, 'config', 'notificationEventStatus'));
+            if (statusDoc.exists()) {
+              Object.assign(window.notificationEventStatus, statusDoc.data());
+              console.log('✅ Bildirim event durumları yüklendi:', window.notificationEventStatus);
+            }
+          } catch (error) {
+            console.error('❌ Bildirim ayarları yükleme hatası:', error);
+          }
+        }, 1000);
 
         const shelvesCol = collection(db, "shelves");
         const logsCol = collection(db, "logs");
@@ -4029,7 +4252,9 @@
         // Raflar snapshot
         onSnapshot(shelvesCol, (snapshot) => {
           shelvesCache = {};
-          rackBody && (rackBody.innerHTML = "");
+          if(rackBody) rackBody.innerHTML = "";
+          if(rackGridFull) rackGridFull.innerHTML = "";
+          if(rackGridEmpty) rackGridEmpty.innerHTML = "";
 
           const total = snapshot.size;
           let emptyCount = 0;
@@ -4044,10 +4269,33 @@
             const empty = Object.keys(products).length===0;
             if(empty) emptyCount++; else fullCount++;
 
-            // PACKER/STOWER (admin değil) => sadece dolu rafları göster
-            if(role !== "admin" && empty) return;
-
+            const card = document.createElement("div");
+            card.className = "rack-card";
+            if(empty) card.classList.add('empty');
+            
+            const statusClass = empty ? 'empty' : 'full';
+            const statusText = empty ? 'BOŞ' : 'DOLU';
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products);
+            
+            card.innerHTML = `
+              <div class="rack-card-header">
+                <div class="rack-card-name">${name}</div>
+                <div class="rack-card-status ${statusClass}">${statusText}</div>
+              </div>
+              <div class="rack-card-products">${productsText}</div>
+            `;
+            
+            // Dolu/boş rafları ayrı gruplara ekle
+            if(empty && rackGridEmpty) {
+              rackGridEmpty.appendChild(card);
+            } else if(!empty && rackGridFull) {
+              rackGridFull.appendChild(card);
+            }
+            
+            // Eski tablo için geriye dönük uyumluluk
             if(rackBody){
+              if(role !== "admin" && empty) return;
+              
               const badge = empty
                 ? '<span class="badge b-empty">BOŞ</span>'
                 : '<span class="badge b-full">DOLU</span>';
@@ -4057,16 +4305,33 @@
               rackBody.appendChild(tr);
             }
           });
+          
+          // Sayıları güncelle
+          if(fullRackCount) fullRackCount.textContent = `(${fullCount})`;
+          if(emptyRackCount) emptyRackCount.textContent = `(${emptyCount})`;
+          
+          // Boş mesajları kontrol et
+          if(rackFullEmpty) {
+            rackFullEmpty.style.display = fullCount === 0 ? 'block' : 'none';
+          }
+          if(rackEmptyEmpty) {
+            rackEmptyEmpty.style.display = emptyCount === 0 ? 'block' : 'none';
+          }
+          
+          // Admin değilse boş raflar bölümünü gizle
+          if(role !== "admin" && emptyRacksSection) {
+            emptyRacksSection.style.display = "none";
+          }
 
           if(rackHint){
             if(role === "admin"){
-              rackHint.textContent = `Toplam raf: ${total} | Dolu: ${fullCount} | Boş: ${emptyCount}`;
+              rackHint.textContent = `Toplam: ${total} raf • Dolu: ${fullCount} • Boş: ${emptyCount}`;
             }else{
               rackHint.textContent = `Dolu raf: ${fullCount}`;
             }
           }
 
-          populateShelfDropdown(); // Raf dropdown'ını güncelle
+          populateShelfDropdown();
           refreshClearMode();
           if(role==="admin") computeSummary();
         });
@@ -4210,8 +4475,8 @@
             await writeLog({ action: "PUT", shelf: shelfName, product: code, qty, detail: "Rafa ürün eklendi" });
 
             // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = notificationRecipients.shelf_product_added || [];
-            if (recipients.length > 0 && notificationEventStatus.shelf_product_added) {
+            const recipients = window.notificationRecipients.shelf_product_added || [];
+            if (recipients.length > 0 && window.notificationEventStatus.shelf_product_added) {
               await sendNotification({
                 eventType: 'shelf_product_added',
                 targetPins: recipients,
@@ -4375,14 +4640,30 @@
             await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: qty, detail: `Üretim talebi oluşturuldu (${prodType === 'laser' ? 'Lazer' : 'Kaynak'}) - ${qty} adet` });
 
             // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = notificationRecipients.production_request || [];
-            if (recipients.length > 0 && notificationEventStatus.production_request) {
+            const recipients = window.notificationRecipients.production_request || [];
+            console.log('🔔 Üretim talebi bildirimi gönderiliyor...');
+            console.log('  - Recipients:', recipients);
+            console.log('  - Event Status:', window.notificationEventStatus.production_request);
+            console.log('  - Notification Recipients Object:', window.notificationRecipients);
+            
+            if (recipients.length > 0 && window.notificationEventStatus.production_request) {
+              console.log('✅ Bildirim gönderiliyor:', {
+                eventType: 'production_request',
+                targetPins: recipients,
+                title: prodType === 'laser' ? '⚡ Lazer Talebi' : '🔥 Kaynak Talebi',
+                body: `${code} ürününden ${qty} adet talep edildi`
+              });
+              
               await sendNotification({
                 eventType: 'production_request',
                 targetPins: recipients,
                 title: prodType === 'laser' ? '⚡ Lazer Talebi' : '🔥 Kaynak Talebi',
                 body: `${code} ürününden ${qty} adet talep edildi`
               });
+              
+              console.log('✅ Bildirim başarıyla Firestore\'a eklendi');
+            } else {
+              console.warn('⚠️ Bildirim gönderilmedi! Recipients:', recipients.length, 'Event aktif:', window.notificationEventStatus.production_request);
             }
 
             setStatusBox(statusReq, "Talep alındı. ✅", "ok");
@@ -4419,13 +4700,16 @@
 
             await writeLog({ action: "MATERIAL_REQUEST", shelf: "-", product: name, qty: qty, detail: `Malzeme talebi oluşturuldu: ${note || '-'}` });
 
-            // Satın almaya bildirim gönder
-            await sendNotification({
-              eventType: 'material_request',
-              targetRoles: ['purchase'],
-              title: '🛒 Malzeme Talebi',
-              body: `${name} - ${qty} adet ${note ? '(' + note + ')' : ''}`
-            });
+            // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
+            const recipients = window.notificationRecipients.material_request || [];
+            if (recipients.length > 0 && window.notificationEventStatus.material_request) {
+              await sendNotification({
+                eventType: 'material_request',
+                targetPins: recipients,
+                title: '🛒 Malzeme Talebi',
+                body: `${name} - ${qty} adet ${note ? '(' + note + ')' : ''}`
+              });
+            }
 
             setStatusBox(statusMatReq, "Malzeme talebi alındı. ✅", "ok");
             matReqName.value = "";
@@ -4692,7 +4976,7 @@
               const requestSnap = await getDoc(requestRef);
               const requestData = requestSnap.data();
               
-              if(requestData && requestData.requestedBy && notificationEventStatus.material_completed){
+              if(requestData && requestData.requestedBy && window.notificationEventStatus.material_completed){
                 await sendNotification({
                   eventType: 'material_completed',
                   targetPins: [requestData.requestedBy],
@@ -5228,8 +5512,8 @@
             });
             
             // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = notificationRecipients.production_completed || [];
-            if (recipients.length > 0 && notificationEventStatus.production_completed) {
+            const recipients = window.notificationRecipients.production_completed || [];
+            if (recipients.length > 0 && window.notificationEventStatus.production_completed) {
               await sendNotification({
                 eventType: 'production_completed',
                 targetPins: recipients,
@@ -8093,6 +8377,10 @@
       document.getElementById('btnCheckIn').onclick = handleCheckIn;
       document.getElementById('btnCheckOut').onclick = handleCheckOut;
       document.getElementById('btnLoadAttendance').onclick = loadAttendanceRecords;
+      
+      // Konum ayarları fonksiyonları
+      await loadWorkplaceLocation();
+      setupLocationButtons();
     }
     
     function populateUserFilter() {
@@ -8198,11 +8486,312 @@
       `;
     }
     
+    // İşyeri konumu (Koordinatları buraya girin)
+    const WORKPLACE_LOCATION = {
+      lat: 41.0082,  // Örnek: İstanbul koordinatı
+      lng: 28.9784,  // Bu koordinatları gerçek işyeri koordinatlarıyla değiştirin
+      maxDistance: 50 // metre
+    };
+    
+    // İki koordinat arasındaki mesafeyi hesapla (Haversine formülü)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Dünya'nın yarıçapı (metre)
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c; // Metre cinsinden mesafe
+    }
+    
+    // Konum kontrolü yap
+    async function checkLocation() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('Tarayıcınız konum servisi desteklemiyor.'));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const distance = calculateDistance(
+              userLat,
+              userLng,
+              WORKPLACE_LOCATION.lat,
+              WORKPLACE_LOCATION.lng
+            );
+            
+            console.log(`Kullanıcı konumu: ${userLat}, ${userLng}`);
+            console.log(`İşyerine mesafe: ${Math.round(distance)} metre`);
+            
+            if (distance <= WORKPLACE_LOCATION.maxDistance) {
+              resolve({ success: true, distance: Math.round(distance) });
+            } else {
+              resolve({ 
+                success: false, 
+                distance: Math.round(distance),
+                message: `İşyerine ${Math.round(distance)} metre uzaklıktasınız. Giriş yapmak için ${WORKPLACE_LOCATION.maxDistance} metre yakınlıkta olmalısınız.`
+              });
+            }
+          },
+          (error) => {
+            let errorMessage = 'Konum alınamadı.';
+            if (error.code === error.PERMISSION_DENIED) {
+              errorMessage = 'Konum izni verilmedi. Lütfen tarayıcı ayarlarından konum iznini açın.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              errorMessage = 'Konum bilgisi alınamıyor.';
+            } else if (error.code === error.TIMEOUT) {
+              errorMessage = 'Konum alma zaman aşımına uğradı.';
+            }
+            reject(new Error(errorMessage));
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      });
+    }
+    
+    // Konum ayarlarını yükle
+    async function loadWorkplaceLocation() {
+      try {
+        const settingsDoc = await window.getDoc(window.doc(window.db, 'settings', 'workplace'));
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data();
+          WORKPLACE_LOCATION.lat = data.lat || WORKPLACE_LOCATION.lat;
+          WORKPLACE_LOCATION.lng = data.lng || WORKPLACE_LOCATION.lng;
+          WORKPLACE_LOCATION.maxDistance = data.maxDistance || WORKPLACE_LOCATION.maxDistance;
+          
+          // Input alanlarını doldur
+          const latInput = document.getElementById('workplaceLat');
+          const lngInput = document.getElementById('workplaceLng');
+          const distInput = document.getElementById('workplaceMaxDistance');
+          
+          if(latInput) latInput.value = data.lat || '';
+          if(lngInput) lngInput.value = data.lng || '';
+          if(distInput) distInput.value = data.maxDistance || 50;
+          
+          console.log('İşyeri konumu yüklendi:', WORKPLACE_LOCATION);
+        }
+      } catch (error) {
+        console.error('Konum ayarları yüklenirken hata:', error);
+      }
+    }
+    
+    // Konum butonlarını ayarla
+    function setupLocationButtons() {
+      const btnSave = document.getElementById('btnSaveWorkplaceLocation');
+      const btnGetCurrent = document.getElementById('btnGetCurrentLocation');
+      const btnParseMapsLink = document.getElementById('btnParseMapsLink');
+      
+      // Google Maps linkinden koordinat çıkar
+      if(btnParseMapsLink) {
+        btnParseMapsLink.onclick = async () => {
+          const statusDiv = document.getElementById('statusWorkplaceLocation');
+          const mapsLinkInput = document.getElementById('workplaceMapsLink');
+          const latInput = document.getElementById('workplaceLat');
+          const lngInput = document.getElementById('workplaceLng');
+          
+          let link = mapsLinkInput.value.trim();
+          
+          if(!link) {
+            setStatusBox(statusDiv, 'Lütfen Google Maps linkini yapıştırın!', 'error');
+            return;
+          }
+          
+          setStatusBox(statusDiv, '🔍 Link analiz ediliyor...', '');
+          
+          try {
+            // Kısa linkler için (maps.app.goo.gl) - yönlendirmeyi takip et
+            if(link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
+              try {
+                setStatusBox(statusDiv, '🔗 Kısa link genişletiliyor...', '');
+                const response = await fetch(link, { 
+                  method: 'HEAD',
+                  redirect: 'follow'
+                });
+                link = response.url;
+                console.log('Genişletilmiş link:', link);
+              } catch (e) {
+                // CORS hatası olabilir, tarayıcıda aç
+                setStatusBox(statusDiv, '⚠️ Kısa link otomatik açılamadı. Tarayıcıda açılıyor...', '');
+                const newWindow = window.open(link, '_blank');
+                setTimeout(() => {
+                  setStatusBox(statusDiv, '📋 Lütfen açılan sayfadaki UZUN linki kopyalayıp buraya yapıştırın.', 'warn');
+                }, 2000);
+                return;
+              }
+            }
+            
+            let lat = null;
+            let lng = null;
+            
+            // Farklı Google Maps link formatlarını dene
+            // Format 1: @LAT,LNG,15z gibi
+            let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if(match) {
+              lat = parseFloat(match[1]);
+              lng = parseFloat(match[2]);
+            }
+            
+            // Format 2: ?q=LAT,LNG gibi
+            if(!lat || !lng) {
+              match = link.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+              if(match) {
+                lat = parseFloat(match[1]);
+                lng = parseFloat(match[2]);
+              }
+            }
+            
+            // Format 3: place/ sonrası LAT,LNG
+            if(!lat || !lng) {
+              match = link.match(/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/);
+              if(match) {
+                lat = parseFloat(match[1]);
+                lng = parseFloat(match[2]);
+              }
+            }
+            
+            // Format 4: /maps/ ile başlayan ve @ içeren
+            if(!lat || !lng) {
+              match = link.match(/\/maps\/.*@(-?\d+\.\d+),(-?\d+\.\d+)/);
+              if(match) {
+                lat = parseFloat(match[1]);
+                lng = parseFloat(match[2]);
+              }
+            }
+            
+            if(lat && lng && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+              latInput.value = lat.toFixed(6);
+              lngInput.value = lng.toFixed(6);
+              setStatusBox(statusDiv, `✅ Koordinatlar bulundu: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'ok');
+            } else {
+              setStatusBox(statusDiv, '❌ Linkten koordinat çıkarılamadı. Lütfen linki tarayıcıda açıp adres çubuğundaki UZUN linki kopyalayın.', 'error');
+            }
+          } catch (error) {
+            console.error('Link parse hatası:', error);
+            setStatusBox(statusDiv, '❌ Link işlenirken hata oluştu: ' + error.message, 'error');
+          }
+        };
+      }
+      
+      if(btnSave) {
+        btnSave.onclick = async () => {
+          const statusDiv = document.getElementById('statusWorkplaceLocation');
+          const latInput = document.getElementById('workplaceLat');
+          const lngInput = document.getElementById('workplaceLng');
+          const distInput = document.getElementById('workplaceMaxDistance');
+          
+          const lat = parseFloat(latInput.value);
+          const lng = parseFloat(lngInput.value);
+          const maxDistance = parseInt(distInput.value);
+          
+          if(isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            setStatusBox(statusDiv, 'Geçersiz koordinatlar! Lütfen doğru değerler girin.', 'error');
+            return;
+          }
+          
+          if(isNaN(maxDistance) || maxDistance < 10 || maxDistance > 500) {
+            setStatusBox(statusDiv, 'Mesafe 10-500 metre arasında olmalı!', 'error');
+            return;
+          }
+          
+          try {
+            setStatusBox(statusDiv, 'Kaydediliyor...', '');
+            
+            await window.setDoc(
+              window.doc(window.db, 'settings', 'workplace'),
+              {
+                lat: lat,
+                lng: lng,
+                maxDistance: maxDistance,
+                updatedAt: window.serverTimestamp(),
+                updatedBy: window.__SESSION?.pin || 'unknown'
+              },
+              { merge: true }
+            );
+            
+            // Global değişkeni güncelle
+            WORKPLACE_LOCATION.lat = lat;
+            WORKPLACE_LOCATION.lng = lng;
+            WORKPLACE_LOCATION.maxDistance = maxDistance;
+            
+            setStatusBox(statusDiv, `✅ Konum kaydedildi! (${lat.toFixed(6)}, ${lng.toFixed(6)} - ${maxDistance}m)`, 'ok');
+          } catch (error) {
+            console.error('Konum kaydetme hatası:', error);
+            setStatusBox(statusDiv, '❌ Hata: ' + error.message, 'error');
+          }
+        };
+      }
+      
+      if(btnGetCurrent) {
+        btnGetCurrent.onclick = async () => {
+          const statusDiv = document.getElementById('statusWorkplaceLocation');
+          const latInput = document.getElementById('workplaceLat');
+          const lngInput = document.getElementById('workplaceLng');
+          
+          setStatusBox(statusDiv, '📍 Mevcut konumunuz alınıyor...', '');
+          
+          try {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+              });
+            });
+            
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            latInput.value = lat.toFixed(6);
+            lngInput.value = lng.toFixed(6);
+            
+            setStatusBox(statusDiv, `✅ Konum alındı: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'ok');
+          } catch (error) {
+            let errorMessage = 'Konum alınamadı.';
+            if (error.code === error.PERMISSION_DENIED) {
+              errorMessage = 'Konum izni verilmedi. Lütfen tarayıcı ayarlarından konum iznini açın.';
+            }
+            setStatusBox(statusDiv, '❌ ' + errorMessage, 'error');
+          }
+        };
+      }
+    }
+    
     async function handleCheckIn() {
       const statusBox = document.getElementById('statusAttendance');
       const currentPin = window.__SESSION?.pin;
       const currentRole = window.__SESSION?.role;
       const supervisorSelect = document.getElementById('supervisorUserSelect');
+      
+      /* Konum kontrolü - Şimdilik deaktif
+      if(!supervisorSelect || !supervisorSelect.value) {
+        try {
+          setStatusBox(statusBox, '📍 Konumunuz kontrol ediliyor...', '');
+          const locationCheck = await checkLocation();
+          
+          if (!locationCheck.success) {
+            setStatusBox(statusBox, `❌ ${locationCheck.message}`, 'error');
+            return;
+          }
+          
+          console.log(`✅ Konum kontrolü başarılı: ${locationCheck.distance} metre`);
+        } catch (error) {
+          setStatusBox(statusBox, `❌ ${error.message}`, 'error');
+          return;
+        }
+      }
+      */
       
       // Hedef kullanıcıyı belirle (supervisor ise seçili kullanıcı, değilse kendisi)
       let targetPin = currentPin;
@@ -8294,6 +8883,25 @@
       const currentPin = window.__SESSION?.pin;
       const currentRole = window.__SESSION?.role;
       const supervisorSelect = document.getElementById('supervisorUserSelect');
+      
+      /* Konum kontrolü - Şimdilik deaktif
+      if(!supervisorSelect || !supervisorSelect.value) {
+        try {
+          setStatusBox(statusBox, '📍 Konumunuz kontrol ediliyor...', '');
+          const locationCheck = await checkLocation();
+          
+          if (!locationCheck.success) {
+            setStatusBox(statusBox, `❌ ${locationCheck.message}`, 'error');
+            return;
+          }
+          
+          console.log(`✅ Konum kontrolü başarılı: ${locationCheck.distance} metre`);
+        } catch (error) {
+          setStatusBox(statusBox, `❌ ${error.message}`, 'error');
+          return;
+        }
+      }
+      */
       
       // Hedef kullanıcıyı belirle
       let targetPin = currentPin;
@@ -9029,7 +9637,7 @@
     window.sendNotification = sendNotification;
     
     // Bildirim alıcıları - her event için hangi PIN'lerin bildirim alacağı
-    const notificationRecipients = {
+    window.notificationRecipients = {
       shelf_product_added: [],
       production_request: [],
       production_completed: [],
@@ -9039,7 +9647,7 @@
     };
 
     // Bildirim event aktif/pasif durumu
-    const notificationEventStatus = {
+    window.notificationEventStatus = {
       shelf_product_added: true,
       production_request: true,
       production_completed: true,
@@ -9048,37 +9656,57 @@
       attendance: true
     };
     
-    // Kullanıcı listesini select'lere doldur
-    function populateNotificationRecipients() {
-      const allUsers = [];
-      
-      // Tüm kullanıcıları topla
-      Object.entries(PIN_NAMES).forEach(([pin, name]) => {
-        const role = getRoleByPin(pin);
-        if (role) {
-          allUsers.push({ pin, name, role });
-        }
-      });
-      
-      // Her event için select'i doldur
-      const events = ['shelf_product_added', 'production_request', 'production_completed', 
-                      'material_request', 'material_completed', 'attendance'];
-      
-      events.forEach(eventType => {
-        const select = document.getElementById(`notify_${eventType}`);
-        if (select) {
-          select.innerHTML = '';
-          allUsers.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.pin;
-            option.textContent = `${user.name} (${user.role.toUpperCase()} - ${user.pin})`;
-            select.appendChild(option);
-          });
-        }
-      });
-      
-      // Kayıtlı seçimleri yükle
-      loadNotificationRecipients();
+    // Kullanıcı listesini select'lere doldur (sadece Chat ID'si olanlar)
+    async function populateNotificationRecipients() {
+      try {
+        // Firestore'dan Chat ID'si olan kullanıcıları al
+        const telegramUsersSnapshot = await window.getDocs(window.collection(window.db, 'telegramUsers'));
+        const usersWithChatId = [];
+        
+        telegramUsersSnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.chatId && data.chatId.trim()) {
+            usersWithChatId.push({
+              pin: data.pin,
+              name: data.name,
+              role: data.role,
+              chatId: data.chatId
+            });
+          }
+        });
+        
+        console.log(`🔔 ${usersWithChatId.length} kullanıcının Chat ID'si var`, usersWithChatId);
+        
+        // Her event için select'i doldur
+        const events = ['shelf_product_added', 'production_request', 'production_completed', 
+                        'material_request', 'material_completed', 'attendance'];
+        
+        events.forEach(eventType => {
+          const select = document.getElementById(`notify_${eventType}`);
+          if (select) {
+            select.innerHTML = '';
+            
+            if (usersWithChatId.length === 0) {
+              const option = document.createElement('option');
+              option.disabled = true;
+              option.textContent = '⚠️ Henüz Chat ID eklenmiş kullanıcı yok';
+              select.appendChild(option);
+            } else {
+              usersWithChatId.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.pin;
+                option.textContent = `${user.name} (${user.role.toUpperCase()} - ${user.pin})`;
+                select.appendChild(option);
+              });
+            }
+          }
+        });
+        
+        // Kayıtlı seçimleri yükle
+        await loadNotificationRecipients();
+      } catch (error) {
+        console.error('Bildirim alıcıları yükleme hatası:', error);
+      }
     }
     
     // Firestore'dan bildirim alıcılarını yükle
@@ -9087,10 +9715,11 @@
         const configDoc = await window.getDoc(window.doc(window.db, 'config', 'notificationRecipients'));
         if (configDoc.exists()) {
           const data = configDoc.data();
-          Object.assign(notificationRecipients, data);
+          Object.assign(window.notificationRecipients, data);
+          console.log('📥 Bildirim alıcıları yüklendi:', window.notificationRecipients);
           
           // Select'lerdeki seçimleri güncelle
-          Object.entries(notificationRecipients).forEach(([eventType, pins]) => {
+          Object.entries(window.notificationRecipients).forEach(([eventType, pins]) => {
             const select = document.getElementById(`notify_${eventType}`);
             if (select && pins) {
               Array.from(select.options).forEach(option => {
@@ -9104,12 +9733,13 @@
         const statusDoc = await window.getDoc(window.doc(window.db, 'config', 'notificationEventStatus'));
         if (statusDoc.exists()) {
           const data = statusDoc.data();
-          Object.assign(notificationEventStatus, data);
+          Object.assign(window.notificationEventStatus, data);
+          console.log('📥 Bildirim event durumları yüklendi:', window.notificationEventStatus);
           
           // Checkbox'ları güncelle
           document.querySelectorAll('[data-event]').forEach(checkbox => {
             const eventType = checkbox.getAttribute('data-event');
-            checkbox.checked = notificationEventStatus[eventType] !== false;
+            checkbox.checked = window.notificationEventStatus[eventType] !== false;
           });
         }
       } catch (error) {
@@ -9117,18 +9747,68 @@
       }
     }
     
-    // Bildirim alıcılarını kaydet
+    // Tüm bildirim alıcılarını kaydet (Toplu)
+    window.saveAllNotificationRecipients = async function() {
+      const statusDiv = document.getElementById('notificationSaveStatus');
+      if (!statusDiv) return;
+      
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = '#fff3cd';
+      statusDiv.style.color = '#856404';
+      statusDiv.innerHTML = '⏳ Kaydediliyor...';
+      
+      try {
+        // Tüm event tiplerini döngüyle kontrol et
+        const events = ['shelf_product_added', 'production_request', 'production_completed', 
+                        'material_request', 'material_completed', 'attendance'];
+        
+        events.forEach(eventType => {
+          const select = document.getElementById(`notify_${eventType}`);
+          if (select) {
+            const selectedPins = Array.from(select.selectedOptions).map(opt => opt.value);
+            window.notificationRecipients[eventType] = selectedPins;
+            console.log(`📝 ${eventType}: ${selectedPins.length} kullanıcı seçildi`, selectedPins);
+          }
+        });
+        
+        // Firestore'a kaydet
+        await window.setDoc(
+          window.doc(window.db, 'config', 'notificationRecipients'),
+          window.notificationRecipients,
+          { merge: true }
+        );
+        
+        console.log('✅ Tüm bildirim alıcıları kaydedildi:', window.notificationRecipients);
+        
+        statusDiv.style.background = '#d4edda';
+        statusDiv.style.color = '#155724';
+        statusDiv.innerHTML = '✅ Bildirim alıcıları başarıyla kaydedildi!';
+        
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 3000);
+        
+      } catch (error) {
+        console.error('Bildirim alıcıları kaydetme hatası:', error);
+        statusDiv.style.background = '#f8d7da';
+        statusDiv.style.color = '#721c24';
+        statusDiv.innerHTML = '❌ Hata: ' + error.message;
+      }
+    };
+    
+    // Bildirim alıcılarını kaydet (tekli - eski fonksiyon, geriye dönük uyumluluk için)
     window.saveNotificationRecipients = async function(eventType, selectElement) {
       const selectedPins = Array.from(selectElement.selectedOptions).map(opt => opt.value);
-      notificationRecipients[eventType] = selectedPins;
+      window.notificationRecipients[eventType] = selectedPins;
       
       try {
         await window.setDoc(
           window.doc(window.db, 'config', 'notificationRecipients'),
-          notificationRecipients,
+          window.notificationRecipients,
           { merge: true }
         );
-        console.log(`Bildirim alıcıları güncellendi: ${eventType}`, selectedPins);
+        console.log(`✅ Bildirim alıcıları güncellendi: ${eventType}`, selectedPins);
+        console.log('📤 Firestore\'a kaydedildi:', window.notificationRecipients);
       } catch (error) {
         console.error('Bildirim alıcıları kaydetme hatası:', error);
       }
@@ -9137,24 +9817,22 @@
     // Event aktif/pasif durumu değiştir
     window.toggleNotificationEventStatus = async function(checkbox) {
       const eventType = checkbox.getAttribute('data-event');
-      notificationEventStatus[eventType] = checkbox.checked;
+      window.notificationEventStatus[eventType] = checkbox.checked;
       
       try {
         await window.setDoc(
           window.doc(window.db, 'config', 'notificationEventStatus'),
-          notificationEventStatus,
+          window.notificationEventStatus,
           { merge: true }
         );
-        console.log(`Bildirim event durumu: ${eventType} = ${checkbox.checked}`);
+        console.log(`✅ Bildirim event durumu: ${eventType} = ${checkbox.checked}`);
+        console.log('📤 Firestore\'a kaydedildi:', window.notificationEventStatus);
       } catch (error) {
         console.error('Event durumu kaydetme hatası:', error);
       }
     };
     
-    // Sayfa yüklendiğinde kullanıcı listesini doldur
-    if (window.__SESSION?.role === 'admin') {
-      setTimeout(populateNotificationRecipients, 500);
-    }
+    // Not: Bildirim ayarları Firebase başlatılırken yükleniyor (yukarıda)
     
     // Eski fonksiyon - geriye uyumluluk için
     window.toggleNotificationRule = function(checkbox) {
@@ -9321,13 +9999,69 @@
 
     // iOS Test butonu -> Telegram Test
     window.testIOSNotification = async function() {
-      const statusDiv = document.getElementById('notificationTestStatus');
-      statusDiv.style.display = 'block';
-      statusDiv.innerHTML = '⏳ Test Telegram bildirimi oluşturuluyor...';
-      
       try {
-        // Firestore'a test bildirimi ekle - Cloud Function otomatik Telegram'a gönderecek
+        console.log('🧪 Test Telegram bildirimi başlatılıyor...');
+        
+        // 1. Bot Token kontrolü
+        const botTokenDoc = await window.getDoc(window.doc(window.db, 'config', 'telegram'));
+        const botToken = botTokenDoc.exists() ? botTokenDoc.data().botToken : null;
+        console.log('🔑 Bot Token:', botToken ? '✅ Var' : '❌ YOK!');
+        
+        if (!botToken) {
+          alert('❌ Bot Token kayıtlı değil! Lütfen Telegram Bot Token\'ı ekleyin.');
+          return;
+        }
+        
+        // 2. Telegram kullanıcıları kontrolü
+        const telegramUsersSnapshot = await window.getDocs(window.collection(window.db, 'telegramUsers'));
+        console.log('👥 Telegram Kullanıcıları:', telegramUsersSnapshot.size);
+        
+        const users = [];
+        telegramUsersSnapshot.forEach(doc => {
+          const data = doc.data();
+          users.push(`${data.name} (${data.pin}): ${data.chatId}`);
+          console.log(`  - ${data.name} (${data.pin}): ${data.chatId}`);
+        });
+        
+        if (telegramUsersSnapshot.size === 0) {
+          alert('❌ Hiç Telegram kullanıcısı kayıtlı değil! Chat ID ekleyin.');
+          return;
+        }
+        
+        // 3. Bildirim alıcıları kontrolü
+        console.log('📋 Kayıtlı Bildirim Alıcıları:', window.notificationRecipients);
+        
+        // 4. Test bildirimi oluştur
+        console.log('📤 Firestore\'a bildirim ekleniyor...');
         const notificationData = {
+          eventType: 'test',
+          title: '🧪 Test Bildirimi',
+          body: `Test mesajı - ${new Date().toLocaleTimeString('tr-TR')}`,
+          targetRoles: ['admin', 'packer', 'welder', 'laser'],
+          targetPins: [],
+          timestamp: window.serverTimestamp(),
+          createdAt: new Date().toISOString()
+        };
+        
+        const notifRef = await window.addDoc(
+          window.collection(window.db, 'notifications'),
+          notificationData
+        );
+        
+        console.log('✅ Bildirim oluşturuldu:', notifRef.id);
+        
+        alert(`✅ Test bildirimi oluşturuldu!\n\n` +
+              `Bildirim ID: ${notifRef.id}\n` +
+              `Bot Token: ${botToken ? 'Var' : 'Yok'}\n` +
+              `Kullanıcı Sayısı: ${telegramUsersSnapshot.size}\n\n` +
+              `Telegram'ınızı kontrol edin!\n\n` +
+              `Kullanıcılar:\n${users.join('\n')}`);
+        
+      } catch (error) {
+        console.error('❌ Test bildirimi hatası:', error);
+        alert('❌ Hata: ' + error.message);
+      }
+    };
 
     // Kullanıcı Telegram listesini doldur
     async function populateTelegramUsersTable() {
@@ -9456,54 +10190,6 @@
     // Admin ise tabloyu doldur
     if (window.__SESSION?.role === 'admin') {
       setTimeout(populateTelegramUsersTable, 500);
-    }
-          title: '🧪 Test Bildirimi',
-          body: 'Telegram bot çalışıyor! Bu bir test mesajıdır. 🎉',
-          targetRoles: ['admin', 'packer', 'welder', 'laser', 'stower', 'purchase', 'painter'],
-          timestamp: Date.now(),
-          createdAt: new Date().toISOString(),
-          type: 'test'
-        };
-        
-        const notifRef = await window.addDoc(
-          window.collection(window.db, 'notifications'),
-          notificationData
-        );
-        
-        statusDiv.innerHTML = '✅ Test bildirimi oluşturuldu!<br><br>' +
-          '📱 Telegram\'a mesaj gönderiliyor...<br>' +
-          '🆔 Notification ID: ' + notifRef.id +
-          '<br><br>💡 Telegram\'ınızı kontrol edin!';
-        
-        console.log('Test bildirimi oluşturuldu:', notifRef.id);
-        
-        // 8 saniye sonra durumu temizle
-        setTimeout(() => {
-          statusDiv.style.display = 'none';
-        }, 8000);
-      } catch (error) {
-        console.error('Test bildirimi hatası:', error);
-        statusDiv.innerHTML = '❌ Hata: ' + error.message;
-      }
-    };
-    
-    // sendNotification'ı kuralları kontrol edecek şekilde güncelle
-    const originalSendNotification = sendNotification;
-    window.sendNotification = async function(params) {
-      // Kural kontrolü
-      if (notificationRules[params.eventType] === false) {
-        console.log(`Bildirim gönderilmedi (kural kapalı): ${params.eventType}`);
-        return;
-      }
-      
-      return originalSendNotification(params);
-    };
-    
-    // Sayfa yüklendiğinde kuralları yükle
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadNotificationRules);
-    } else {
-      loadNotificationRules();
     }
     
     // Test fonksiyonları
