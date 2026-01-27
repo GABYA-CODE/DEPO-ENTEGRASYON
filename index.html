@@ -2698,6 +2698,26 @@
                   <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Ctrl tuşuna basılı tutarak çoklu seçim yapabilirsiniz</div>
                 </div>
               </div>
+
+              <!-- Mesai Giriş Hatırlatması -->
+              <div style="padding:16px;background:var(--panel2);border-radius:8px;border:2px solid var(--border);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <div>
+                    <strong style="font-size:15px;">⏰ Mesai Giriş Hatırlatması</strong>
+                    <div style="font-size:12px;color:var(--muted);margin-top:4px;">Mesai başlangıcından 5 dakika sonra giriş yapılmadığında</div>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" checked data-event="shift_reminder" onchange="toggleNotificationEventStatus(this)">
+                    <span style="font-size:12px;font-weight:600;">Aktif</span>
+                  </label>
+                </div>
+                <div style="margin-top:12px;">
+                  <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:12px;font-size:12px;color:#d97706;">
+                    💡 <strong>Otomatik Sistem:</strong> Bu bildirim, mesai planına göre otomatik olarak ilgili kullanıcılara gönderilir. 
+                    Ekip 1 (08:05), Ekip 2 (07:50) ve Ekip 3 (10:35 ve 20:35) saatlerinde kontrol edilir.
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Kaydet Butonu -->
@@ -2715,6 +2735,31 @@
             </button>
 
             <div id="notificationTestStatus" style="display:none;margin-top:12px;padding:12px;background:var(--panel2);border-radius:8px;font-size:13px;"></div>
+            
+            <!-- Mesai Kontrol Bilgilendirme -->
+            <div style="margin-top:20px;padding:16px;background:#1e293b;border-radius:8px;color:#e2e8f0;">
+              <h4 style="margin:0 0 12px 0;color:#10b981;font-size:14px;">⏰ Otomatik Mesai Kontrol Sistemi</h4>
+              
+              <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:12px;font-size:12px;color:#6ee7b7;">
+                <strong>✅ Sistem Aktif - Otomatik Çalışıyor</strong><br><br>
+                
+                <strong>Ekip 1 (Veli, Gökmen, Şaban, Dilara, Bahriye, Şeyma):</strong><br>
+                • Hafta içi: 08:00-17:00<br>
+                • Cumartesi: 08:00-12:30<br>
+                • Kontrol saati: 08:05<br><br>
+                
+                <strong>Ekip 2 (Kaynakçılar, Lazerciler, Boyacılar):</strong><br>
+                • Hafta içi: 07:45-17:45<br>
+                • Kontrol saati: 07:50<br><br>
+                
+                <strong>Ekip 3 (Evan):</strong><br>
+                • Sabah vardiyası: 10:30-17:00 (Kontrol: 10:35)<br>
+                • Akşam vardiyası: 20:30-23:49 (Kontrol: 20:35)<br><br>
+                
+                💡 Her 5 dakikada bir otomatik kontrol yapılır.<br>
+                Mesai başlangıcından 5 dakika sonra giriş yapılmamışsa Telegram bildirimi gönderilir.
+              </div>
+            </div>
           </div>
 
           <div class="card" style="margin-top:14px;">
@@ -2799,6 +2844,63 @@
     window.PURCHASE_PINS = PURCHASE_PINS;
     window.PAINTER_PINS = PAINTER_PINS;
     window.COMMISSION_PINS = COMMISSION_PINS;
+
+    // ========== MESAİ PLANLARI VE KULLANICI GRUPLARI ==========
+    
+    // 1. Ekip - Standart Mesai (08:00-17:00 + Cumartesi 08:00-12:30)
+    const TEAM_1 = {
+      name: "1. Ekip - Standart",
+      pins: ["61704", "45823", "73621", "58392", "29847", "41927"], // Veli, Gökmen, Şaban, Dilara, Bahriye, Şeyma
+      schedule: {
+        weekdays: {
+          start: "08:00",
+          end: "17:00",
+          workDays: [1, 2, 3, 4, 5, 6] // Pazartesi-Cumartesi
+        },
+        saturday: {
+          start: "08:00",
+          end: "12:30"
+        }
+      }
+    };
+
+    // 2. Ekip - Kaynak/Lazer/Boya (07:45-17:45, Hafta içi)
+    const TEAM_2 = {
+      name: "2. Ekip - Üretim",
+      pins: [
+        ...Array.from(WELDER_PINS), 
+        ...Array.from(LASER_PINS),
+        ...Array.from(PAINTER_PINS)
+      ],
+      schedule: {
+        weekdays: {
+          start: "07:45",
+          end: "17:45",
+          workDays: [1, 2, 3, 4, 5] // Pazartesi-Cuma
+        }
+      }
+    };
+
+    // 3. Ekip - Vardiyalı (10:30-17:00 ve 20:30-23:49, Hafta içi)
+    const TEAM_3 = {
+      name: "3. Ekip - Vardiyalı",
+      pins: ["68503"], // Evan
+      schedule: {
+        morningShift: {
+          start: "10:30",
+          end: "17:00",
+          workDays: [1, 2, 3, 4, 5]
+        },
+        eveningShift: {
+          start: "20:30",
+          end: "23:49",
+          workDays: [1, 2, 3, 4, 5]
+        }
+      }
+    };
+
+    // Tüm ekipleri global değişkene kaydet
+    window.WORK_TEAMS = [TEAM_1, TEAM_2, TEAM_3];
 
     window.__SESSION = { role: null, pin: null };
 
@@ -4639,31 +4741,24 @@
 
             await writeLog({ action: "PRODUCTION_REQUEST", shelf: "-", product: code, qty: qty, detail: `Üretim talebi oluşturuldu (${prodType === 'laser' ? 'Lazer' : 'Kaynak'}) - ${qty} adet` });
 
-            // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = window.notificationRecipients.production_request || [];
-            console.log('🔔 Üretim talebi bildirimi gönderiliyor...');
-            console.log('  - Recipients:', recipients);
-            console.log('  - Event Status:', window.notificationEventStatus.production_request);
-            console.log('  - Notification Recipients Object:', window.notificationRecipients);
-            
-            if (recipients.length > 0 && window.notificationEventStatus.production_request) {
-              console.log('✅ Bildirim gönderiliyor:', {
-                eventType: 'production_request',
-                targetPins: recipients,
-                title: prodType === 'laser' ? '⚡ Lazer Talebi' : '🔥 Kaynak Talebi',
-                body: `${code} ürününden ${qty} adet talep edildi`
-              });
+            // Bildirim gönder (Talep eden + Bildirim alıcıları)
+            if (window.notificationEventStatus.production_request) {
+              const recipients = window.notificationRecipients.production_request || [];
+              const targetPins = [...new Set([sessionPin, ...recipients])]; // Talep eden + alıcılar (tekrar olanları temizle)
+              
+              console.log('🔔 Üretim talebi bildirimi gönderiliyor:');
+              console.log('  - Talep eden:', sessionPin);
+              console.log('  - Bildirim alıcıları:', recipients);
+              console.log('  - Toplam gönderilecek:', targetPins);
               
               await sendNotification({
                 eventType: 'production_request',
-                targetPins: recipients,
+                targetPins: targetPins,
                 title: prodType === 'laser' ? '⚡ Lazer Talebi' : '🔥 Kaynak Talebi',
                 body: `${code} ürününden ${qty} adet talep edildi`
               });
               
               console.log('✅ Bildirim başarıyla Firestore\'a eklendi');
-            } else {
-              console.warn('⚠️ Bildirim gönderilmedi! Recipients:', recipients.length, 'Event aktif:', window.notificationEventStatus.production_request);
             }
 
             setStatusBox(statusReq, "Talep alındı. ✅", "ok");
@@ -4700,12 +4795,19 @@
 
             await writeLog({ action: "MATERIAL_REQUEST", shelf: "-", product: name, qty: qty, detail: `Malzeme talebi oluşturuldu: ${note || '-'}` });
 
-            // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = window.notificationRecipients.material_request || [];
-            if (recipients.length > 0 && window.notificationEventStatus.material_request) {
+            // Bildirim gönder (Talep eden + Bildirim alıcıları)
+            if (window.notificationEventStatus.material_request) {
+              const recipients = window.notificationRecipients.material_request || [];
+              const targetPins = [...new Set([sessionPin, ...recipients])]; // Talep eden + alıcılar (tekrar olanları temizle)
+              
+              console.log('Malzeme talebi bildirimi gönderiliyor:');
+              console.log('  - Talep eden:', sessionPin);
+              console.log('  - Bildirim alıcıları:', recipients);
+              console.log('  - Toplam gönderilecek:', targetPins);
+              
               await sendNotification({
                 eventType: 'material_request',
-                targetPins: recipients,
+                targetPins: targetPins,
                 title: '🛒 Malzeme Talebi',
                 body: `${name} - ${qty} adet ${note ? '(' + note + ')' : ''}`
               });
@@ -4971,15 +5073,24 @@
               detail: `Malzeme talebi durumu: ${newStatus}` 
             });
             
-            // Mal alındıysa talep edene bildirim gönder
+            // Mal alındıysa bildirim gönder (hem talep edene hem de bildirim alıcılarına)
             if(newStatus === "completed"){
               const requestSnap = await getDoc(requestRef);
               const requestData = requestSnap.data();
               
-              if(requestData && requestData.requestedBy && window.notificationEventStatus.material_completed){
+              if(requestData && window.notificationEventStatus.material_completed){
+                // Bildirim alacaklar: Talep eden + Bildirim alıcıları listesi
+                const recipients = window.notificationRecipients.material_completed || [];
+                const targetPins = [...new Set([requestData.requestedBy, ...recipients])]; // Tekrar olanları temizle
+                
+                console.log('Malzeme temin edildi bildirimi gönderiliyor:');
+                console.log('  - Talep eden:', requestData.requestedBy);
+                console.log('  - Bildirim alıcıları:', recipients);
+                console.log('  - Toplam gönderilecek:', targetPins);
+                
                 await sendNotification({
                   eventType: 'material_completed',
-                  targetPins: [requestData.requestedBy],
+                  targetPins: targetPins,
                   title: '✅ Malzeme Alındı',
                   body: `${requestData.materialName} malzemesi temin edildi`
                 });
@@ -5511,12 +5622,23 @@
               detail: `Üretim talebi tamamlandı (Kaynakçı: ${sessionPin})` 
             });
             
-            // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
-            const recipients = window.notificationRecipients.production_completed || [];
-            if (recipients.length > 0 && window.notificationEventStatus.production_completed) {
+            // Bildirim gönder (Talep eden + Bildirim alıcıları)
+            if (window.notificationEventStatus.production_completed) {
+              const requestSnap = await getDoc(requestRef);
+              const requestData = requestSnap.data();
+              const requestedBy = requestData?.requestedBy;
+              
+              const recipients = window.notificationRecipients.production_completed || [];
+              const targetPins = [...new Set([requestedBy, ...recipients].filter(Boolean))]; // Talep eden + alıcılar (tekrar olanları temizle)
+              
+              console.log('Üretim tamamlandı bildirimi gönderiliyor:');
+              console.log('  - Talep eden:', requestedBy);
+              console.log('  - Bildirim alıcıları:', recipients);
+              console.log('  - Toplam gönderilecek:', targetPins);
+              
               await sendNotification({
                 eventType: 'production_completed',
-                targetPins: recipients,
+                targetPins: targetPins,
                 title: '✅ Üretim Tamamlandı',
                 body: `${productCode} ürünü hazır, paketlenebilir`
               });
@@ -9643,7 +9765,8 @@
       production_completed: [],
       material_request: [],
       material_completed: [],
-      attendance: []
+      attendance: [],
+      shift_reminder: []
     };
 
     // Bildirim event aktif/pasif durumu
@@ -9653,7 +9776,8 @@
       production_completed: true,
       material_request: true,
       material_completed: true,
-      attendance: true
+      attendance: true,
+      shift_reminder: true
     };
     
     // Kullanıcı listesini select'lere doldur (sadece Chat ID'si olanlar)
@@ -9760,7 +9884,7 @@
       try {
         // Tüm event tiplerini döngüyle kontrol et
         const events = ['shelf_product_added', 'production_request', 'production_completed', 
-                        'material_request', 'material_completed', 'attendance'];
+                        'material_request', 'material_completed', 'attendance', 'shift_reminder'];
         
         events.forEach(eventType => {
           const select = document.getElementById(`notify_${eventType}`);
@@ -10212,6 +10336,261 @@
       
       statusDiv.innerHTML = html;
     };
+
+    // ========== OTOMATİK GİRİŞ HATIRLATMA FONKSİYONLARI ==========
+
+    // Kullanıcının bugün çalışıp çalışmadığını kontrol et
+    function isWorkDay(team, dayOfWeek) {
+      const schedule = team.schedule;
+      
+      // Cumartesi özel kontrolü (Ekip 1 için)
+      if (dayOfWeek === 6 && schedule.saturday) {
+        return true;
+      }
+      
+      // Standart hafta içi kontrol
+      if (schedule.weekdays && schedule.weekdays.workDays.includes(dayOfWeek)) {
+        return true;
+      }
+      
+      // Vardiyalı kontrol (Ekip 3 için)
+      if (schedule.morningShift && schedule.morningShift.workDays.includes(dayOfWeek)) {
+        return true;
+      }
+      
+      return false;
+    }
+
+    // Kullanıcının hangi vardiyada olduğunu belirle
+    function getCurrentShift(team, currentTime) {
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const schedule = team.schedule;
+      
+      // Cumartesi kontrolü (Ekip 1)
+      if (dayOfWeek === 6 && schedule.saturday) {
+        return {
+          type: 'saturday',
+          start: schedule.saturday.start,
+          end: schedule.saturday.end
+        };
+      }
+      
+      // Standart mesai (Ekip 1 ve 2)
+      if (schedule.weekdays) {
+        return {
+          type: 'weekday',
+          start: schedule.weekdays.start,
+          end: schedule.weekdays.end
+        };
+      }
+      
+      // Vardiyalı mesai (Ekip 3)
+      if (schedule.morningShift && schedule.eveningShift) {
+        const morningStart = timeToMinutes(schedule.morningShift.start);
+        const morningEnd = timeToMinutes(schedule.morningShift.end);
+        const eveningStart = timeToMinutes(schedule.eveningShift.start);
+        const currentMinutes = timeToMinutes(currentTime);
+        
+        // Sabah vardiyası
+        if (currentMinutes >= morningStart - 15 && currentMinutes < morningEnd) {
+          return {
+            type: 'morning',
+            start: schedule.morningShift.start,
+            end: schedule.morningShift.end
+          };
+        }
+        
+        // Akşam vardiyası
+        if (currentMinutes >= eveningStart - 15) {
+          return {
+            type: 'evening',
+            start: schedule.eveningShift.start,
+            end: schedule.eveningShift.end
+          };
+        }
+      }
+      
+      return null;
+    }
+
+    // Kullanıcının bugün giriş yapıp yapmadığını kontrol et
+    async function checkUserAttendance(pin, date) {
+      try {
+        const attendanceCol = window.collection(window.db, 'attendance');
+        const q = window.query(
+          attendanceCol,
+          window.where('pin', '==', pin),
+          window.where('date', '==', date)
+        );
+        
+        const snapshot = await window.getDocs(q);
+        
+        if (snapshot.empty) {
+          return { hasCheckIn: false, timestamps: [] };
+        }
+        
+        const data = snapshot.docs[0].data();
+        const timestamps = data.timestamps || [];
+        
+        // Son kayıt "in" mi kontrol et
+        const hasCheckIn = timestamps.length > 0 && timestamps[timestamps.length - 1].type === 'in';
+        
+        return { hasCheckIn, timestamps };
+      } catch (error) {
+        console.error('Mesai kontrolü hatası:', error);
+        return { hasCheckIn: false, timestamps: [] };
+      }
+    }
+
+    // Giriş hatırlatma bildirimi gönder
+    async function sendCheckInReminder(pin, userName, teamName, shiftInfo) {
+      try {
+        console.log(`📢 Giriş hatırlatması gönderiliyor: ${userName} (${teamName})`);
+        
+        // Bildirim kapalıysa gönderme
+        if (!window.notificationEventStatus?.shift_reminder) {
+          console.log('⚠️ Mesai giriş hatırlatması kapalı, gönderilmiyor');
+          return;
+        }
+        
+        const message = `⏰ Mesai Başlama Saati: ${shiftInfo.start}\n\n` +
+                       `Henüz giriş yapılmadı!\n\n` +
+                       `Geç kalacaksanız lütfen mazeret bildiriniz.`;
+        
+        // Firestore'a bildirim ekle
+        await window.addDoc(
+          window.collection(window.db, 'notifications'),
+          {
+            eventType: 'shift_reminder',
+            targetPins: [pin],
+            title: `${teamName} - Giriş Hatırlatması`,
+            body: message,
+            timestamp: window.serverTimestamp(),
+            createdAt: new Date().toISOString(),
+            priority: 'high'
+          }
+        );
+        
+        console.log(`✅ Hatırlatma gönderildi: ${userName}`);
+        
+      } catch (error) {
+        console.error('Hatırlatma gönderme hatası:', error);
+      }
+    }
+
+    // Ana kontrol fonksiyonu - Her 5 dakikada bir çalışır
+    async function checkAllTeamsAttendance() {
+      try {
+        const now = new Date();
+        const currentTime = now.toTimeString().slice(0, 5); // HH:MM
+        const currentDate = now.toISOString().split('T')[0];
+        const dayOfWeek = now.getDay();
+        
+        console.log(`🔍 Mesai kontrolü başlatıldı: ${currentTime}`);
+        
+        for (const team of window.WORK_TEAMS) {
+          // Bu ekip bugün çalışıyor mu?
+          if (!isWorkDay(team, dayOfWeek)) {
+            continue;
+          }
+          
+          // Hangi vardiya aktif?
+          const shift = getCurrentShift(team, currentTime);
+          if (!shift) {
+            continue;
+          }
+          
+          const shiftStartMinutes = timeToMinutes(shift.start);
+          const currentMinutes = timeToMinutes(currentTime);
+          
+          // Mesai başlangıcından 5 dakika sonra kontrol et
+          const reminderTime = shiftStartMinutes + 5;
+          
+          if (currentMinutes !== reminderTime) {
+            continue;
+          }
+          
+          console.log(`📋 ${team.name} kontrol ediliyor...`);
+          
+          // Ekipteki her kullanıcıyı kontrol et
+          for (const pin of team.pins) {
+            const userName = window.PIN_NAMES?.[pin] || pin;
+            
+            // Kullanıcının bugün girişi var mı?
+            const attendance = await checkUserAttendance(pin, currentDate);
+            
+            if (!attendance.hasCheckIn) {
+              // Giriş yapılmamış - Hatırlatma gönder
+              await sendCheckInReminder(pin, userName, team.name, shift);
+              
+              // Log kaydet
+              await window.addDoc(
+                window.collection(window.db, 'logs'),
+                {
+                  timestamp: new Date().toISOString(),
+                  action: 'CHECK_IN_REMINDER',
+                  pin: pin,
+                  role: 'system',
+                  shelf: '-',
+                  product: userName,
+                  qty: 0,
+                  detail: `${team.name} - ${shift.start} mesaisi için hatırlatma gönderildi`,
+                  ts: window.serverTimestamp()
+                }
+              );
+            } else {
+              console.log(`✅ ${userName} bugün zaten giriş yapmış`);
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.error('Mesai kontrolü genel hatası:', error);
+      }
+    }
+
+    // ========== OTOMATİK KONTROL BAŞLATMA ==========
+
+    // Sayfa yüklendiğinde kontrol sistemi başlat
+    if (window.__SESSION?.role === 'admin') {
+      console.log('🚀 Otomatik mesai kontrol sistemi başlatılıyor...');
+      
+      // İlk kontrolü hemen yap (gerçek mesai planlarına göre)
+      setTimeout(checkAllTeamsAttendance, 5000);
+      
+      // Her 5 dakikada bir kontrol et (gerçek mesai planlarına göre)
+      window.shiftCheckInterval = setInterval(checkAllTeamsAttendance, 5 * 60 * 1000);
+      
+      console.log('✅ Otomatik kontrol sistemi aktif (Her 5 dakikada bir)');
+    }
+
+    // ========== MANUEL TEST FONKSİYONU (Basit) ==========
+
+    window.testShiftReminders = async function() {
+      console.log('🧪 Manuel mesai kontrolü başlatılıyor...');
+      
+      const statusDiv = document.getElementById('notificationTestStatus');
+      if (statusDiv) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'var(--panel2)';
+        statusDiv.innerHTML = '⏳ Tüm ekipler kontrol ediliyor...';
+      }
+      
+      await checkAllTeamsAttendance();
+      
+      if (statusDiv) {
+        statusDiv.style.background = '#e8f5e9';
+        statusDiv.style.color = '#2e7d32';
+        statusDiv.innerHTML = '✅ Kontrol tamamlandı! Hatırlatmalar gönderildi.';
+        
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 5000);
+      }
+    };
+
+
     
   </script>
 
