@@ -4,6 +4,87 @@ const fetch = require('node-fetch');
 
 admin.initializeApp();
 
+// ========== MESAİ PLANLARI ==========
+const WORK_TEAMS = [
+  {
+    name: "1. Ekip - Standart",
+    pins: ["61704", "45823", "73621", "58392", "29847", "41927"], // Veli, Gökmen, Şaban, Dilara, Bahriye, Şeyma
+    schedule: {
+      weekdays: { start: "08:00", end: "17:00", workDays: [1, 2, 3, 4, 5, 6] },
+      saturday: { start: "08:00", end: "12:30" }
+    }
+  },
+  {
+    name: "2. Ekip - Üretim",
+    pins: ["64829", "28573", "91346", "53018", "82947", "72541", "87654", "87655"], // Kaynakçılar, Lazerciler, Boyacılar
+    schedule: {
+      weekdays: { start: "07:45", end: "17:45", workDays: [1, 2, 3, 4, 5] }
+    }
+  },
+  {
+    name: "3. Ekip - Vardiyalı",
+    pins: ["68503"], // Evan
+    schedule: {
+      morningShift: { start: "10:30", end: "17:00", workDays: [1, 2, 3, 4, 5] },
+      eveningShift: { start: "20:30", end: "23:49", workDays: [1, 2, 3, 4, 5] }
+    }
+  }
+];
+
+// PIN-isim eşleştirmesi
+const PIN_NAMES = {
+  "67431": "Burak", "99999": "Mesut", "45823": "Gökmen", "73621": "Şaban",
+  "29847": "Bahriye", "58392": "Dilara", "61704": "Veli", "34562": "Bahriye",
+  "64829": "Emin", "28573": "İlhami", "91346": "Atasoy", "53018": "Veysel",
+  "82947": "Abdullah", "72541": "Emre K.", "41927": "Şeyma A.", "68503": "Evan",
+  "87654": "Nasır", "87655": "Talha"
+};
+
+function timeToMinutes(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function isWorkDay(team, dayOfWeek) {
+  const schedule = team.schedule;
+  if (dayOfWeek === 6 && schedule.saturday) return true;
+  if (schedule.weekdays && schedule.weekdays.workDays.includes(dayOfWeek)) return true;
+  if (schedule.morningShift && schedule.morningShift.workDays.includes(dayOfWeek)) return true;
+  return false;
+}
+
+function getCurrentShift(team, currentMinutes, dayOfWeek) {
+  const schedule = team.schedule;
+  
+  // Cumartesi kontrolü
+  if (dayOfWeek === 6 && schedule.saturday) {
+    return { type: 'saturday', start: schedule.saturday.start, end: schedule.saturday.end };
+  }
+  
+  // Standart mesai
+  if (schedule.weekdays) {
+    return { type: 'weekday', start: schedule.weekdays.start, end: schedule.weekdays.end };
+  }
+  
+  // Vardiyalı mesai (Ekip 3)
+  if (schedule.morningShift && schedule.eveningShift) {
+    const morningStart = timeToMinutes(schedule.morningShift.start);
+    const eveningStart = timeToMinutes(schedule.eveningShift.start);
+    
+    // Sabah vardiyası kontrolü (10:30 için 10:35-10:37)
+    if (currentMinutes >= morningStart + 5 && currentMinutes <= morningStart + 7) {
+      return { type: 'morning', start: schedule.morningShift.start, end: schedule.morningShift.end };
+    }
+    
+    // Akşam vardiyası kontrolü (20:30 için 20:35-20:37)
+    if (currentMinutes >= eveningStart + 5 && currentMinutes <= eveningStart + 7) {
+      return { type: 'evening', start: schedule.eveningShift.start, end: schedule.eveningShift.end };
+    }
+  }
+  
+  return null;
+}
+
 // Telegram mesaj gönder
 async function sendTelegramMessage(botToken, chatId, message) {
   if (!botToken) {
@@ -193,6 +274,283 @@ exports.createNotificationRequest = functions.firestore
       
     } catch (error) {
       console.error('Bildirim isteği oluşturma hatası:', error);
+      return null;
+    }
+  });
+
+// ========== ZAMANLANMIŞ MESAİ KONTROL FONKSİYONU ==========
+// Her dakika çalışır ve mesai saatlerini kontrol eder
+exports.checkShiftAttendance = functions.pubsub
+  .schedule('* * * * *') // Her dakika
+  .timeZone('Europe/Istanbul')
+  .onRun(async (context) => {
+    const db = admin.firestore();
+    
+    try {
+      const now = new Date();
+      // Türkiye saati için +3 saat ekle
+      const turkeyTime = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+      const currentHour = turkeyTime.getUTCHours();
+      const currentMinute = turkeyTime.getUTCMinutes();
+      const currentMinutes = currentHour * 60 + currentMinute;
+      const dayOfWeek = turkeyTime.getUTCDay();
+      const currentDate = turkeyTime.toISOString().split('T')[0];
+      const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+      
+      console.log(`🔍 Mesai kontrolü: ${currentTime} (${currentDate}) - Gün: ${dayOfWeek}`);
+      
+      // Bot token'ı al
+      const configDoc = await db.collection('config').doc('telegram').get();
+      if (!configDoc.exists || !configDoc.data().botToken) {
+        console.log('Bot token bulunamadı, kontrol atlanıyor');
+        return null;
+      }
+      const botToken = configDoc.data().botToken;
+      
+      // Telegram kullanıcılarını al
+      const telegramUsersSnapshot = await db.collection('telegramUsers').get();
+      const telegramUsers = {};
+      const allTelegramUsers = []; // Mola bildirimleri için tüm kullanıcılar
+      telegramUsersSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.chatId) {
+          telegramUsers[data.pin] = data;
+          allTelegramUsers.push(data);
+        }
+      });
+      
+      // ========== MOLA BİLDİRİMLERİ ==========
+      // Pazar günü mola bildirimi gönderme
+      if (dayOfWeek !== 0) {
+        // Ekip 1 PIN'leri
+        const TEAM1_PINS = ["61704", "45823", "73621", "58392", "29847", "41927"];
+        // Ekip 2 PIN'leri
+        const TEAM2_PINS = ["64829", "28573", "91346", "53018", "82947", "72541", "87654", "87655"];
+        // Ekip 3 PIN'leri (Evan)
+        const TEAM3_PINS = ["68503"];
+        // Ekip 2 ve 3 PIN'leri (diğerleri)
+        const OTHER_TEAMS_PINS = [...TEAM2_PINS, ...TEAM3_PINS];
+        
+        // Cumartesi mi kontrol et
+        const isSaturday = dayOfWeek === 6;
+        
+        const BREAK_SCHEDULE = [
+          // Çay molası - Herkes (10:00 - 10:15)
+          { hour: 10, minute: 0, message: "☕ Çay Molası!", body: "Biraz dinlenelim, çay molası!", teams: "all" },
+          { hour: 10, minute: 15, message: "⏰ Çay Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "all" },
+          
+          // Öğle yemeği başlangıç - Herkes (12:30)
+          { hour: 12, minute: 30, message: "🍽️ Öğle Yemeği!", body: "Afiyet olsun!", teams: "all", skipSaturday: true },
+          
+          // Öğle yemeği bitiş - Ekip 1 (13:15)
+          { hour: 13, minute: 15, message: "⏰ Öğle Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "team1", skipSaturday: true },
+          
+          // Öğle yemeği bitiş - Diğer ekipler (13:30)
+          { hour: 13, minute: 30, message: "⏰ Öğle Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "others", skipSaturday: true },
+          
+          // İkindi molası başlangıç - Herkes (15:00)
+          { hour: 15, minute: 0, message: "☕ İkindi Molası!", body: "Biraz dinlenelim!", teams: "all", skipSaturday: true },
+          
+          // İkindi molası bitiş - Diğer ekipler (15:15)
+          { hour: 15, minute: 15, message: "⏰ İkindi Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "others", skipSaturday: true },
+          
+          // İkindi molası bitiş - Ekip 1 (15:25)
+          { hour: 15, minute: 25, message: "⏰ İkindi Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "team1", skipSaturday: true },
+          
+          // ========== MESAİ BİTİŞ BİLDİRİMLERİ ==========
+          // Ekip 1 ve Ekip 3 (sabah vardiyası) - 17:00
+          { hour: 17, minute: 0, message: "🏠 Mesai Bitti!", body: "Emekleriniz için teşekkür ederiz. İyi günler :)", teams: "team1_team3", skipSaturday: true },
+          
+          // Ekip 2 - 17:45
+          { hour: 17, minute: 45, message: "🏠 Mesai Bitti!", body: "Emekleriniz için teşekkür ederiz. İyi günler :)", teams: "team2", skipSaturday: true },
+          
+          // Ekip 3 akşam vardiyası - 23:49
+          { hour: 23, minute: 49, message: "🏠 Mesai Bitti!", body: "Emekleriniz için teşekkür ederiz. İyi geceler :)", teams: "team3", skipSaturday: true },
+          
+          // Cumartesi Ekip 1 mesai bitişi - 12:30
+          { hour: 12, minute: 30, message: "🏠 Mesai Bitti!", body: "Emekleriniz için teşekkür ederiz. İyi hafta sonları :)", teams: "team1_saturday", onlySaturday: true }
+        ];
+        
+        // Bu dakikaya uyan tüm molaları bul
+        const matchingBreaks = BREAK_SCHEDULE.filter(b => {
+          if (b.hour !== currentHour || b.minute !== currentMinute) return false;
+          if (b.skipSaturday && isSaturday) return false;
+          if (b.onlySaturday && !isSaturday) return false;
+          return true;
+        });
+        
+        for (const matchingBreak of matchingBreaks) {
+          const breakKey = `break_${currentDate}_${matchingBreak.hour}_${matchingBreak.minute}_${matchingBreak.teams}`;
+          const breakDoc = await db.collection('breakNotifications').doc(breakKey).get();
+          
+          if (!breakDoc.exists) {
+            console.log(`📢 Mola bildirimi gönderiliyor: ${matchingBreak.message} (${matchingBreak.teams})`);
+            
+            let breakSentCount = 0;
+            const breakSentUsers = [];
+            
+            // Hedef kullanıcıları belirle
+            let targetUsers = [];
+            if (matchingBreak.teams === "all") {
+              targetUsers = allTelegramUsers;
+            } else if (matchingBreak.teams === "team1" || matchingBreak.teams === "team1_saturday") {
+              targetUsers = allTelegramUsers.filter(u => TEAM1_PINS.includes(u.pin));
+            } else if (matchingBreak.teams === "team2") {
+              targetUsers = allTelegramUsers.filter(u => TEAM2_PINS.includes(u.pin));
+            } else if (matchingBreak.teams === "team3") {
+              targetUsers = allTelegramUsers.filter(u => TEAM3_PINS.includes(u.pin));
+            } else if (matchingBreak.teams === "team1_team3") {
+              targetUsers = allTelegramUsers.filter(u => TEAM1_PINS.includes(u.pin) || TEAM3_PINS.includes(u.pin));
+            } else if (matchingBreak.teams === "others") {
+              targetUsers = allTelegramUsers.filter(u => OTHER_TEAMS_PINS.includes(u.pin));
+            }
+            
+            for (const userData of targetUsers) {
+              const message = `<b>${matchingBreak.message}</b>\n\n${matchingBreak.body}`;
+              const sent = await sendTelegramMessage(botToken, userData.chatId, message);
+              if (sent) {
+                breakSentCount++;
+                breakSentUsers.push(userData.name || userData.pin);
+              }
+            }
+            
+            // Bu mola bildirimi gönderildi olarak işaretle
+            await db.collection('breakNotifications').doc(breakKey).set({
+              date: currentDate,
+              hour: matchingBreak.hour,
+              minute: matchingBreak.minute,
+              message: matchingBreak.message,
+              teams: matchingBreak.teams,
+              sentAt: admin.firestore.FieldValue.serverTimestamp(),
+              sentCount: breakSentCount,
+              sentUsers: breakSentUsers
+            });
+            
+            console.log(`✅ Mola bildirimi (${matchingBreak.teams}) ${breakSentCount} kişiye gönderildi`);
+          }
+        }
+      }
+      // ========== MOLA BİLDİRİMLERİ SONU ==========
+      
+      for (const team of WORK_TEAMS) {
+        // Bu ekip bugün çalışıyor mu?
+        if (!isWorkDay(team, dayOfWeek)) {
+          continue;
+        }
+        
+        // Standart mesai kontrolü (5-7 dakika arası)
+        let shift = null;
+        const schedule = team.schedule;
+        
+        if (schedule.weekdays && !schedule.morningShift) {
+          const shiftStart = timeToMinutes(schedule.weekdays.start);
+          // Mesai başlangıcından 5-7 dakika sonra kontrol (örn: 07:45 için 07:50-07:52)
+          if (currentMinutes >= shiftStart + 5 && currentMinutes <= shiftStart + 7) {
+            shift = { type: 'weekday', start: schedule.weekdays.start };
+          }
+        }
+        
+        // Cumartesi kontrolü
+        if (dayOfWeek === 6 && schedule.saturday) {
+          const shiftStart = timeToMinutes(schedule.saturday.start);
+          if (currentMinutes >= shiftStart + 5 && currentMinutes <= shiftStart + 7) {
+            shift = { type: 'saturday', start: schedule.saturday.start };
+          }
+        }
+        
+        // Vardiyalı mesai (Ekip 3)
+        if (schedule.morningShift) {
+          shift = getCurrentShift(team, currentMinutes, dayOfWeek);
+        }
+        
+        if (!shift) {
+          continue;
+        }
+        
+        // Bu ekip için bugün zaten bildirim gönderildi mi?
+        const reminderKey = `${team.name}_${currentDate}_${shift.start}`;
+        const reminderDoc = await db.collection('shiftReminders').doc(reminderKey).get();
+        if (reminderDoc.exists) {
+          console.log(`⏭️ ${team.name}: Bugün ${shift.start} mesaisi için zaten bildirim gönderildi`);
+          continue;
+        }
+        
+        console.log(`📋 ${team.name} kontrol ediliyor (${shift.start} mesaisi)...`);
+        
+        let sentCount = 0;
+        const sentUsers = [];
+        
+        // Ekipteki her kullanıcıyı kontrol et
+        for (const pin of team.pins) {
+          const userName = PIN_NAMES[pin] || pin;
+          
+          // Kullanıcının bugün girişi var mı?
+          const attendanceSnapshot = await db.collection('attendance')
+            .where('pin', '==', pin)
+            .where('date', '==', currentDate)
+            .get();
+          
+          let hasCheckIn = false;
+          if (!attendanceSnapshot.empty) {
+            const data = attendanceSnapshot.docs[0].data();
+            const timestamps = data.timestamps || [];
+            // Herhangi bir giriş kaydı varsa
+            hasCheckIn = timestamps.some(t => t.type === 'in');
+          }
+          
+          if (!hasCheckIn) {
+            // Giriş yapılmamış - Telegram bildirimi gönder
+            const telegramUser = telegramUsers[pin];
+            if (telegramUser && telegramUser.chatId) {
+              const message = `<b>⏰ ${team.name} - Giriş Hatırlatması</b>\n\n` +
+                             `Mesai Başlama Saati: ${shift.start}\n\n` +
+                             `Henüz giriş yapılmadı!\n\n` +
+                             `Geç kalacaksanız lütfen mazeret bildiriniz.`;
+              
+              const sent = await sendTelegramMessage(botToken, telegramUser.chatId, message);
+              if (sent) {
+                sentCount++;
+                sentUsers.push(userName);
+                console.log(`📢 ${userName} (${pin}): Bildirim gönderildi`);
+              }
+            } else {
+              console.log(`⚠️ ${userName} (${pin}): Chat ID yok, bildirim gönderilemedi`);
+            }
+            
+            // Log kaydet
+            await db.collection('logs').add({
+              timestamp: new Date().toISOString(),
+              action: 'CHECK_IN_REMINDER',
+              pin: pin,
+              role: 'system',
+              shelf: '-',
+              product: userName,
+              qty: 0,
+              detail: `${team.name} - ${shift.start} mesaisi için hatırlatma gönderildi`,
+              ts: admin.firestore.FieldValue.serverTimestamp()
+            });
+          } else {
+            console.log(`✅ ${userName} (${pin}): Bugün giriş yapmış`);
+          }
+        }
+        
+        // Bu ekip için bugün bildirim gönderildi olarak işaretle
+        await db.collection('shiftReminders').doc(reminderKey).set({
+          team: team.name,
+          date: currentDate,
+          shift: shift.start,
+          sentAt: admin.firestore.FieldValue.serverTimestamp(),
+          sentCount: sentCount,
+          sentUsers: sentUsers
+        });
+        
+        console.log(`✅ ${team.name}: ${sentCount} kişiye bildirim gönderildi`);
+      }
+      
+      return null;
+      
+    } catch (error) {
+      console.error('Mesai kontrolü hatası:', error);
       return null;
     }
   });
