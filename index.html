@@ -916,7 +916,7 @@
         <div class="tab" id="tabCommissionSummary">ETSY BAYİLERİ</div>
         <div class="tab" id="tabCommission">HAK EDİŞ</div>
         <div class="tab" id="tabPlatformPayments">AMAZON & SHOPIFY</div>
-        <div class="tab" id="tabAttendance">PUANTAJ</div>
+        <div class="tab" id="tabAttendance">ÇALIŞMA KAYDI</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -2009,7 +2009,7 @@
         <!-- VIEW: PUANTAJ -->
         <div id="viewAttendance" style="display:none;">
           <div class="card">
-            <h2 style="margin:0 0 20px 0;">Puantaj Sistemi</h2>
+            <h2 style="margin:0 0 20px 0;">Çalışma Kaydı Sistemi</h2>
             
             <!-- Giriş-Çıkış Butonları -->
             <div style="background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
@@ -3890,7 +3890,7 @@
           tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
         }
         
-        setActiveTab("clear");
+        setActiveTab("attendance");
       }else if(r==="stower"){
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
@@ -3899,7 +3899,7 @@
         tabPackaging.style.display="block";
         tabAttendance.style.display="block";
         tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
-        setActiveTab("put");
+        setActiveTab("attendance");
       }else if(r==="welder"){
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
@@ -3910,7 +3910,7 @@
         tabInstructions.style.display="block";
         tabAttendance.style.display="block";
         tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
-        setActiveTab("welder");
+        setActiveTab("attendance");
       }else if(r==="purchase"){
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
@@ -10479,39 +10479,53 @@
       }
     }
 
-    // Ana kontrol fonksiyonu - Her 5 dakikada bir çalışır
+    // Ana kontrol fonksiyonu - Her 1 dakikada bir çalışır
     async function checkAllTeamsAttendance() {
       try {
         const now = new Date();
         const currentTime = now.toTimeString().slice(0, 5); // HH:MM
         const currentDate = now.toISOString().split('T')[0];
         const dayOfWeek = now.getDay();
+        const currentMinutes = timeToMinutes(currentTime);
         
-        console.log(`🔍 Mesai kontrolü başlatıldı: ${currentTime}`);
+        console.log(`🔍 Mesai kontrolü: ${currentTime} (${currentDate})`);
         
         for (const team of window.WORK_TEAMS) {
           // Bu ekip bugün çalışıyor mu?
           if (!isWorkDay(team, dayOfWeek)) {
+            console.log(`⏭️ ${team.name}: Bugün çalışmıyor (gün: ${dayOfWeek})`);
             continue;
           }
           
           // Hangi vardiya aktif?
           const shift = getCurrentShift(team, currentTime);
           if (!shift) {
+            console.log(`⏭️ ${team.name}: Aktif vardiya yok`);
             continue;
           }
           
           const shiftStartMinutes = timeToMinutes(shift.start);
-          const currentMinutes = timeToMinutes(currentTime);
           
-          // Mesai başlangıcından 5 dakika sonra kontrol et
-          const reminderTime = shiftStartMinutes + 5;
+          // Mesai başlangıcından 5-15 dakika arası kontrol et (daha esnek)
+          const reminderStart = shiftStartMinutes + 5;
+          const reminderEnd = shiftStartMinutes + 15;
           
-          if (currentMinutes !== reminderTime) {
+          // Bu zaman aralığında değilse atla
+          if (currentMinutes < reminderStart || currentMinutes > reminderEnd) {
+            console.log(`⏭️ ${team.name}: Kontrol zamanı değil (şu an: ${currentTime}, kontrol aralığı: ${minutesToTime(reminderStart)}-${minutesToTime(reminderEnd)})`);
             continue;
           }
           
-          console.log(`📋 ${team.name} kontrol ediliyor...`);
+          // Bu ekip için bugün zaten bildirim gönderildi mi kontrol et
+          const reminderKey = `shift_reminder_${team.name}_${currentDate}_${shift.start}`;
+          if (localStorage.getItem(reminderKey)) {
+            console.log(`⏭️ ${team.name}: Bugün zaten bildirim gönderildi`);
+            continue;
+          }
+          
+          console.log(`📋 ${team.name} kontrol ediliyor (${shift.start} mesaisi)...`);
+          
+          let sentCount = 0;
           
           // Ekipteki her kullanıcıyı kontrol et
           for (const pin of team.pins) {
@@ -10522,7 +10536,9 @@
             
             if (!attendance.hasCheckIn) {
               // Giriş yapılmamış - Hatırlatma gönder
+              console.log(`📢 ${userName} (${pin}): Giriş YOK - Bildirim gönderiliyor`);
               await sendCheckInReminder(pin, userName, team.name, shift);
+              sentCount++;
               
               // Log kaydet
               await window.addDoc(
@@ -10540,9 +10556,13 @@
                 }
               );
             } else {
-              console.log(`✅ ${userName} bugün zaten giriş yapmış`);
+              console.log(`✅ ${userName} (${pin}): Bugün giriş yapmış`);
             }
           }
+          
+          // Bu ekip için bugün bildirim gönderildi olarak işaretle
+          localStorage.setItem(reminderKey, new Date().toISOString());
+          console.log(`✅ ${team.name}: ${sentCount} kişiye bildirim gönderildi`);
         }
         
       } catch (error) {
@@ -10550,20 +10570,15 @@
       }
     }
 
-    // ========== OTOMATİK KONTROL BAŞLATMA ==========
-
-    // Sayfa yüklendiğinde kontrol sistemi başlat
-    if (window.__SESSION?.role === 'admin') {
-      console.log('🚀 Otomatik mesai kontrol sistemi başlatılıyor...');
-      
-      // İlk kontrolü hemen yap (gerçek mesai planlarına göre)
-      setTimeout(checkAllTeamsAttendance, 5000);
-      
-      // Her 5 dakikada bir kontrol et (gerçek mesai planlarına göre)
-      window.shiftCheckInterval = setInterval(checkAllTeamsAttendance, 5 * 60 * 1000);
-      
-      console.log('✅ Otomatik kontrol sistemi aktif (Her 5 dakikada bir)');
-    }
+    // ========== OTOMATİK KONTROL (Cloud Functions ile yapılıyor) ==========
+    // Not: Mesai hatırlatmaları artık Cloud Functions tarafından her dakika kontrol ediliyor
+    // Frontend'de sadece manuel test için fonksiyon kalıyor
+    
+    console.log('✅ Mesai hatırlatma sistemi Cloud Functions ile çalışıyor');
+    console.log('📋 Kontrol saatleri:');
+    console.log('  - Ekip 1 (Standart): 08:05-08:07');
+    console.log('  - Ekip 2 (Üretim): 07:50-07:52');
+    console.log('  - Ekip 3 (Vardiyalı): 10:35-10:37 ve 20:35-20:37');
 
     // ========== MANUEL TEST FONKSİYONU (Basit) ==========
 
