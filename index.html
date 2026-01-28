@@ -908,7 +908,8 @@
         <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
         <div class="tab" id="tabWelderRequests">SİPARİŞLER</div>
         <div class="tab" id="tabProduction">ÜRETİM KAYITLARI</div>
-        <div class="tab" id="tabPurchase">SATIN ALMA</div>
+        <div class="tab" id="tabPurchase">MALZEME TALEPLERİ</div>
+        <div class="tab" id="tabSuppliers">TEDARİKÇİLER VE SATINALMA</div>
         <div class="tab" id="tabInstructions">ÜRETİM TALİMATLARI</div>
         <div class="tab" id="tabPackaging">PAKETLEME TALİMATLARI</div>
         <div class="tab" id="tabPayments">PERSONEL ÖDEMELERİ</div>
@@ -1008,6 +1009,7 @@
         <div class="tab-sub" data-target="request">Ürün Talep</div>
         <div class="tab-sub" data-target="materialRequest">Malzeme Talep</div>
         <div class="tab-sub" data-target="purchase">Satın Alma</div>
+        <div class="tab-sub" data-target="suppliers">Tedarikçiler</div>
       </div>
       <div class="tab-group-content" id="group-talimat">
         <div class="tab-sub" data-target="instructions">Üretim Talimatları</div>
@@ -1310,7 +1312,8 @@
           <div class="card">
 
             <label class="fieldLabel">Malzeme</label>
-            <input id="matReqName" class="input" placeholder="" />
+            <input id="matReqName" class="input" placeholder="Malzeme adı yazın veya seçin..." list="materialRequestList" />
+            <datalist id="materialRequestList"></datalist>
 
             <label class="fieldLabel" style="margin-top:14px;">Adet</label>
             <input id="matReqQty" class="input" type="number" min="1" value="1" />
@@ -1372,6 +1375,168 @@
                 </thead>
                 <tbody id="purchaseBody"></tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: SUPPLIERS (Tedarikçi Fiyat Sistemi) -->
+        <div id="viewSuppliers" style="display:none;">
+          
+          <!-- Alt Sekmeler (Pill/Chip stili) -->
+          <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;background:var(--panel2);padding:8px;border-radius:12px;">
+            <div id="subTabSupplierRegister" class="supplier-sub-tab active" onclick="switchSupplierSubTab('register')">Tedarikçi Kaydet</div>
+            <div id="subTabPriceRecord" class="supplier-sub-tab" onclick="switchSupplierSubTab('record')">Fiyat Kaydet</div>
+            <div id="subTabPriceCompare" class="supplier-sub-tab" onclick="switchSupplierSubTab('compare')">Fiyat Karşılaştır</div>
+          </div>
+          
+          <style>
+            .supplier-sub-tab {
+              padding: 10px 20px;
+              border-radius: 8px;
+              font-size: 13px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.2s;
+              color: var(--muted);
+              background: transparent;
+            }
+            .supplier-sub-tab:hover {
+              background: rgba(59, 130, 246, 0.1);
+              color: #3b82f6;
+            }
+            .supplier-sub-tab.active {
+              background: #3b82f6;
+              color: white;
+            }
+          </style>
+          
+          <!-- Alt Sekme 0: Tedarikçi Kayıt -->
+          <div id="subViewSupplierRegister">
+            <div class="card">
+              <h3 style="margin:0 0 20px 0;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:24px;">🏭</span> Tedarikçi Bilgileri Kayıt
+              </h3>
+              <p style="margin:0 0 20px 0;color:var(--muted);font-size:14px;">Yeni tedarikçi firma bilgilerini kaydedin</p>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                <div>
+                  <label class="fieldLabel">Firma Adı *</label>
+                  <input id="supplierRegisterFirm" class="input" placeholder="Tedarikçi firma adı" />
+                </div>
+                <div>
+                  <label class="fieldLabel">İlgili Kişi *</label>
+                  <input id="supplierRegisterContact" class="input" placeholder="Ad Soyad" />
+                </div>
+                <div>
+                  <label class="fieldLabel">Telefon *</label>
+                  <input id="supplierRegisterPhone" class="input" placeholder="05XX XXX XX XX" />
+                </div>
+                <div>
+                  <label class="fieldLabel">Adres</label>
+                  <input id="supplierRegisterAddress" class="input" placeholder="Firma adresi" />
+                </div>
+                <div style="grid-column:span 2;">
+                  <label class="fieldLabel">Temin Edebileceği Malzemeler</label>
+                  <input id="supplierRegisterMaterials" class="input" placeholder="Örn: Civata, Somun, Pul (virgülle ayırın)" />
+                </div>
+              </div>
+              
+              <button class="actionBtn" id="btnSaveSupplierRegister" type="button" style="margin-top:24px;background:linear-gradient(135deg,#10b981,#059669);">
+                💾 TEDARİKÇİ KAYDET
+              </button>
+              
+              <div id="supplierRegisterStatus" style="margin-top:16px;display:none;padding:12px 16px;border-radius:8px;font-size:14px;"></div>
+            </div>
+            
+            <!-- Kayıtlı Tedarikçiler -->
+            <div class="card" style="margin-top:16px;">
+              <h4 style="margin:0 0 16px 0;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <span>📋</span> Kayıtlı Tedarikçiler
+              </h4>
+              <div id="registeredSuppliersList" style="display:grid;gap:10px;">
+                <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">Yükleniyor...</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Alt Sekme 1: Fiyat Kaydet -->
+          <div id="subViewPriceRecord" style="display:none;">
+            <div class="card">
+              <h3 style="margin:0 0 20px 0;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:24px;">💰</span> Tedarikçi Fiyat Kaydı
+              </h3>
+              <p style="margin:0 0 20px 0;color:var(--muted);font-size:14px;">Tedarikçiden aldığınız fiyat teklifini kaydedin</p>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                <div style="grid-column:span 2;">
+                  <label class="fieldLabel">Malzeme *</label>
+                  <input id="priceRecordMaterial" class="input" placeholder="Malzeme adı yazın veya seçin..." list="priceRecordMaterialList" autocomplete="off" />
+                  <datalist id="priceRecordMaterialList"></datalist>
+                </div>
+                <div>
+                  <label class="fieldLabel">Firma *</label>
+                  <select id="priceRecordFirm" class="input">
+                    <option value="">-- Firma Seçin --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel">Fiyat (₺) *</label>
+                  <input id="priceRecordPrice" class="input" type="number" step="0.01" placeholder="Birim fiyat" />
+                </div>
+                <div style="grid-column:span 2;">
+                  <label class="fieldLabel">Not</label>
+                  <input id="priceRecordNote" class="input" placeholder="Ek not (isteğe bağlı)" />
+                </div>
+              </div>
+              
+              <button class="actionBtn" id="btnSavePriceRecord" type="button" style="margin-top:24px;">
+                💾 FİYAT KAYDET
+              </button>
+              
+              <div id="priceRecordStatus" style="margin-top:16px;display:none;padding:12px 16px;border-radius:8px;font-size:14px;"></div>
+            </div>
+            
+            <!-- Son Kaydedilen Fiyatlar -->
+            <div class="card" style="margin-top:16px;">
+              <h4 style="margin:0 0 16px 0;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <span>📋</span> Son Kaydedilen Fiyatlar
+              </h4>
+              <div id="recentPriceRecords" style="display:grid;gap:10px;">
+                <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">Yükleniyor...</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Alt Sekme 2: Fiyat Karşılaştır -->
+          <div id="subViewPriceCompare" style="display:none;">
+            <div class="card">
+              <h3 style="margin:0 0 16px 0;font-size:18px;">📊 Fiyat Karşılaştırma</h3>
+              
+              <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                  <label class="fieldLabel">Malzeme</label>
+                  <input id="priceCompareMaterial" class="input" placeholder="Malzeme adı yazın..." list="priceCompareMaterialList" autocomplete="off" style="margin:0;" />
+                  <datalist id="priceCompareMaterialList"></datalist>
+                </div>
+                <button class="actionBtn" id="btnComparePrices" type="button" style="margin:0;padding:14px 28px;min-width:150px;">
+                  Karşılaştır
+                </button>
+              </div>
+            </div>
+            
+            <!-- Karşılaştırma Sonuçları -->
+            <div id="priceCompareResults" style="display:none;margin-top:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div>
+                  <span id="priceCompareMaterialName" style="font-size:18px;font-weight:700;color:var(--text);"></span>
+                  <span id="priceCompareCount" style="font-size:13px;color:var(--muted);margin-left:12px;"></span>
+                </div>
+                <span style="font-size:11px;color:var(--muted);">Son 5 gün</span>
+              </div>
+              
+              <div id="priceCompareList" style="display:grid;gap:8px;">
+                <!-- Sonuçlar buraya gelecek -->
+              </div>
             </div>
           </div>
         </div>
@@ -3080,7 +3245,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {
       getFirestore, collection, doc, setDoc, updateDoc, addDoc, deleteDoc,
-      onSnapshot, serverTimestamp, writeBatch,
+      onSnapshot, serverTimestamp, writeBatch, Timestamp,
       getDoc, getDocs, query, limit, orderBy, where
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
@@ -3098,6 +3263,7 @@
     const tabWelderRequests= document.getElementById("tabWelderRequests");
     const tabProduction= document.getElementById("tabProduction");
     const tabPurchase= document.getElementById("tabPurchase");
+    const tabSuppliers= document.getElementById("tabSuppliers");
     const tabInstructions= document.getElementById("tabInstructions");
     const tabPackaging= document.getElementById("tabPackaging");
     const tabPayments= document.getElementById("tabPayments");
@@ -3118,6 +3284,7 @@
     const viewWelderRequests= document.getElementById("viewWelderRequests");
     const viewProduction= document.getElementById("viewProduction");
     const viewPurchase= document.getElementById("viewPurchase");
+    const viewSuppliers= document.getElementById("viewSuppliers");
     const viewInstructions= document.getElementById("viewInstructions");
     const viewPackaging= document.getElementById("viewPackaging");
     const viewPayments= document.getElementById("viewPayments");
@@ -3682,7 +3849,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -3696,6 +3863,7 @@
         viewWelderRequests && (viewWelderRequests.style.display="none");
         viewProduction && (viewProduction.style.display="none");
         viewPurchase && (viewPurchase.style.display="none");
+        viewSuppliers && (viewSuppliers.style.display="none");
         viewInstructions && (viewInstructions.style.display="none");
         viewPackaging && (viewPackaging.style.display="none");
         viewPayments && (viewPayments.style.display="none");
@@ -3728,11 +3896,12 @@
         },50); 
       }
       if(target==="request"){ tabRequest?.classList.add("active"); viewRequest.style.display="block"; setTimeout(()=>{ try{ reqProduct.focus(); reqProduct.select && reqProduct.select(); }catch(e){} },50); }
-      if(target==="materialRequest"){ tabMaterialRequest?.classList.add("active"); viewMaterialRequest.style.display="block"; setTimeout(()=>{ try{ matReqName.focus(); matReqName.select && matReqName.select(); }catch(e){} },50); }
+      if(target==="materialRequest"){ tabMaterialRequest?.classList.add("active"); viewMaterialRequest.style.display="block"; setTimeout(()=>{ try{ loadSupplierMaterialList(); matReqName.focus(); matReqName.select && matReqName.select(); }catch(e){} },50); }
       if(target==="welder"){ tabWelder?.classList.add("active"); viewWelder.style.display="block"; setTimeout(()=>{ try{ welderCode.focus(); welderCode.select && welderCode.select(); }catch(e){} },50); }
       if(target==="welderRequests"){ tabWelderRequests?.classList.add("active"); viewWelderRequests.style.display="block"; }
       if(target==="production"){ tabProduction?.classList.add("active"); viewProduction.style.display="block"; }
       if(target==="purchase"){ tabPurchase?.classList.add("active"); viewPurchase.style.display="block"; }
+      if(target==="suppliers"){ tabSuppliers?.classList.add("active"); viewSuppliers.style.display="block"; setTimeout(()=>{ loadPriceMaterialList(); loadRegisteredSuppliers(); },50); }
       if(target==="instructions"){ tabInstructions?.classList.add("active"); viewInstructions.style.display="block"; setTimeout(()=>{ try{ instructionsProductCode.focus(); instructionsProductCode.select && instructionsProductCode.select(); }catch(e){} },50); }
       if(target==="packaging"){ tabPackaging?.classList.add("active"); viewPackaging.style.display="block"; setTimeout(()=>{ try{ packagingProductCode.focus(); packagingProductCode.select && packagingProductCode.select(); }catch(e){} },50); }
       if(target==="payments"){ tabPayments?.classList.add("active"); viewPayments.style.display="block"; setTimeout(()=>{ try{ paymentPersonSelect.focus(); }catch(e){} },50); }
@@ -3854,6 +4023,7 @@
         [tabWelderRequests, viewWelderRequests],
         [tabProduction, viewProduction],
         [tabPurchase, viewPurchase],
+        [tabSuppliers, viewSuppliers],
         [tabInstructions, viewInstructions],
         [tabPackaging, viewPackaging],
         [tabPayments, viewPayments],
@@ -3916,8 +4086,9 @@
         tabbarGrouped.style.display="none";
         
         tabPurchase.style.display="block";
+        tabSuppliers.style.display="block";
         tabAttendance.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr";
         setActiveTab("purchase");
       }else if(r==="painter"){
         tabbar.style.display="flex";
@@ -4087,6 +4258,7 @@
         tabWelderRequests && (tabWelderRequests.onclick = ()=>setActiveTab("welderRequests"));
         tabProduction && (tabProduction.onclick = ()=>setActiveTab("production"));
         tabPurchase && (tabPurchase.onclick = ()=>setActiveTab("purchase"));
+        tabSuppliers && (tabSuppliers.onclick = ()=>setActiveTab("suppliers"));
         tabInstructions && (tabInstructions.onclick = ()=>setActiveTab("instructions"));
         tabPackaging && (tabPackaging.onclick = ()=>setActiveTab("packaging"));
         tabPayments && (tabPayments.onclick = ()=>setActiveTab("payments"));
@@ -4194,6 +4366,7 @@
         window.doc = doc;
         window.collection = collection;
         window.serverTimestamp = serverTimestamp;
+        window.Timestamp = Timestamp;
         window.query = query;
         window.where = where;
         window.orderBy = orderBy;
@@ -10604,6 +10777,553 @@
         }, 5000);
       }
     };
+
+    // ========== TEDARİKÇİ FİYAT SİSTEMİ ==========
+    
+
+    // Tedarikçi kaydet
+    async function saveSupplierRegister() {
+      if (!window.db) { alert('Veritabanı bağlantısı yok!'); return; }
+      
+      const firm = document.getElementById('supplierRegisterFirm').value.trim();
+      const contact = document.getElementById('supplierRegisterContact').value.trim();
+      const phone = document.getElementById('supplierRegisterPhone').value.trim();
+      const address = document.getElementById('supplierRegisterAddress').value.trim();
+      const materials = document.getElementById('supplierRegisterMaterials').value.trim();
+      const statusDiv = document.getElementById('supplierRegisterStatus');
+      
+      // Validasyon
+      if (!firm || !contact || !phone) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(239,68,68,0.1)';
+        statusDiv.style.color = '#dc2626';
+        statusDiv.innerHTML = '❌ <strong>Firma adı, ilgili kişi ve telefon zorunludur!</strong>';
+        return;
+      }
+      
+      try {
+        // Firestore'a kaydet
+        const suppliersCol = window.collection(window.db, 'supplierFirms');
+        await window.addDoc(suppliersCol, {
+          firm,
+          contact,
+          phone,
+          address,
+          materials,
+          createdAt: window.serverTimestamp(),
+          createdBy: window.__SESSION?.pin || 'unknown'
+        });
+        
+        // Başarılı mesajı
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(34,197,94,0.1)';
+        statusDiv.style.color = '#16a34a';
+        statusDiv.innerHTML = '✅ <strong>Tedarikçi başarıyla kaydedildi!</strong>';
+        
+        // Formu temizle
+        document.getElementById('supplierRegisterFirm').value = '';
+        document.getElementById('supplierRegisterContact').value = '';
+        document.getElementById('supplierRegisterPhone').value = '';
+        document.getElementById('supplierRegisterAddress').value = '';
+        document.getElementById('supplierRegisterMaterials').value = '';
+        
+        // Listeyi güncelle
+        loadRegisteredSuppliers();
+        loadSupplierFirmsDropdown();
+        
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+        
+      } catch (error) {
+        console.error('Tedarikçi kaydedilirken hata:', error);
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(239,68,68,0.1)';
+        statusDiv.style.color = '#dc2626';
+        statusDiv.innerHTML = '❌ Hata: ' + error.message;
+      }
+    }
+    
+    // Kayıtlı tedarikçileri yükle
+    async function loadRegisteredSuppliers() {
+      const container = document.getElementById('registeredSuppliersList');
+      if (!container || !window.db) return;
+      
+      try {
+        const suppliersCol = window.collection(window.db, 'supplierFirms');
+        const q = window.query(suppliersCol, window.orderBy('firm', 'asc'));
+        const snapshot = await window.getDocs(q);
+        
+        if (snapshot.empty) {
+          container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">Henüz tedarikçi kaydı yok</div>';
+          return;
+        }
+        
+        let html = '';
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          
+          html += `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;">
+            <div style="width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;flex-shrink:0;">
+              ${data.firm.charAt(0).toUpperCase()}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:15px;color:var(--text);">${data.firm}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;">
+                ${data.contact} • <a href="tel:${data.phone}" style="color:#3b82f6;text-decoration:none;">${data.phone}</a>
+              </div>
+              ${data.materials ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;"><span style="color:var(--accent);">Malzemeler:</span> ${data.materials}</div>` : ''}
+              ${data.address ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">📍 ${data.address}</div>` : ''}
+            </div>
+            <button onclick="deleteSupplierFirm('${docSnap.id}', '${data.firm}')" 
+                    style="width:36px;height:36px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;border-radius:8px;cursor:pointer;font-size:14px;flex-shrink:0;"
+                    title="Sil">🗑️</button>
+          </div>`;
+        });
+        
+        container.innerHTML = html;
+        
+      } catch (error) {
+        console.error('Tedarikçiler yüklenirken hata:', error);
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--danger);">Yüklenirken hata oluştu</div>';
+      }
+    }
+    
+    // Tedarikçi firmayı sil
+    async function deleteSupplierFirm(docId, firmName) {
+      if (!window.db) return;
+      if (!confirm(`"${firmName}" tedarikçisini silmek istediğinizden emin misiniz?`)) return;
+      
+      try {
+        const docRef = window.doc(window.db, 'supplierFirms', docId);
+        await window.deleteDoc(docRef);
+        loadRegisteredSuppliers();
+        loadSupplierFirmsDropdown();
+      } catch (error) {
+        console.error('Tedarikçi silinirken hata:', error);
+        alert('Silme sırasında hata oluştu!');
+      }
+    }
+    
+    // Firma dropdown'ını yükle (malzemeye göre filtrele)
+    async function loadSupplierFirmsDropdown(filterMaterial = null) {
+      const select = document.getElementById('priceRecordFirm');
+      if (!select || !window.db) return;
+      
+      try {
+        const suppliersCol = window.collection(window.db, 'supplierFirms');
+        const q = window.query(suppliersCol, window.orderBy('firm', 'asc'));
+        const snapshot = await window.getDocs(q);
+        
+        let options = '<option value="">-- Firma Seçin --</option>';
+        
+        if (filterMaterial) {
+          // Sadece bu malzemeyi temin edebilen firmaları göster
+          const filterLower = filterMaterial.toLowerCase();
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            // materials alanında malzeme adı var mı kontrol et
+            const supplierMaterials = (data.materials || '').toLowerCase();
+            if (supplierMaterials.includes(filterLower)) {
+              options += `<option value="${data.firm}">${data.firm}</option>`;
+            }
+          });
+        } else {
+          // Tüm firmaları göster
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            options += `<option value="${data.firm}">${data.firm}</option>`;
+          });
+        }
+        
+        select.innerHTML = options;
+        
+        // Eğer filtreleme sonucu firma bulunamadıysa uyarı göster
+        if (filterMaterial && select.options.length <= 1) {
+          select.innerHTML = '<option value="">⚠️ Bu malzeme için tedarikçi yok</option>';
+        }
+        
+      } catch (error) {
+        console.error('Firma listesi yüklenirken hata:', error);
+      }
+    }
+    
+    // ======== FİYAT KAYIT FONKSİYONLARI ========
+    
+    // Fiyat kaydı kaydet
+    async function savePriceRecord() {
+      if (!window.db) { alert('Veritabanı bağlantısı yok!'); return; }
+      
+      const material = document.getElementById('priceRecordMaterial').value.trim();
+      const firm = document.getElementById('priceRecordFirm').value;
+      const price = parseFloat(document.getElementById('priceRecordPrice').value);
+      const note = document.getElementById('priceRecordNote').value.trim();
+      const statusDiv = document.getElementById('priceRecordStatus');
+      
+      // Validasyon
+      if (!material || !firm || !price || isNaN(price)) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(239,68,68,0.1)';
+        statusDiv.style.color = '#dc2626';
+        statusDiv.innerHTML = '❌ <strong>Malzeme, firma ve fiyat zorunludur!</strong>';
+        return;
+      }
+      
+      try {
+        // Bugünün tarihi
+        const recordDate = new Date();
+        
+        // Firestore'a kaydet
+        const priceRecordsCol = window.collection(window.db, 'priceRecords');
+        await window.addDoc(priceRecordsCol, {
+          material,
+          firm,
+          price,
+          recordDate: window.Timestamp.fromDate(recordDate),
+          note,
+          createdAt: window.serverTimestamp(),
+          createdBy: window.__SESSION?.pin || 'unknown'
+        });
+        
+        // Başarılı mesajı
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(34,197,94,0.1)';
+        statusDiv.style.color = '#16a34a';
+        statusDiv.innerHTML = '✅ <strong>Fiyat başarıyla kaydedildi!</strong>';
+        
+        // Formu temizle
+        document.getElementById('priceRecordMaterial').value = '';
+        document.getElementById('priceRecordFirm').value = '';
+        document.getElementById('priceRecordPrice').value = '';
+        document.getElementById('priceRecordNote').value = '';
+        
+        // Son kayıtları güncelle
+        loadRecentPriceRecords();
+        loadPriceMaterialList();
+        
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+        
+      } catch (error) {
+        console.error('Fiyat kaydedilirken hata:', error);
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(239,68,68,0.1)';
+        statusDiv.style.color = '#dc2626';
+        statusDiv.innerHTML = '❌ Hata: ' + error.message;
+      }
+    }
+    
+    // Son kaydedilen fiyatları yükle
+    async function loadRecentPriceRecords() {
+      const container = document.getElementById('recentPriceRecords');
+      if (!container || !window.db) return;
+      
+      try {
+        const priceRecordsCol = window.collection(window.db, 'priceRecords');
+        const q = window.query(priceRecordsCol, window.orderBy('createdAt', 'desc'), window.limit(10));
+        const snapshot = await window.getDocs(q);
+        
+        if (snapshot.empty) {
+          container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">Henüz fiyat kaydı yok</div>';
+          return;
+        }
+        
+        let html = '';
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const recordDate = data.recordDate ? data.recordDate.toDate().toLocaleDateString('tr-TR') : '-';
+          
+          html += `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;">
+            <div style="width:50px;height:44px;background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0;text-align:center;line-height:1.2;">
+              ${data.price.toLocaleString('tr-TR')}₺
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:14px;color:var(--text);">${data.material}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">${data.firm}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:12px;color:var(--muted);">📅 ${recordDate}</div>
+              ${data.note ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${data.note}">${data.note}</div>` : ''}
+            </div>
+            <button onclick="deletePriceRecord('${docSnap.id}')" 
+                    style="width:32px;height:32px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;border-radius:6px;cursor:pointer;font-size:14px;flex-shrink:0;"
+                    title="Sil">🗑️</button>
+          </div>`;
+        });
+        
+        container.innerHTML = html;
+        
+      } catch (error) {
+        console.error('Son fiyatlar yüklenirken hata:', error);
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--danger);">Yüklenirken hata oluştu</div>';
+      }
+    }
+    
+    // Fiyat kaydını sil
+    async function deletePriceRecord(docId) {
+      if (!window.db) return;
+      if (!confirm('Bu fiyat kaydını silmek istediğinizden emin misiniz?')) return;
+      
+      try {
+        const docRef = window.doc(window.db, 'priceRecords', docId);
+        await window.deleteDoc(docRef);
+        loadRecentPriceRecords();
+      } catch (error) {
+        console.error('Fiyat silinirken hata:', error);
+        alert('Silme sırasında hata oluştu!');
+      }
+    }
+    
+    // Fiyat karşılaştırma - Son 5 gündeki fiyatları getir
+    async function comparePrices() {
+      const materialInput = document.getElementById('priceCompareMaterial');
+      const resultsDiv = document.getElementById('priceCompareResults');
+      const materialNameDiv = document.getElementById('priceCompareMaterialName');
+      const countDiv = document.getElementById('priceCompareCount');
+      const listDiv = document.getElementById('priceCompareList');
+      
+      const material = materialInput.value.trim();
+      
+      if (!material) {
+        alert('Lütfen bir malzeme seçin veya yazın!');
+        return;
+      }
+      
+      if (!window.db) { alert('Veritabanı bağlantısı yok!'); return; }
+      
+      try {
+        // Son 5 günün başlangıç tarihi
+        const fiveDaysAgo = new Date();
+        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+        fiveDaysAgo.setHours(0, 0, 0, 0);
+        
+        // Sadece malzeme ile sorgula (composite index gerekmeden)
+        const priceRecordsCol = window.collection(window.db, 'priceRecords');
+        const q = window.query(
+          priceRecordsCol, 
+          window.where('material', '==', material)
+        );
+        
+        const snapshot = await window.getDocs(q);
+        
+        resultsDiv.style.display = 'block';
+        materialNameDiv.textContent = material;
+        
+        if (snapshot.empty) {
+          countDiv.textContent = 'Bu malzeme için fiyat kaydı bulunamadı';
+          listDiv.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">Bu malzeme için kayıtlı fiyat teklifi yok.</div>';
+          return;
+        }
+        
+        // Kayıtları al ve son 5 gün içindekileri filtrele
+        const records = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          // Tarih kontrolü yap
+          if (data.recordDate) {
+            const recordDate = data.recordDate.toDate();
+            if (recordDate >= fiveDaysAgo) {
+              records.push({ id: docSnap.id, ...data });
+            }
+          }
+        });
+        
+        if (records.length === 0) {
+          countDiv.textContent = 'Son 5 günde fiyat kaydı bulunamadı';
+          listDiv.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">Bu malzeme için son 5 günde alınmış fiyat kaydı yok.</div>';
+          return;
+        }
+        
+        // Fiyata göre sırala (ucuzdan pahalıya)
+        records.sort((a, b) => a.price - b.price);
+        
+        countDiv.textContent = `${records.length} fiyat teklifi bulundu`;
+        
+        let html = '';
+        records.forEach((record, index) => {
+          const isLowest = index === 0;
+          const recordDate = record.recordDate ? record.recordDate.toDate().toLocaleDateString('tr-TR') : '-';
+          const bgClass = isLowest ? 'background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:1px solid #86efac;' : 'background:var(--panel2);border:1px solid var(--border);';
+          
+          html += `
+          <div style="display:flex;align-items:center;gap:16px;padding:14px 16px;border-radius:10px;${bgClass}">
+            <div style="min-width:90px;">
+              <div style="font-size:18px;font-weight:800;${isLowest ? 'color:#16a34a;' : 'color:var(--text);'}">${record.price.toLocaleString('tr-TR')} ₺</div>
+              ${isLowest ? '<span style="font-size:10px;background:#16a34a;color:white;padding:2px 6px;border-radius:4px;font-weight:600;">EN UCUZ</span>' : ''}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:14px;color:var(--text);">${record.firm}</div>
+              ${record.note ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">${record.note}</div>` : ''}
+            </div>
+            <div style="font-size:12px;color:var(--muted);white-space:nowrap;">${recordDate}</div>
+          </div>`;
+        });
+        
+        listDiv.innerHTML = html;
+        
+        // Sonuçlara kaydır
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+      } catch (error) {
+        console.error('Fiyatlar karşılaştırılırken hata:', error);
+        listDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--danger);">Yüklenirken hata oluştu: ' + error.message + '</div>';
+      }
+    }
+    
+    // Malzeme listesini yükle (fiyat kayıt ve karşılaştırma için)
+    async function loadPriceMaterialList() {
+      const datalist1 = document.getElementById('priceRecordMaterialList');
+      const datalist2 = document.getElementById('priceCompareMaterialList');
+      const datalistRequest = document.getElementById('materialRequestList');
+      if (!window.db) return;
+      
+      try {
+        const materialsSet = new Set();
+        
+        // 1. Materials koleksiyonundan (Malzeme Ekle ile eklenenler)
+        const materialsCol = window.collection(window.db, 'materials');
+        const snapshot = await window.getDocs(materialsCol);
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.name) materialsSet.add(data.name);
+        });
+        
+        // 2. MaterialRequests koleksiyonundan (talep edilen malzemeler)
+        const requestsCol = window.collection(window.db, 'materialRequests');
+        const requestsSnapshot = await window.getDocs(requestsCol);
+        requestsSnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.materialName) materialsSet.add(data.materialName);
+        });
+        
+        // 3. SupplierFirms koleksiyonundan (tedarikçi kaydederken girilen malzemeler)
+        const suppliersCol = window.collection(window.db, 'supplierFirms');
+        const suppliersSnapshot = await window.getDocs(suppliersCol);
+        suppliersSnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          // materials alanı virgülle ayrılmış string olarak kaydediliyor
+          if (data.materials) {
+            const materialArray = data.materials.split(',');
+            materialArray.forEach(m => {
+              const trimmed = m.trim();
+              if (trimmed) materialsSet.add(trimmed);
+            });
+          }
+        });
+        
+        // Sırala
+        const sortedMaterials = Array.from(materialsSet).sort((a, b) => a.localeCompare(b, 'tr'));
+        
+        // Datalist'leri güncelle
+        const options = sortedMaterials.map(m => `<option value="${m}">`).join('');
+        if (datalist1) datalist1.innerHTML = options;
+        if (datalist2) datalist2.innerHTML = options;
+        if (datalistRequest) datalistRequest.innerHTML = options;
+        
+      } catch (error) {
+        console.error('Malzeme listesi yüklenirken hata:', error);
+      }
+    }
+    
+    // Alt sekme değiştirme
+    function switchSupplierSubTab(tabName) {
+      const subTabSupplierRegister = document.getElementById('subTabSupplierRegister');
+      const subTabPriceRecord = document.getElementById('subTabPriceRecord');
+      const subTabPriceCompare = document.getElementById('subTabPriceCompare');
+      const subViewSupplierRegister = document.getElementById('subViewSupplierRegister');
+      const subViewPriceRecord = document.getElementById('subViewPriceRecord');
+      const subViewPriceCompare = document.getElementById('subViewPriceCompare');
+      
+      // Tüm sekmeleri sıfırla (active class kaldır)
+      [subTabSupplierRegister, subTabPriceRecord, subTabPriceCompare].forEach(tab => {
+        if (tab) tab.classList.remove('active');
+      });
+      [subViewSupplierRegister, subViewPriceRecord, subViewPriceCompare].forEach(view => {
+        if (view) view.style.display = 'none';
+      });
+      
+      // Seçili sekmeyi aktif et
+      if (tabName === 'register') {
+        subTabSupplierRegister.classList.add('active');
+        subViewSupplierRegister.style.display = 'block';
+        loadRegisteredSuppliers();
+      } else if (tabName === 'record') {
+        subTabPriceRecord.classList.add('active');
+        subViewPriceRecord.style.display = 'block';
+        loadSupplierFirmsDropdown();
+        loadRecentPriceRecords();
+      } else if (tabName === 'compare') {
+        subTabPriceCompare.classList.add('active');
+        subViewPriceCompare.style.display = 'block';
+      }
+    }
+    
+    // Event listeners - Tedarikçi Fiyat Sistemi
+    document.addEventListener('DOMContentLoaded', function() {
+      // Alt sekme butonları
+      const subTabSupplierRegister = document.getElementById('subTabSupplierRegister');
+      const subTabPriceRecord = document.getElementById('subTabPriceRecord');
+      const subTabPriceCompare = document.getElementById('subTabPriceCompare');
+      
+      if (subTabSupplierRegister) {
+        subTabSupplierRegister.addEventListener('click', () => switchSupplierSubTab('register'));
+      }
+      if (subTabPriceRecord) {
+        subTabPriceRecord.addEventListener('click', () => switchSupplierSubTab('record'));
+      }
+      if (subTabPriceCompare) {
+        subTabPriceCompare.addEventListener('click', () => switchSupplierSubTab('compare'));
+      }
+      
+      // Tedarikçi kaydet butonu
+      const btnSaveSupplierRegister = document.getElementById('btnSaveSupplierRegister');
+      if (btnSaveSupplierRegister) {
+        btnSaveSupplierRegister.addEventListener('click', saveSupplierRegister);
+      }
+      
+      // Fiyat kaydet butonu
+      const btnSavePriceRecord = document.getElementById('btnSavePriceRecord');
+      if (btnSavePriceRecord) {
+        btnSavePriceRecord.addEventListener('click', savePriceRecord);
+      }
+      
+      // Malzeme seçildiğinde firmaları filtrele
+      const priceRecordMaterial = document.getElementById('priceRecordMaterial');
+      if (priceRecordMaterial) {
+        priceRecordMaterial.addEventListener('change', function() {
+          const material = this.value.trim();
+          if (material) {
+            loadSupplierFirmsDropdown(material);
+          } else {
+            loadSupplierFirmsDropdown();
+          }
+        });
+        priceRecordMaterial.addEventListener('input', function() {
+          const material = this.value.trim();
+          if (material.length > 2) {
+            loadSupplierFirmsDropdown(material);
+          }
+        });
+      }
+      
+      // Fiyat karşılaştır butonu
+      const btnComparePrices = document.getElementById('btnComparePrices');
+      if (btnComparePrices) {
+        btnComparePrices.addEventListener('click', comparePrices);
+      }
+      
+      // Enter ile fiyat karşılaştır
+      const priceCompareMaterial = document.getElementById('priceCompareMaterial');
+      if (priceCompareMaterial) {
+        priceCompareMaterial.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') comparePrices();
+        });
+      }
+    });
+    
+    // Global fonksiyonlar
+    window.switchSupplierSubTab = switchSupplierSubTab;
+    window.deletePriceRecord = deletePriceRecord;
+    window.deleteSupplierFirm = deleteSupplierFirm;
 
 
     
