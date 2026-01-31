@@ -1,6 +1,6 @@
 {
-  "name": "GABYA HOME Depo Yönetimi",
-  "short_name": "GABYA",
+  "name": "Larmo Depo Yönetimi",
+  "short_name": "Larmo",
   "description": "Raf ve Depo Yönetim Sistemi",
   "start_url": "/",
   "display": "standalone",
