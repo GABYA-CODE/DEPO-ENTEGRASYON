@@ -188,7 +188,7 @@ exports.createNotificationRequest = functions.firestore
     try {
       console.log('Yeni bildirim:', notificationData);
       
-      const { eventType, targetRoles, targetPins, title, body } = notificationData;
+      const { eventType, targetRoles, targetPins, targetDesignerPin, title, body } = notificationData;
       const db = admin.firestore();
       
       // 1. TELEGRAM BİLDİRİMLERİ (Öncelikli)
@@ -200,10 +200,12 @@ exports.createNotificationRequest = functions.firestore
           console.log('Bot token bulundu, bildirim gönderiliyor...');
           console.log('targetPins:', targetPins);
           console.log('targetRoles:', targetRoles);
+          console.log('targetDesignerPin:', targetDesignerPin);
           
           // Hedef kullanıcıları belirle
           const telegramPromises = [];
           
+          // Önce belirli PIN'lere gönder (targetPins)
           if (targetPins && targetPins.length > 0) {
             // PIN'lere göre gönder - Array olduğu için döngü ile işle
             const usersSnapshot = await db.collection('telegramUsers').get();
@@ -215,8 +217,23 @@ exports.createNotificationRequest = functions.firestore
                 telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
               }
             });
-          } else if (targetRoles && targetRoles.length > 0) {
-            // Role'lere göre gönder
+          }
+          
+          // Atanmış tasarımcıya özel gönder (targetDesignerPin)
+          if (targetDesignerPin) {
+            const usersSnapshot = await db.collection('telegramUsers').get();
+            usersSnapshot.forEach(doc => {
+              const userData = doc.data();
+              if (userData.pin === targetDesignerPin && userData.chatId) {
+                const message = `<b>${title}</b>\n\n${body}`;
+                console.log(`Atanmış tasarımcıya mesaj gönderiliyor: ${userData.name} (${userData.pin}) -> ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
+              }
+            });
+          }
+          
+          // Role'lere göre gönder (targetRoles)
+          if (targetRoles && targetRoles.length > 0) {
             const usersSnapshot = await db.collection('telegramUsers').get();
             usersSnapshot.forEach(doc => {
               const userData = doc.data();
@@ -247,6 +264,8 @@ exports.createNotificationRequest = functions.firestore
       let tokensQuery;
       if (targetPins && targetPins.length > 0) {
         tokensQuery = db.collection('fcmTokens').where('pin', 'in', targetPins);
+      } else if (targetDesignerPin) {
+        tokensQuery = db.collection('fcmTokens').where('pin', '==', targetDesignerPin);
       } else if (targetRoles && targetRoles.length > 0) {
         tokensQuery = db.collection('fcmTokens').where('role', 'in', targetRoles);
       }
