@@ -820,6 +820,237 @@
       color: white;
       border-color: var(--green);
     }
+    /* Kişiye Özel Sipariş Stilleri */
+    .custom-order-filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .custom-order-filter-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .custom-order-filter-btn:hover {
+      border-color: var(--orange);
+      background: var(--panel);
+    }
+    .custom-order-filter-btn.active {
+      background: var(--orange);
+      color: white;
+      border-color: var(--orange);
+    }
+    .custom-order-card {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .custom-order-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .custom-order-card-header h4 {
+      margin: 0;
+      color: var(--orange);
+    }
+    .custom-order-status {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .custom-order-status.pending { background: #f59e0b22; color: #f59e0b; }
+    .custom-order-status.uploaded { background: #3b82f622; color: #3b82f6; }
+    .custom-order-status.revision { background: #ef444422; color: #ef4444; }
+    .custom-order-status.approved { background: #22c55e22; color: #22c55e; }
+    .custom-order-status.cutting { background: #f9731622; color: #f97316; }
+    .custom-order-card-body {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .custom-order-card-body p {
+      margin: 6px 0;
+    }
+    .custom-order-card-body a {
+      color: var(--link);
+    }
+    .custom-order-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .custom-order-card-actions button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .co-btn-upload { background: #3b82f6; color: white; }
+    .co-btn-upload:hover { background: #2563eb; }
+    .co-btn-approve { background: #22c55e; color: white; }
+    .co-btn-approve:hover { background: #16a34a; }
+    .co-btn-revise { background: #ef4444; color: white; }
+    .co-btn-revise:hover { background: #dc2626; }
+    .custom-order-history {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .custom-order-history-item {
+      margin: 4px 0;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+    }
+    .custom-order-revision-notes {
+      margin-top: 10px;
+      background: #ef444411;
+      border: 1px solid #ef444433;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .custom-order-revision-notes h5 {
+      margin: 0 0 6px 0;
+      color: #ef4444;
+      font-size: 12px;
+    }
+    .custom-order-revision-notes p {
+      margin: 4px 0;
+      font-size: 12px;
+    }
+    
+    /* Prim Sistemi Stilleri */
+    .prim-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .prim-total-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .prim-total-box .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .prim-total-box .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #10b981;
+    }
+    .prim-total-box .count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .prim-month-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .prim-month-selector input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+    }
+    .prim-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .prim-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .prim-item:hover {
+      border-color: #10b98155;
+      background: #10b98108;
+    }
+    .prim-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .prim-item-order {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .prim-item-time {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .prim-item-time .night-icon {
+      color: #f59e0b;
+    }
+    .prim-item-right {
+      text-align: right;
+    }
+    .prim-item-amount {
+      font-weight: 700;
+      font-size: 16px;
+      color: #10b981;
+    }
+    .prim-item-designer {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .prim-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+    }
+    .prim-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .prim-info {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 12px 16px;
+      background: var(--surface);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 3px solid #10b981;
+    }
   </style>
 </head>
 
@@ -918,6 +1149,8 @@
         <div class="tab" id="tabCommission">HAK EDİŞ</div>
         <div class="tab" id="tabPlatformPayments">AMAZON & SHOPIFY</div>
         <div class="tab" id="tabAttendance">ÇALIŞMA KAYDI</div>
+        <div class="tab" id="tabCustomOrders">KİŞİYE ÖZEL</div>
+        <div class="tab" id="tabDesignerBonus">PRİM</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1025,6 +1258,7 @@
         <div class="tab-sub" data-target="admin">Yönetici</div>
         <div class="tab-sub" data-target="production">Üretim Kayıtları</div>
         <div class="tab-sub" data-target="attendance">Mesai Kayıtları</div>
+        <div class="tab-sub" data-target="customOrders">Kişiye Özel Siparişler</div>
       </div>
 
       <div class="content">
@@ -2368,6 +2602,95 @@
           </div>
         </div>
 
+        <!-- VIEW: KİŞİYE ÖZEL SİPARİŞLER -->
+        <div id="viewCustomOrders" style="display:none;">
+          <div class="sectionTitle">Kişiye Özel Sipariş Yönetimi</div>
+          
+          <!-- Yeni Sipariş Formu (Sayfa Yöneticisi ve Admin) -->
+          <div class="card" id="customOrderFormCard" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;">➕ Yeni Sipariş Oluştur</h3>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;">
+              <div>
+                <label class="fieldLabel">Sipariş Numarası *</label>
+                <input id="coOrderNo" class="input" placeholder="Örn: KS-2026-001" />
+              </div>
+              <div>
+                <label class="fieldLabel">Ürün Linki *</label>
+                <input id="coProductUrl" class="input" placeholder="https://..." />
+              </div>
+            </div>
+            
+            <div style="margin-top:14px;">
+              <label class="fieldLabel">Kişiselleştirme Bilgileri *</label>
+              <textarea id="coCustomization" class="input" rows="3" placeholder="Müşterinin istediği isimler, tarihler, özel istekler..."></textarea>
+            </div>
+            
+            <button class="actionBtn" id="btnCreateCO" style="margin-top:16px;width:100%;" onclick="createCustomOrder()">SİPARİŞ OLUŞTUR</button>
+            <div class="statusBox" id="statusCO" style="display:none;margin-top:12px;"></div>
+          </div>
+          
+          <!-- Filtre Butonları -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="coFilterBar">
+            <button class="custom-order-filter-btn active" data-status="all" onclick="filterCustomOrders('all', this)">Tümü</button>
+            <button class="custom-order-filter-btn" data-status="PENDING_DESIGN" onclick="filterCustomOrders('PENDING_DESIGN', this)">Tasarım Bekliyor</button>
+            <button class="custom-order-filter-btn" data-status="UPLOADED_FOR_REVIEW" onclick="filterCustomOrders('UPLOADED_FOR_REVIEW', this)">Kontrol Bekliyor</button>
+            <button class="custom-order-filter-btn" data-status="REVISION_REQUIRED" onclick="filterCustomOrders('REVISION_REQUIRED', this)">Revize Gerekli</button>
+            <button class="custom-order-filter-btn" data-status="APPROVED" onclick="filterCustomOrders('APPROVED', this)">Kesim Bekliyor</button>
+            <button class="custom-order-filter-btn" data-status="CUTTING_COMPLETE" onclick="filterCustomOrders('CUTTING_COMPLETE', this)">Kesim Tamamlandı</button>
+          </div>
+          
+          <!-- Sipariş Listesi -->
+          <div id="coOrdersList">
+            <div style="text-align:center;padding:40px;color:var(--muted);">
+              <div style="font-size:48px;margin-bottom:12px;">📦</div>
+              <div>Yükleniyor...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revize Modal -->
+        <div id="coReviseModal" class="role-modal-overlay" style="display:none;">
+          <div class="role-modal" style="max-width:500px;">
+            <h3 style="margin:0 0 16px 0;">📝 Revize Notu</h3>
+            <input type="hidden" id="coReviseOrderId" />
+            <textarea id="coReviseNote" class="input" rows="4" placeholder="Eksik veya düzeltilmesi gereken hususları yazın..."></textarea>
+            <div class="role-modal-buttons" style="margin-top:16px;">
+              <button class="btn-cancel" onclick="closeReviseModal()">İptal</button>
+              <button class="actionBtn" onclick="submitRevision()" style="flex:2;">REVİZE GÖNDER</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: TASARIMCI PRİMİ -->
+        <div id="viewDesignerBonus" style="display:none;">
+          <div class="sectionTitle">Prim</div>
+          
+          <div class="prim-info">
+            🌙 Mesai dışı (08:00-18:00 haricinde) onaylanan tasarımlar için <strong>30 ₺</strong> prim.
+          </div>
+          
+          <!-- Header: Toplam + Ay Seçici -->
+          <div class="prim-header">
+            <div class="prim-total-box" id="primTotalBox">
+              <div class="label">Bu Ay Toplam</div>
+              <div class="value" id="primTotalValue">0 ₺</div>
+              <div class="count" id="primTotalCount">0 tasarım</div>
+            </div>
+            <div class="prim-month-selector">
+              <input type="month" id="primMonthSelector" onchange="loadDesignerBonuses()" />
+            </div>
+          </div>
+          
+          <!-- Prim Listesi -->
+          <div id="primDetailsList" class="prim-list">
+            <div class="prim-empty">
+              <div class="prim-empty-icon">🌙</div>
+              <div>Yükleniyor...</div>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
@@ -2616,6 +2939,44 @@
                     <td style="padding:12px;border-bottom:1px solid var(--border);">ETSY Satıcı</td>
                     <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">52384</td>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">Komisyonlu Satış</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(249,115,22,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#f97316;border-bottom:1px solid var(--border);">SAYFA YÖNETİCİSİ</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Sayfa Yöneticisi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">38471</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Mirza - Elf Metal</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Sayfa Yöneticisi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">62914</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Zehra - Grandmix</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Sayfa Yöneticisi</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">47293</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Faruk - Milonsa</td>
+                  </tr>
+                  
+                  <tr style="background:rgba(6,182,212,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#06b6d4;border-bottom:1px solid var(--border);">TASARIMCI</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Tasarımcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">72541</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Emre K. (Lazerci)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Tasarımcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">19583</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Müşerref Keçe</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Tasarımcı</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">85246</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Melike Çapraz</td>
                   </tr>
                 </tbody>
               </table>
@@ -3081,6 +3442,8 @@
     const PURCHASE_PINS = new Set(["41927","68503"]);
     const PAINTER_PINS = new Set(["87654","87655"]);
     const COMMISSION_PINS = new Set(["23764","190706","190707","14698","76312","31849","62957","48731","95126","52384"]);
+    const PAGE_MANAGER_PINS = new Set(["38471","62914","47293"]); // Sayfa yöneticileri - Mirza (Elf Metal), Zehra (Grandmix), Faruk (Milonsa)
+    const DESIGNER_PINS = new Set(["72541","19583","85246"]); // Tasarımcılar - Emre K. (Lazerci), Müşerref Keçe, Melike Çapraz
 
     // PIN setlerini global scope'a ekle
     window.ADMIN_PINS = ADMIN_PINS;
@@ -3091,6 +3454,8 @@
     window.PURCHASE_PINS = PURCHASE_PINS;
     window.PAINTER_PINS = PAINTER_PINS;
     window.COMMISSION_PINS = COMMISSION_PINS;
+    window.PAGE_MANAGER_PINS = PAGE_MANAGER_PINS;
+    window.DESIGNER_PINS = DESIGNER_PINS;
 
     // ========== MESAİ PLANLARI VE KULLANICI GRUPLARI ==========
     
@@ -3180,7 +3545,12 @@
       "95126": "Müşerref K.",
       "52384": "Komisyonlu Satış",
       "87654": "Nasır",
-      "87655": "Talha"
+      "87655": "Talha",
+      "38471": "Mirza - Elf Metal",
+      "62914": "Zehra - Grandmix",
+      "47293": "Faruk - Milonsa",
+      "19583": "Müşerref Keçe",
+      "85246": "Melike Çapraz"
     };
 
     // Puantaj yöneticileri - hangi kullanıcı hangi rollerin puantajını yönetebilir
@@ -3248,6 +3618,8 @@
       if(LASER_PINS.has(pin)) return "welder";
       if(PURCHASE_PINS.has(pin)) return "purchase";
       if(PAINTER_PINS.has(pin)) return "painter";
+      if(PAGE_MANAGER_PINS.has(pin)) return "page_manager";
+      if(DESIGNER_PINS.has(pin)) return "designer";
       if(COMMISSION_PINS.has(pin)) return "commission";
       return null;
     }
@@ -3259,6 +3631,8 @@
       if(role==="welder") return `<span class="badge b-welder">ÜRETİM</span>`;
       if(role==="purchase") return `<span class="badge b-admin">SATIN ALMA</span>`;
       if(role==="painter") return `<span class="badge" style="background:#ff6b35;color:#fff;">BOYACI</span>`;
+      if(role==="page_manager") return `<span class="badge" style="background:#f97316;color:#fff;">SAYFA YÖN.</span>`;
+      if(role==="designer") return `<span class="badge" style="background:#06b6d4;color:#fff;">TASARIMCI</span>`;
       if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">ETSY SATIŞLARI</span>`;
       return `<span class="badge">-</span>`;
     }
@@ -3365,6 +3739,8 @@
     const tabCommission= document.getElementById("tabCommission");
     const tabPlatformPayments= document.getElementById("tabPlatformPayments");
     const tabAttendance= document.getElementById("tabAttendance");
+    const tabCustomOrders= document.getElementById("tabCustomOrders");
+    const tabDesignerBonus= document.getElementById("tabDesignerBonus");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -3386,6 +3762,8 @@
     const viewCommission= document.getElementById("viewCommission");
     const viewPlatformPayments= document.getElementById("viewPlatformPayments");
     const viewAttendance= document.getElementById("viewAttendance");
+    const viewCustomOrders= document.getElementById("viewCustomOrders");
+    const viewDesignerBonus= document.getElementById("viewDesignerBonus");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -3962,7 +4340,7 @@
     }
 
     function setActiveTab(target){
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -3985,6 +4363,8 @@
         viewCommission && (viewCommission.style.display="none");
         viewPlatformPayments && (viewPlatformPayments.style.display="none");
         viewAttendance && (viewAttendance.style.display="none");
+        viewCustomOrders && (viewCustomOrders.style.display="none");
+        viewDesignerBonus && (viewDesignerBonus.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -4063,6 +4443,30 @@
         setTimeout(()=>{ 
           try{ 
             initAttendance();
+          }catch(e){console.error(e);} 
+        },50); 
+      }
+      if(target==="customOrders"){ 
+        tabCustomOrders?.classList.add("active"); 
+        viewCustomOrders.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            loadCustomOrders();
+          }catch(e){console.error(e);} 
+        },50); 
+      }
+      if(target==="designerBonus"){ 
+        tabDesignerBonus?.classList.add("active"); 
+        viewDesignerBonus.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            // Ay seçiciyi bu ay'a ayarla
+            const monthSelector = document.getElementById("primMonthSelector");
+            if(monthSelector && !monthSelector.value) {
+              const now = new Date();
+              monthSelector.value = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
+            }
+            loadDesignerBonuses();
           }catch(e){console.error(e);} 
         },50); 
       }
@@ -4145,6 +4549,7 @@
         [tabCommission, viewCommission],
         [tabPlatformPayments, viewPlatformPayments],
         [tabAttendance, viewAttendance],
+        [tabCustomOrders, viewCustomOrders],
         [tabAdmin, viewAdmin]
       ];
 
@@ -4191,8 +4596,9 @@
         tabWelderRequests.style.display="block";
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
+        tabCustomOrders.style.display="block";
         tabAttendance.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
         setActiveTab("attendance");
       }else if(r==="purchase"){
         tabbar.style.display="flex";
@@ -4226,6 +4632,28 @@
         tabbarGrouped.style.display="none";
         tabCommission.style.display="block";
         setActiveTab("commission");
+      }else if(r==="page_manager"){
+        // Sayfa yöneticisi: Komisyon + Kişiye Özel Siparişler + Prim
+        tabbar.style.display="flex";
+        tabbarGrouped.style.display="none";
+        
+        tabCommission.style.display="block";
+        tabCustomOrders.style.display="block";
+        tabDesignerBonus.style.display="block";
+        tabAttendance.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        setActiveTab("customOrders");
+      }else if(r==="designer"){
+        // Tasarımcı: Kişiye Özel Siparişler + Üretim Talimatları + Prim
+        tabbar.style.display="flex";
+        tabbarGrouped.style.display="none";
+        
+        tabCustomOrders.style.display="block";
+        tabInstructions.style.display="block";
+        tabDesignerBonus.style.display="block";
+        tabAttendance.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        setActiveTab("customOrders");
       }else{
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
@@ -4380,6 +4808,8 @@
         tabCommission && (tabCommission.onclick = ()=>setActiveTab("commission"));
         tabPlatformPayments && (tabPlatformPayments.onclick = ()=>setActiveTab("platformPayments"));
         tabAttendance && (tabAttendance.onclick = ()=>setActiveTab("attendance"));
+        tabCustomOrders && (tabCustomOrders.onclick = ()=>setActiveTab("customOrders"));
+        tabDesignerBonus && (tabDesignerBonus.onclick = ()=>setActiveTab("designerBonus"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>{
@@ -4409,6 +4839,8 @@
             { id: 'purchase', name: 'Satın Alma', badge: 'SATIN ALMA', color: '#00c853' },
             { id: 'painter', name: 'Boyacı', badge: 'BOYACI', color: '#ff6b35' },
             { id: 'commission', name: 'Etsy Satışları', badge: 'ETSY SATIŞLARI', color: '#9333ea' },
+            { id: 'page_manager', name: 'Sayfa Yöneticisi', badge: 'SAYFA YÖN.', color: '#f97316' },
+            { id: 'designer', name: 'Tasarımcı', badge: 'TASARIMCI', color: '#06b6d4' },
             { id: 'logout', name: 'Çıkış Yap', badge: 'ÇIKIŞ', color: '#ef4444' }
           ];
           
@@ -8991,6 +9423,8 @@
               else if(selectedRole === "purchase") pinSet = window.PURCHASE_PINS;
               else if(selectedRole === "painter") pinSet = window.PAINTER_PINS;
               else if(selectedRole === "commission") pinSet = window.COMMISSION_PINS;
+              else if(selectedRole === "page_manager") pinSet = window.PAGE_MANAGER_PINS;
+              else if(selectedRole === "designer") pinSet = window.DESIGNER_PINS;
 
               if(pinSet){
                 pinSet.delete(currentPin);
@@ -9011,6 +9445,8 @@
                 purchase: Array.from(window.PURCHASE_PINS),
                 painter: Array.from(window.PAINTER_PINS),
                 commission: Array.from(window.COMMISSION_PINS),
+                page_manager: Array.from(window.PAGE_MANAGER_PINS),
+                designer: Array.from(window.DESIGNER_PINS),
                 names: window.PIN_NAMES,
                 updatedAt: serverTimestamp()
               });
@@ -9078,6 +9514,14 @@
               if(data.commission) {
                 window.COMMISSION_PINS.clear();
                 data.commission.forEach(pin => window.COMMISSION_PINS.add(pin));
+              }
+              if(data.page_manager) {
+                window.PAGE_MANAGER_PINS.clear();
+                data.page_manager.forEach(pin => window.PAGE_MANAGER_PINS.add(pin));
+              }
+              if(data.designer) {
+                window.DESIGNER_PINS.clear();
+                data.designer.forEach(pin => window.DESIGNER_PINS.add(pin));
               }
               
               // İsimleri güncelle
@@ -9191,6 +9635,734 @@
     const WORK_START = "07:45"; // Varsayılan mesai başlangıç
     const WORK_END = "17:45";   // Varsayılan mesai bitiş
     
+    // ============ KİŞİYE ÖZEL SİPARİŞ SİSTEMİ ============
+    let currentCustomOrderFilter = "all";
+    let currentReviseOrderId = null;
+
+    // Sipariş oluştur (Sayfa Yöneticisi)
+    async function createCustomOrder() {
+      const orderNo = document.getElementById("coOrderNo").value.trim();
+      const productUrl = document.getElementById("coProductUrl").value.trim();
+      const customization = document.getElementById("coCustomization").value.trim();
+
+      if(!orderNo || !productUrl || !customization) {
+        alert("Lütfen tüm alanları doldurun!");
+        return;
+      }
+
+      try {
+        const now = new Date();
+        const orderData = {
+          orderNo: orderNo,
+          productUrl: productUrl,
+          customizationInfo: customization,
+          status: "PENDING_DESIGN",
+          createdAt: now,
+          createdBy: window.__SESSION?.pin || "unknown",
+          createdByName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin || "Bilinmeyen",
+          driveUrl: "",
+          reviewNotes: [],
+          history: [{
+            action: "created",
+            by: window.__SESSION?.pin,
+            byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+            at: now.toISOString(),
+            note: "Sipariş oluşturuldu"
+          }]
+        };
+
+        await addDoc(collection(db, "customOrders"), orderData);
+        
+        // Bildirim gönder - Tasarımcılara ve Adminlere
+        const notificationData = {
+          type: "custom_order_created",
+          title: "🎨 Yeni Kişiye Özel Sipariş",
+          body: `Sipariş No: ${orderNo}\n\nKişiselleştirme: ${customization}\n\nÜrün Linki: ${productUrl}`,
+          targetRoles: ["designer", "admin"],
+          createdAt: now,
+          createdBy: window.__SESSION?.pin,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+
+        // Formu temizle
+        document.getElementById("coOrderNo").value = "";
+        document.getElementById("coProductUrl").value = "";
+        document.getElementById("coCustomization").value = "";
+        
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Sipariş oluşturma hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.createCustomOrder = createCustomOrder;
+
+    // Siparişleri yükle
+    async function loadCustomOrders() {
+      const listContainer = document.getElementById("coOrdersList");
+      if(!listContainer) return;
+
+      listContainer.innerHTML = '<p style="color:var(--muted);">Yükleniyor...</p>';
+
+      // Rol bazlı form görünürlüğü
+      const currentPin = window.__SESSION?.pin;
+      const isAdmin = window.ADMIN_PINS?.has(currentPin);
+      const isPageManager = window.PAGE_MANAGER_PINS?.has(currentPin);
+      const isDesigner = window.DESIGNER_PINS?.has(currentPin);
+      const isLaser = window.LASER_PINS?.has(currentPin);
+
+      // Sipariş formunu sadece sayfa yöneticisi ve admin görebilir
+      const formCard = document.getElementById("customOrderFormCard");
+      if(formCard) {
+        formCard.style.display = (isAdmin || isPageManager) ? "block" : "none";
+      }
+
+      try {
+        const q = query(collection(db, "customOrders"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        if(snapshot.empty) {
+          listContainer.innerHTML = '<p style="color:var(--muted);">Henüz sipariş yok.</p>';
+          return;
+        }
+
+        let html = "";
+        const currentRole = window.__SESSION?.role;
+        const isLaser = window.LASER_PINS?.has(currentPin);
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const orderId = docSnap.id;
+
+          // Filtreleme
+          if(currentCustomOrderFilter !== "all" && data.status !== currentCustomOrderFilter) {
+            return;
+          }
+
+          // Tasarımcı filtrelemesi: Atanmamış siparişler + kendi atanan siparişleri
+          // NOT: Lazerci (Emre K.) tüm siparişleri görebilir
+          if(isDesigner && !isAdmin && !isPageManager && !isLaser) {
+            const isAssignedToMe = data.assignedDesigner === currentPin;
+            const isUnassigned = !data.assignedDesigner;
+            const isPendingOrRevision = data.status === "PENDING_DESIGN" || data.status === "REVISION_REQUIRED";
+            
+            // Sadece atanmamış bekleyen siparişleri veya bana atanan siparişleri göster
+            if(!isAssignedToMe && !isUnassigned) {
+              return; // Başkasına atanmış, gösterme
+            }
+            if(isUnassigned && !isPendingOrRevision) {
+              return; // Atanmamış ama bekleyen değil (olmaması gereken durum)
+            }
+          }
+
+          const statusText = {
+            "PENDING_DESIGN": "Tasarım Bekliyor",
+            "UPLOADED_FOR_REVIEW": "Kontrol Bekliyor",
+            "REVISION_REQUIRED": "Revize Gerekli",
+            "APPROVED": "Kesim Bekliyor",
+            "CUTTING_COMPLETE": "Kesim Tamamlandı"
+          }[data.status] || data.status;
+
+          const statusClass = {
+            "PENDING_DESIGN": "pending",
+            "UPLOADED_FOR_REVIEW": "uploaded",
+            "REVISION_REQUIRED": "revision",
+            "APPROVED": "approved",
+            "CUTTING_COMPLETE": "cutting"
+          }[data.status] || "pending";
+
+          const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString("tr-TR") : (data.createdAt || "-");
+
+          html += `
+            <div class="custom-order-card" data-order-id="${orderId}">
+              <div class="custom-order-card-header">
+                <h4>📦 Sipariş: ${data.orderNo}</h4>
+                <span class="custom-order-status ${statusClass}">${statusText}</span>
+              </div>
+              <div class="custom-order-card-body">
+                <p><strong>Ürün:</strong> <a href="${data.productUrl}" target="_blank">${data.productUrl}</a></p>
+                <p><strong>Kişiselleştirme:</strong> ${data.customizationInfo}</p>
+                <p><strong>Oluşturan:</strong> ${data.createdByName || data.createdBy} - ${createdDate}</p>
+                ${data.driveUrl ? `<p><strong>Drive Linki:</strong> <a href="${data.driveUrl}" target="_blank">📁 Dosyalara Git</a></p>` : ''}
+          `;
+
+          // Revize notları varsa göster
+          if(data.reviewNotes && data.reviewNotes.length > 0) {
+            html += `<div class="custom-order-revision-notes">
+              <h5>📝 Revize Notları:</h5>`;
+            data.reviewNotes.forEach(note => {
+              const noteDate = note.at ? new Date(note.at).toLocaleString("tr-TR") : "";
+              html += `<p><strong>${note.byName || note.by}:</strong> ${note.note} <small>(${noteDate})</small></p>`;
+            });
+            html += `</div>`;
+          }
+
+          html += `</div><div class="custom-order-card-actions">`;
+
+          // Butonları rol ve duruma göre göster
+          
+          // Tasarımcı: Atanmamış siparişlerde "Tasarıma Başla" butonu
+          if((isDesigner || isAdmin) && (data.status === "PENDING_DESIGN" || data.status === "REVISION_REQUIRED") && !data.assignedDesigner) {
+            html += `<button class="co-btn-upload" style="background:#3b82f6;font-size:14px;padding:12px 24px;font-weight:bold;" onclick="claimDesignTask('${orderId}')">🎯 TASARIMA BAŞLA</button>`;
+          }
+          
+          // Tasarımcı: Kendisine atanmış siparişlerde "Tasarım Hazırlandı" butonu
+          if((isDesigner || isAdmin) && (data.status === "PENDING_DESIGN" || data.status === "REVISION_REQUIRED") && data.assignedDesigner === currentPin) {
+            html += `<button class="co-btn-upload" style="background:#22c55e;font-size:14px;padding:12px 24px;font-weight:bold;" onclick="markDesignReady('${orderId}')">✅ TASARIM HAZIRLANDI</button>`;
+          }
+          
+          // Atanmış tasarımcı bilgisi göster
+          if(data.assignedDesigner && (data.status === "PENDING_DESIGN" || data.status === "REVISION_REQUIRED" || data.status === "UPLOADED_FOR_REVIEW")) {
+            html += `<span style="background:#8b5cf622;color:#8b5cf6;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;">👤 Tasarımcı: ${data.assignedDesignerName || data.assignedDesigner}</span>`;
+          }
+
+          // Sayfa Yöneticisi/Admin: UPLOADED_FOR_REVIEW durumunda Onay/Revize butonları
+          if((isPageManager || isAdmin) && data.status === "UPLOADED_FOR_REVIEW") {
+            html += `<button class="co-btn-approve" onclick="approveCustomOrder('${orderId}')">✅ Onayla</button>`;
+            html += `<button class="co-btn-revise" onclick="openReviseModal('${orderId}')">🔄 Revize İste</button>`;
+          }
+
+          // Lazerci: APPROVED durumunda "Kesim Tamamlandı" butonu
+          if((isLaser || isAdmin) && data.status === "APPROVED") {
+            html += `<button class="co-btn-upload" style="background:#f97316;font-size:14px;padding:12px 24px;font-weight:bold;" onclick="markCuttingComplete('${orderId}')">✂️ KESİM TAMAMLANDI</button>`;
+          }
+
+          // Sayfa Yöneticisi/Admin: Sipariş Silme butonu (tüm durumlarda)
+          if(isPageManager || isAdmin) {
+            const safeOrderNo = (data.orderNo || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            html += `<button class="co-btn-revise" style="background:#6b7280;margin-left:auto;" onclick="deleteCustomOrder('${orderId}', '${safeOrderNo}')">🗑️ Sil</button>`;
+          }
+
+          html += `</div>`;
+
+          // Geçmiş
+          if(data.history && data.history.length > 0) {
+            html += `<div class="custom-order-history"><strong>📜 Geçmiş:</strong>`;
+            data.history.slice(-5).forEach(h => {
+              const hDate = h.at ? new Date(h.at).toLocaleString("tr-TR") : "";
+              html += `<div class="custom-order-history-item">${h.note} - ${h.byName || h.by} (${hDate})</div>`;
+            });
+            html += `</div>`;
+          }
+
+          html += `</div>`;
+        });
+
+        listContainer.innerHTML = html || '<p style="color:var(--muted);">Bu filtreye uygun sipariş yok.</p>';
+      } catch(err) {
+        console.error("Siparişler yüklenirken hata:", err);
+        listContainer.innerHTML = `<p style="color:red;">Hata: ${err.message}</p>`;
+      }
+    }
+    window.loadCustomOrders = loadCustomOrders;
+
+    // Sipariş Silme (Sayfa Yöneticisi ve Admin)
+    async function deleteCustomOrder(orderId, orderNo) {
+      if(!confirm(`"${orderNo}" numaralı siparişi silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) return;
+
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", orderId);
+        
+        // Önce sipariş bilgilerini al (bildirim için)
+        const orderSnap = await getDoc(orderRef);
+        const orderData = orderSnap.exists() ? orderSnap.data() : null;
+        
+        await deleteDoc(orderRef);
+        
+        // Bildirim - Lazerci ve Yöneticiye
+        const notificationData = {
+          type: "custom_order_cancelled",
+          title: "❌ Sipariş İptal Edildi",
+          body: `Sipariş No: ${orderNo}\n\nMüşteri iptal etti.\n\nİptal Eden: ${window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin}`,
+          targetRoles: ["laser", "admin"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+        
+        console.log(`🗑️ Sipariş silindi: ${orderNo}`);
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Sipariş silme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.deleteCustomOrder = deleteCustomOrder;
+
+    // Filtre değiştir
+    function filterCustomOrders(status, btn) {
+      currentCustomOrderFilter = status;
+      
+      // Aktif butonu güncelle
+      document.querySelectorAll('.custom-order-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      loadCustomOrders();
+    }
+    window.filterCustomOrders = filterCustomOrders;
+
+    // Tasarıma Başla - Siparişi kendine ata
+    async function claimDesignTask(orderId) {
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", orderId);
+        const orderSnap = await getDoc(orderRef);
+        
+        if(!orderSnap.exists()) {
+          alert("Sipariş bulunamadı!");
+          return;
+        }
+
+        const oldData = orderSnap.data();
+        
+        // Zaten birine atanmış mı kontrol et
+        if(oldData.assignedDesigner) {
+          alert(`Bu sipariş zaten ${oldData.assignedDesignerName || oldData.assignedDesigner} tarafından alınmış!`);
+          loadCustomOrders();
+          return;
+        }
+
+        const currentPin = window.__SESSION?.pin;
+        const currentName = window.PIN_NAMES?.[currentPin] || currentPin;
+
+        const newHistory = [...(oldData.history || []), {
+          action: "design_claimed",
+          by: currentPin,
+          byName: currentName,
+          at: now.toISOString(),
+          note: `Tasarım görevi ${currentName} tarafından alındı`
+        }];
+
+        await updateDoc(orderRef, {
+          assignedDesigner: currentPin,
+          assignedDesignerName: currentName,
+          assignedAt: now,
+          history: newHistory
+        });
+
+        // Bildirim - Sayfa Yöneticisi ve Admin'e
+        const notificationData = {
+          type: "design_task_claimed",
+          title: "🎯 Tasarım Görevi Alındı",
+          body: `Sipariş No: ${oldData.orderNo}\n\nTasarımcı: ${currentName}\n\nÜrün Linki: ${oldData.productUrl}`,
+          targetRoles: ["page_manager", "admin"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Tasarım görevi alma hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.claimDesignTask = claimDesignTask;
+
+    // Tasarım hazırlandı butonu - direkt işaretle
+    function markDesignReady(orderId) {
+      if(!confirm("Tasarımı hazırladınızı ve kontrol için göndermeye hazır olduğunuzu onaylayın.")) {
+        return;
+      }
+      markUploadedForReview(orderId, "");
+    }
+    window.markDesignReady = markDesignReady;
+
+    // Kontrol için yüklendi işaretle (Tasarımcı)
+    async function markUploadedForReview(orderId, driveUrl) {
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", orderId);
+        const orderSnap = await getDoc(orderRef);
+        
+        if(!orderSnap.exists()) {
+          alert("Sipariş bulunamadı!");
+          return;
+        }
+
+        const oldData = orderSnap.data();
+        const newHistory = [...(oldData.history || []), {
+          action: "uploaded_for_review",
+          by: window.__SESSION?.pin,
+          byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          at: now.toISOString(),
+          note: "Dosyalar Drive'a yüklendi, kontrol bekliyor"
+        }];
+
+        await updateDoc(orderRef, {
+          status: "UPLOADED_FOR_REVIEW",
+          driveUrl: driveUrl,
+          uploadedAt: now,
+          uploadedBy: window.__SESSION?.pin,
+          history: newHistory
+        });
+
+        // Bildirim - Sayfa Yöneticileri ve Adminler
+        const notificationData = {
+          type: "custom_order_uploaded",
+          title: "� Tasarım Hazırlandı - Kontrol Et",
+          body: `Sipariş No: ${oldData.orderNo}\n\nÜrün Linki: ${oldData.productUrl}\n\nKişiselleştirme: ${oldData.customizationInfo}`,
+          targetRoles: ["page_manager", "admin"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Hata:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.markUploadedForReview = markUploadedForReview;
+
+    // Revize modal aç
+    function openReviseModal(orderId) {
+      currentReviseOrderId = orderId;
+      document.getElementById("coReviseModal").style.display = "flex";
+      document.getElementById("coReviseNote").value = "";
+      document.getElementById("coReviseNote").focus();
+    }
+    window.openReviseModal = openReviseModal;
+
+    // Revize modal kapat
+    function closeReviseModal() {
+      currentReviseOrderId = null;
+      document.getElementById("coReviseModal").style.display = "none";
+    }
+    window.closeReviseModal = closeReviseModal;
+
+    // Revize gönder
+    async function submitRevision() {
+      const note = document.getElementById("coReviseNote").value.trim();
+      
+      if(!note) {
+        alert("Lütfen revize notunu yazın!");
+        return;
+      }
+
+      if(!currentReviseOrderId) {
+        alert("Sipariş seçilmedi!");
+        return;
+      }
+
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", currentReviseOrderId);
+        const orderSnap = await getDoc(orderRef);
+        
+        if(!orderSnap.exists()) {
+          alert("Sipariş bulunamadı!");
+          return;
+        }
+
+        const oldData = orderSnap.data();
+        
+        const newReviewNotes = [...(oldData.reviewNotes || []), {
+          note: note,
+          by: window.__SESSION?.pin,
+          byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          at: now.toISOString()
+        }];
+
+        const newHistory = [...(oldData.history || []), {
+          action: "revision_requested",
+          by: window.__SESSION?.pin,
+          byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          at: now.toISOString(),
+          note: `Revize istendi: ${note}`
+        }];
+
+        await updateDoc(orderRef, {
+          status: "REVISION_REQUIRED",
+          reviewNotes: newReviewNotes,
+          history: newHistory
+        });
+
+        // Bildirim - Atanmış Tasarımcıya ve Admin'e
+        const notificationData = {
+          type: "custom_order_revision",
+          title: "⚠️ DİKKAT REVİZE VAR",
+          body: `Sipariş No: ${oldData.orderNo}\n\nÜrün Linki: ${oldData.productUrl}\n\nRevize Notu: ${note}`,
+          targetRoles: ["admin"],
+          targetDesignerPin: oldData.assignedDesigner || null,
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+
+        closeReviseModal();
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Hata:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.submitRevision = submitRevision;
+
+    // Siparişi onayla (Sayfa Yöneticisi)
+    async function approveCustomOrder(orderId) {
+      if(!confirm("Bu siparişi onaylamak istediğinizden emin misiniz?")) return;
+
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", orderId);
+        const orderSnap = await getDoc(orderRef);
+        
+        if(!orderSnap.exists()) {
+          alert("Sipariş bulunamadı!");
+          return;
+        }
+
+        const oldData = orderSnap.data();
+        const newHistory = [...(oldData.history || []), {
+          action: "approved",
+          by: window.__SESSION?.pin,
+          byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          at: now.toISOString(),
+          note: "Sipariş onaylandı"
+        }];
+
+        await updateDoc(orderRef, {
+          status: "APPROVED",
+          approvedAt: now,
+          approvedBy: window.__SESSION?.pin,
+          approvedByName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          history: newHistory
+        });
+
+        // Bildirim 1 - Atanmış Tasarımcıya
+        const notificationDesigner = {
+          type: "custom_order_approved",
+          title: "✅ Tasarım Onaylandı",
+          body: `Sipariş No: ${oldData.orderNo}\n\nEline sağlık!\n\nÜrün Linki: ${oldData.productUrl}`,
+          targetRoles: [],
+          targetDesignerPin: oldData.assignedDesigner || null,
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationDesigner);
+
+        // Bildirim 2 - Lazerciye
+        const notificationLaser = {
+          type: "custom_order_ready_cut",
+          title: "✂️ Kesime Hazır - Yeni Sipariş",
+          body: `Drive'a yüklendi!\n\nSipariş No: ${oldData.orderNo}\nÜrün Linki: ${oldData.productUrl}`,
+          targetRoles: ["laser"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationLaser);
+
+        // Bildirim 3 - Admin
+        const notificationAdmin = {
+          type: "custom_order_approved",
+          title: "✅ Kişiye Özel Sipariş Onaylandı",
+          body: `Sipariş No: ${oldData.orderNo} onaylandı ve kesime hazır.`,
+          targetRoles: ["admin"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationAdmin);
+
+        // PRİM HESAPLAMA - Mesai dışı (08:00-18:00 dışında) tasarımlar için
+        if(oldData.uploadedAt && oldData.uploadedBy) {
+          let uploadTime;
+          if(oldData.uploadedAt.toDate) {
+            uploadTime = oldData.uploadedAt.toDate();
+          } else if(oldData.uploadedAt.seconds) {
+            uploadTime = new Date(oldData.uploadedAt.seconds * 1000);
+          } else {
+            uploadTime = new Date(oldData.uploadedAt);
+          }
+          
+          const uploadHour = uploadTime.getHours();
+          const isOutsideWorkHours = uploadHour < 8 || uploadHour >= 18;
+          
+          if(isOutsideWorkHours) {
+            // Prim kaydı oluştur
+            const bonusData = {
+              orderId: orderId,
+              orderNo: oldData.orderNo,
+              designerPin: oldData.uploadedBy,
+              designerName: window.PIN_NAMES?.[oldData.uploadedBy] || oldData.uploadedBy,
+              uploadedAt: oldData.uploadedAt,
+              approvedAt: now,
+              approvedBy: window.__SESSION?.pin,
+              bonusAmount: 30,
+              productUrl: oldData.productUrl || "",
+              customizationInfo: oldData.customizationInfo || "",
+              createdAt: now
+            };
+            await addDoc(collection(db, "designerBonuses"), bonusData);
+            console.log(`💰 Prim eklendi: ${oldData.orderNo} - ${oldData.uploadedBy} - 30 TL (Saat: ${uploadHour}:xx)`);
+          }
+        }
+
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Hata:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.approveCustomOrder = approveCustomOrder;
+
+    // ========== TASARIMCI PRİM SİSTEMİ ==========
+    async function loadDesignerBonuses() {
+      const monthSelector = document.getElementById("primMonthSelector");
+      const totalValue = document.getElementById("primTotalValue");
+      const totalCount = document.getElementById("primTotalCount");
+      const detailsList = document.getElementById("primDetailsList");
+      
+      if(!monthSelector.value) {
+        const now = new Date();
+        monthSelector.value = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
+      }
+      
+      const [year, month] = monthSelector.value.split("-").map(Number);
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59);
+      
+      try {
+        const bonusesRef = collection(db, "designerBonuses");
+        const q = query(bonusesRef, orderBy("approvedAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        const bonuses = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          let approvedAt;
+          if(data.approvedAt?.toDate) {
+            approvedAt = data.approvedAt.toDate();
+          } else if(data.approvedAt?.seconds) {
+            approvedAt = new Date(data.approvedAt.seconds * 1000);
+          } else {
+            approvedAt = new Date(data.approvedAt);
+          }
+          
+          if(approvedAt >= startDate && approvedAt <= endDate) {
+            bonuses.push({ id: doc.id, ...data, approvedAtDate: approvedAt });
+          }
+        });
+        
+        const currentPin = window.__SESSION?.pin;
+        const isAdmin = window.ADMIN_PINS?.has(currentPin);
+        const isPageManager = window.PAGE_MANAGER_PINS?.has(currentPin);
+        const isDesigner = window.DESIGNER_PINS?.has(currentPin);
+        
+        let filteredBonuses = bonuses;
+        if(isDesigner && !isAdmin && !isPageManager) {
+          filteredBonuses = bonuses.filter(b => b.designerPin === currentPin);
+        }
+        
+        // Toplam hesapla
+        const total = filteredBonuses.reduce((sum, b) => sum + (b.bonusAmount || 30), 0);
+        totalValue.textContent = total.toLocaleString('tr-TR') + " ₺";
+        totalCount.textContent = filteredBonuses.length + " tasarım";
+        
+        if(filteredBonuses.length === 0) {
+          detailsList.innerHTML = `
+            <div class="prim-empty">
+              <div class="prim-empty-icon">🌙</div>
+              <div>Bu dönemde mesai dışı onaylı tasarım yok</div>
+            </div>
+          `;
+          return;
+        }
+        
+        let listHTML = "";
+        filteredBonuses.forEach(b => {
+          let uploadTimeStr = "";
+          if(b.uploadedAt) {
+            let ut;
+            if(b.uploadedAt.toDate) ut = b.uploadedAt.toDate();
+            else if(b.uploadedAt.seconds) ut = new Date(b.uploadedAt.seconds * 1000);
+            else ut = new Date(b.uploadedAt);
+            
+            const h = String(ut.getHours()).padStart(2,"0");
+            const m = String(ut.getMinutes()).padStart(2,"0");
+            uploadTimeStr = `<span class="night-icon">🌙</span> ${h}:${m}`;
+          }
+          
+          const approvedDate = b.approvedAtDate.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+          const showDesigner = (isAdmin || isPageManager) && b.designerName;
+          
+          listHTML += `
+            <div class="prim-item">
+              <div class="prim-item-left">
+                <div class="prim-item-order">${b.orderNo || "Sipariş"}</div>
+                <div class="prim-item-time">${uploadTimeStr} · ${approvedDate}</div>
+              </div>
+              <div class="prim-item-right">
+                <div class="prim-item-amount">+30 ₺</div>
+                ${showDesigner ? `<div class="prim-item-designer">${b.designerName}</div>` : ""}
+              </div>
+            </div>
+          `;
+        });
+        
+        detailsList.innerHTML = listHTML;
+        
+      } catch(err) {
+        console.error("Prim yükleme hatası:", err);
+        detailsList.innerHTML = `<div class="prim-empty"><div style="color:#ef4444;">Hata: ${err.message}</div></div>`;
+      }
+    }
+    window.loadDesignerBonuses = loadDesignerBonuses;
+
+    // Kesim Tamamlandı (Lazerci)
+    async function markCuttingComplete(orderId) {
+      if(!confirm("Kesim işlemini tamamladığınızı onaylayın.")) return;
+
+      try {
+        const now = new Date();
+        const orderRef = doc(db, "customOrders", orderId);
+        const orderSnap = await getDoc(orderRef);
+        
+        if(!orderSnap.exists()) {
+          alert("Sipariş bulunamadı!");
+          return;
+        }
+
+        const oldData = orderSnap.data();
+        const newHistory = [...(oldData.history || []), {
+          action: "cutting_complete",
+          by: window.__SESSION?.pin,
+          byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
+          at: now.toISOString(),
+          note: "Kesim tamamlandı, boyaya hazır"
+        }];
+
+        await updateDoc(orderRef, {
+          status: "CUTTING_COMPLETE",
+          cuttingCompletedAt: now,
+          cuttingCompletedBy: window.__SESSION?.pin,
+          history: newHistory
+        });
+
+        // Bildirim - Yönetici ve Sayfa Yöneticilerine
+        const notificationData = {
+          type: "custom_order_cut",
+          title: `✂️ ${oldData.orderNo} Sipariş Numaralı Ürün Kesildi`,
+          body: `Sipariş No: ${oldData.orderNo}\n\nBoyaya hazır!\n\nÜrün Linki: ${oldData.productUrl}\nKişiselleştirme: ${oldData.customizationInfo}`,
+          targetRoles: ["admin", "page_manager"],
+          createdAt: now,
+          read: false
+        };
+        await addDoc(collection(db, "notifications"), notificationData);
+
+        loadCustomOrders();
+      } catch(err) {
+        console.error("Hata:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.markCuttingComplete = markCuttingComplete;
+
+    // ============ KİŞİYE ÖZEL SİPARİŞ SİSTEMİ SONU ============
+
     async function initAttendance() {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -9426,7 +10598,7 @@
               resolve({ 
                 success: false, 
                 distance: Math.round(distance),
-                message: `İşyerine ${Math.round(distance)} metre uzaklıktasınız. Giriş yapmak için ${WORKPLACE_LOCATION.maxDistance} metre yakınlıkta olmalısınız.`
+                body: `İşyerine ${Math.round(distance)} metre uzaklıktasınız. Giriş yapmak için ${WORKPLACE_LOCATION.maxDistance} metre yakınlıkta olmalısınız.`
               });
             }
           },
