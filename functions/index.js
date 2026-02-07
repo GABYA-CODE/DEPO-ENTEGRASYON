@@ -188,7 +188,7 @@ exports.createNotificationRequest = functions.firestore
     try {
       console.log('Yeni bildirim:', notificationData);
       
-      const { eventType, targetRoles, targetPins, targetDesignerPin, title, body } = notificationData;
+      const { eventType, targetRoles, targetPins, targetDesignerPin, targetPin, title, body } = notificationData;
       const db = admin.firestore();
       
       // 1. TELEGRAM BİLDİRİMLERİ (Öncelikli)
@@ -199,11 +199,25 @@ exports.createNotificationRequest = functions.firestore
           const botToken = configDoc.data().botToken;
           console.log('Bot token bulundu, bildirim gönderiliyor...');
           console.log('targetPins:', targetPins);
+          console.log('targetPin:', targetPin);
           console.log('targetRoles:', targetRoles);
           console.log('targetDesignerPin:', targetDesignerPin);
           
           // Hedef kullanıcıları belirle
           const telegramPromises = [];
+          
+          // Tekil PIN'e gönder (kargo bildirimleri için)
+          if (targetPin) {
+            const usersSnapshot = await db.collection('telegramUsers').get();
+            usersSnapshot.forEach(doc => {
+              const userData = doc.data();
+              if (userData.pin === targetPin && userData.chatId) {
+                const message = `<b>${title}</b>\n\n${body}`;
+                console.log(`Tekil PIN'e mesaj gönderiliyor: ${userData.name} (${userData.pin}) -> ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
+              }
+            });
+          }
           
           // Önce belirli PIN'lere gönder (targetPins)
           if (targetPins && targetPins.length > 0) {
@@ -238,8 +252,60 @@ exports.createNotificationRequest = functions.firestore
             usersSnapshot.forEach(doc => {
               const userData = doc.data();
               if (targetRoles.includes(userData.role) && userData.chatId) {
+                // Sayfa yöneticileri için özel filtreleme
+                if (userData.role === 'page_manager') {
+                  const notificationType = notificationData.type || '';
+                  
+                  // Mola/yemek/mesai bildirimlerini sayfa yöneticilerine gönderme
+                  const isMolaNotification = title && (
+                    title.includes('Mola') || 
+                    title.includes('Yemek') || 
+                    title.includes('Mesai') ||
+                    title.includes('☕') ||
+                    title.includes('🍽️') ||
+                    title.includes('🏠')
+                  );
+                  if (isMolaNotification) {
+                    console.log(`Sayfa yöneticisine mola/mesai bildirimi atlanıyor: ${userData.name}`);
+                    return;
+                  }
+                  
+                  // Kişiye özel sipariş bildirimi kontrolü
+                  const isCustomOrder = notificationType.startsWith('custom_order') || notificationType === 'design_task_claimed';
+                  if (isCustomOrder) {
+                    // targetPageManagerPin varsa sadece o kişiye gönder
+                    if (notificationData.targetPageManagerPin) {
+                      if (userData.pin !== notificationData.targetPageManagerPin) {
+                        console.log(`Sayfa yöneticisi ${userData.name} (${userData.pin}) - bu sipariş ${notificationData.targetPageManagerPin}'a ait, atlanıyor`);
+                        return;
+                      }
+                    } else {
+                      // targetPageManagerPin yoksa hiçbir sayfa yöneticisine gönderme
+                      console.log(`Sayfa yöneticisi ${userData.name} - targetPageManagerPin yok, atlanıyor`);
+                      return;
+                    }
+                  }
+                }
+                
                 const message = `<b>${title}</b>\n\n${body}`;
                 console.log(`Mesaj gönderiliyor: ${userData.name} (${userData.role}) -> ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
+              }
+            });
+          }
+          
+          // Veli (61704) - Kişiye özel sipariş bildirimlerinde her zaman bildirim alsın
+          const isCustomOrderNotification = notificationData.type && (
+            notificationData.type.startsWith('custom_order') || 
+            notificationData.type === 'design_task_claimed'
+          );
+          if (isCustomOrderNotification) {
+            const veliSnapshot = await db.collection('telegramUsers').where('pin', '==', '61704').get();
+            veliSnapshot.forEach(doc => {
+              const userData = doc.data();
+              if (userData.chatId) {
+                const message = `<b>${title}</b>\n\n${body}`;
+                console.log(`Veli'ye kişiye özel sipariş bildirimi gönderiliyor: ${userData.chatId}`);
                 telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
               }
             });
