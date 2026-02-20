@@ -831,21 +831,25 @@
     .custom-order-filter-btn {
       padding: 8px 16px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 20px;
       background: var(--panel2);
-      color: var(--text);
+      color: var(--muted);
       cursor: pointer;
       font-size: 12px;
+      font-weight: 500;
       transition: all 0.2s;
     }
     .custom-order-filter-btn:hover {
-      border-color: var(--orange);
-      background: var(--panel);
+      border-color: #667eea;
+      color: #667eea;
+      background: #667eea11;
     }
     .custom-order-filter-btn.active {
-      background: var(--orange);
+      background: #667eea;
       color: white;
-      border-color: var(--orange);
+      border-color: #667eea;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(102,126,234,0.3);
     }
     .custom-order-card {
       background: var(--panel2);
@@ -1052,6 +1056,16 @@
       margin-bottom: 20px;
       border-left: 3px solid #10b981;
     }
+    
+    /* Animasyonlar */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
   </style>
 </head>
 
@@ -1152,7 +1166,9 @@
         <div class="tab" id="tabAttendance">ÇALIŞMA KAYDI</div>
         <div class="tab" id="tabCustomOrders">KİŞİYE ÖZEL</div>
         <div class="tab" id="tabDesignerBonus">PRİM</div>
-        <div class="tab" id="tabCargo">KARGO ETİKETİ</div>
+        <div class="tab" id="tabFreelanceWorks">FREELANCE HAKEDİŞ</div>
+        <div class="tab" id="tabCargo">KARGO ETİKETİ TALEP</div>
+        <div class="tab" id="tabUnaltaWA" style="display:none;">LEDLİ ÜRÜN SİPARİŞLERİ</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1182,6 +1198,20 @@
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
             <span>Talep-Satın Alma</span>
+            <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Grup 2.5: Ünalta -->
+        <div class="tab-group">
+          <div class="tab-group-header" data-group="unalta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Ünalta</span>
             <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4 6l4 4 4-4"/>
             </svg>
@@ -1246,6 +1276,10 @@
         <div class="tab-sub" data-target="purchase">Satın Alma</div>
         <div class="tab-sub" data-target="suppliers">Tedarikçiler</div>
       </div>
+      <div class="tab-group-content" id="group-unalta">
+        <div class="tab-sub" data-target="unaltaKargo">Kargo Faturalandırma</div>
+        <div class="tab-sub" data-target="unaltaWallArt">Wall Art Sipariş</div>
+      </div>
       <div class="tab-group-content" id="group-talimat">
         <div class="tab-sub" data-target="instructions">Üretim Talimatları</div>
         <div class="tab-sub" data-target="packaging">Paketleme Talimatları</div>
@@ -1275,6 +1309,17 @@
             <label class="fieldLabel">Ürün Kodu</label>
             <input id="inProduct" class="input" />
 
+            <label class="fieldLabel">Renk</label>
+            <select id="inProductColor" class="input">
+              <option value="">Renk seçiniz (opsiyonel)</option>
+              <option value="Siyah">Siyah</option>
+              <option value="Beyaz">Beyaz</option>
+              <option value="Gold">Gold</option>
+              <option value="Silver">Silver</option>
+              <option value="Kırmızı">Kırmızı</option>
+              <option value="Satine Nickel">Satine Nickel</option>
+            </select>
+
             <label class="fieldLabel">Raf Numarası</label>
             <select id="inShelfNum" class="input">
             </select>
@@ -1303,6 +1348,7 @@
             <div class="subBox" id="clearProductBox">
 
               <label class="fieldLabel">Ürün</label>
+              <input id="clearProductFilter" class="input" placeholder="Ürün kodu ile filtrele..." style="margin-bottom:8px;font-size:13px;" />
               <div id="productListContainer" class="product-list"></div>
               <input type="hidden" id="outProductCode" />
 
@@ -1311,6 +1357,25 @@
                 <label class="fieldLabel">Adet (Azalt)</label>
                 <select id="outReduceQty" class="input">
                   <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                  <option value="13">13</option>
+                  <option value="14">14</option>
+                  <option value="15">15</option>
+                  <option value="16">16</option>
+                  <option value="17">17</option>
+                  <option value="18">18</option>
+                  <option value="19">19</option>
+                  <option value="20">20</option>
                 </select>
               </div>
             </div>
@@ -2622,39 +2687,58 @@
           <div class="card" id="customOrderFormCard" style="margin-bottom:20px;">
             <h3 style="margin-top:0;">➕ Yeni Sipariş Oluştur</h3>
             
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;">
-              <div>
-                <label class="fieldLabel">Sipariş Numarası *</label>
-                <input id="coOrderNo" class="input" placeholder="Örn: KS-2026-001" />
+            <!-- Sipariş No (tüm ürünler için ortak) -->
+            <div style="margin-bottom:14px;">
+              <label class="fieldLabel">Sipariş Numarası *</label>
+              <input id="coOrderNo" class="input" placeholder="Örn: KS-2026-001" />
+            </div>
+            
+            <!-- Ürün bilgileri (sepete eklenecek) -->
+            <div style="background:var(--surface);border-radius:10px;padding:14px;border:1px solid var(--border);">
+              <div style="font-weight:600;font-size:13px;margin-bottom:10px;">📦 Ürün Bilgileri</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;">
+                <div>
+                  <label class="fieldLabel">Ürün Linki *</label>
+                  <input id="coProductUrl" class="input" placeholder="https://..." />
+                </div>
               </div>
-              <div>
-                <label class="fieldLabel">Ürün Linki *</label>
-                <input id="coProductUrl" class="input" placeholder="https://..." />
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px;">
+                <div>
+                  <label class="fieldLabel">Ölçü</label>
+                  <input id="coSize" class="input" placeholder="Örn: 30x40 cm, 50x70 cm..." />
+                </div>
+                <div>
+                  <label class="fieldLabel">Renk</label>
+                  <select id="coColor" class="input">
+                    <option value="">Seçiniz...</option>
+                    <option value="Siyah">Siyah</option>
+                    <option value="Beyaz">Beyaz</option>
+                    <option value="Gold">Gold</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div style="margin-top:14px;">
+                <label class="fieldLabel">Kişiselleştirme Bilgileri *</label>
+                <textarea id="coCustomization" class="input" rows="3" placeholder="Müşterinin istediği isimler, tarihler, özel istekler..."></textarea>
+              </div>
+              
+              <button class="actionBtn" style="margin-top:12px;width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="addToCustomOrderCart()">🛒 SEPETE EKLE</button>
+            </div>
+            
+            <!-- Sepet -->
+            <div id="coCartSection" style="display:none;margin-top:14px;background:var(--surface);border-radius:10px;padding:14px;border:2px dashed #f59e0b;">
+              <div style="font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span>🛒 Sepet (<span id="coCartCount">0</span> ürün)</span>
+              </div>
+              <div id="coCartItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="clearCustomOrderCart()" style="flex:1;padding:10px;background:#ef4444;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">🗑️ Sepeti Temizle</button>
+                <button class="actionBtn" id="btnCreateCO" style="flex:2;padding:10px;" onclick="createCustomOrder()">📤 SİPARİŞİ GÖNDER</button>
               </div>
             </div>
             
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px;">
-              <div>
-                <label class="fieldLabel">Ölçü</label>
-                <input id="coSize" class="input" placeholder="Örn: 30x40 cm, 50x70 cm..." />
-              </div>
-              <div>
-                <label class="fieldLabel">Renk</label>
-                <select id="coColor" class="input">
-                  <option value="">Seçiniz...</option>
-                  <option value="Siyah">Siyah</option>
-                  <option value="Beyaz">Beyaz</option>
-                  <option value="Gold">Gold</option>
-                </select>
-              </div>
-            </div>
-            
-            <div style="margin-top:14px;">
-              <label class="fieldLabel">Kişiselleştirme Bilgileri *</label>
-              <textarea id="coCustomization" class="input" rows="3" placeholder="Müşterinin istediği isimler, tarihler, özel istekler..."></textarea>
-            </div>
-            
-            <button class="actionBtn" id="btnCreateCO" style="margin-top:16px;width:100%;" onclick="createCustomOrder()">SİPARİŞ OLUŞTUR</button>
             <div class="statusBox" id="statusCO" style="display:none;margin-top:12px;"></div>
           </div>
           
@@ -2782,115 +2866,354 @@
           </div>
         </div>
 
-        <!-- VIEW: KARGO ETİKETİ -->
-        <div id="viewCargo" style="display:none;">
-          <div class="sectionTitle">📦 FedEx Kargo Etiketi</div>
+        <!-- VIEW: FREELANCE HAKEDIŞ (Melike Dağlı) -->
+        <div id="viewFreelanceWorks" style="display:none;">
+          <div class="sectionTitle">Freelance Hakediş - Melike Dağlı</div>
           
-          <!-- TALEP EDEN FİRMALAR İÇİN FORM (Ünalta, Osman A.) -->
-          <div id="cargoRequesterView">
-            <div class="card" style="margin-bottom:20px;">
-              <h3 style="margin-top:0;">➕ Yeni Kargo Etiketi Talebi</h3>
-              <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Müşteri bilgilerini girin, Şeyma K. FedEx'ten etiketi hazırlayacak.</p>
-              
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
-                <div>
-                  <label class="fieldLabel">Alıcı Adı Soyadı *</label>
-                  <input id="cargoAliciAd" class="input" placeholder="Alıcının tam adı" />
-                </div>
-                <div>
-                  <label class="fieldLabel">Telefon *</label>
-                  <input id="cargoTelefon" class="input" placeholder="+90 5XX XXX XX XX" />
-                </div>
+          <!-- Toplam Hakediş Kutusu -->
+          <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:20px;color:white;margin-bottom:20px;box-shadow:0 4px 15px rgba(102,126,234,0.4);">
+            <div style="font-size:14px;opacity:0.9;">Toplam Hakediş</div>
+            <div style="font-size:32px;font-weight:700;margin-top:4px;" id="freelanceTotalEarnings">0 ₺</div>
+            <div style="font-size:12px;opacity:0.8;margin-top:4px;" id="freelanceWorkCount">0 iş</div>
+          </div>
+          
+          <!-- Yeni İş Ekleme Formu -->
+          <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;">➕ Yeni İş Ekle</h3>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+              <div>
+                <label class="fieldLabel">İş Türü *</label>
+                <select id="freelanceWorkType" class="input" onchange="updateFreelancePrice()">
+                  <option value="">Seçiniz...</option>
+                  <option value="üretim_talimatı">Üretim Talimatı</option>
+                  <option value="paketleme_talimatı">Paketleme Talimatı</option>
+                  <option value="full_set">Full Set (7-8 görsel + Talimatlı)</option>
+                  <option value="amazon_listingi">Premium Amazon Listingi</option>
+                </select>
               </div>
-              
-              <div style="margin-top:14px;">
-                <label class="fieldLabel">Adres *</label>
-                <textarea id="cargoAdres" class="input" rows="2" placeholder="Tam adres bilgisi..."></textarea>
+              <div>
+                <label class="fieldLabel">Fiyat</label>
+                <input id="freelancePrice" class="input" readonly style="background:var(--muted-bg);font-weight:600;color:#667eea;" value="0 ₺" />
               </div>
-              
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:14px;">
-                <div>
-                  <label class="fieldLabel">İlçe *</label>
-                  <input id="cargoIlce" class="input" placeholder="İlçe" />
-                </div>
-                <div>
-                  <label class="fieldLabel">İl *</label>
-                  <input id="cargoIl" class="input" placeholder="İl" />
-                </div>
-                <div>
-                  <label class="fieldLabel">Posta Kodu</label>
-                  <input id="cargoPostaKodu" class="input" placeholder="Posta kodu" />
-                </div>
-                <div>
-                  <label class="fieldLabel">Ülke *</label>
-                  <input id="cargoUlke" class="input" value="Türkiye" />
-                </div>
-              </div>
-              
-              <div style="margin-top:14px;">
-                <label class="fieldLabel">Not (Opsiyonel)</label>
-                <input id="cargoNot" class="input" placeholder="Ek bilgi veya açıklama..." />
-              </div>
-              
-              <button class="actionBtn" style="margin-top:16px;width:100%;" onclick="createCargoRequest()">📤 ETİKET İSTİYORUM</button>
             </div>
-          </div>
-          
-          <!-- ŞEYMA K. / ADMİN İÇİN TALEP LİSTESİ -->
-          <div id="cargoLabelMakerView" style="display:none;">
-            <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#0ea5e911,#06b6d411);">
-              <h3 style="margin-top:0;">🏷️ Bekleyen Etiket Talepleri</h3>
-              <p style="font-size:13px;color:var(--muted);">FedEx'ten etiketi alıp PDF olarak yükleyin.</p>
+            
+            <div style="margin-top:14px;">
+              <label class="fieldLabel">Google Drive Linki *</label>
+              <input id="freelanceDriveLink" class="input" placeholder="https://drive.google.com/..." />
             </div>
+            
+            <button class="actionBtn" onclick="addFreelanceWork()" style="margin-top:14px;width:100%;">✅ İŞİ EKLE</button>
+            <div class="statusBox" id="freelanceStatus" style="display:none;margin-top:12px;"></div>
           </div>
           
-          <!-- Filtre -->
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-            <button class="custom-order-filter-btn active" data-status="all" onclick="filterCargoRequests('all', this)">Tümü</button>
-            <button class="custom-order-filter-btn" data-status="PENDING" onclick="filterCargoRequests('PENDING', this)">Bekleyen</button>
-            <button class="custom-order-filter-btn" data-status="LABEL_READY" onclick="filterCargoRequests('LABEL_READY', this)">Etiket Hazır</button>
-            <button class="custom-order-filter-btn" data-status="DOWNLOADED" onclick="filterCargoRequests('DOWNLOADED', this)">İndirildi</button>
+          <!-- İşler Listesi -->
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="custom-order-filter-btn active" onclick="filterFreelanceWorks('all', this)">Tümü</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('üretim_talimatı', this)">Üretim Talim.</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('paketleme_talimatı', this)">Paketleme Talim.</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('full_set', this)">Full Set</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('amazon_listingi', this)">Amazon</button>
           </div>
           
-          <!-- Kargo Listesi -->
-          <div id="cargoRequestsList" class="card">
-            <div style="text-align:center;padding:40px;color:var(--muted);">
-              <div style="font-size:48px;margin-bottom:12px;">📦</div>
-              <div>Yükleniyor...</div>
+          <div id="freelanceWorksList" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</div>
+          </div>
+        </div>
+
+        <!-- VIEW: ÜNALTA KARGO FATURALANDIRMA -->
+        <div id="viewUnaltaKargo" style="display:none;">
+          <div class="sectionTitle">📦 Ünalta - Kargo Faturalandırma</div>
+          <div class="card" style="margin-bottom:20px;">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">FedEx fiyat tarifesine göre kargo maliyeti ve toplam borç</p>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+              <div style="padding:16px;background:linear-gradient(135deg,#3b82f611,#06b6d411);border-radius:8px;border:1px solid var(--border);">
+                <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;">Toplam Gönderi</div>
+                <div id="unaltaTotalShipments" style="font-size:24px;font-weight:700;color:var(--primary);">-</div>
+              </div>
+              <div style="padding:16px;background:linear-gradient(135deg,#22c55e11,#10b98111);border-radius:8px;border:1px solid var(--border);">
+                <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;">Toplam Borç</div>
+                <div id="unaltaTotalDebt" style="font-size:24px;font-weight:700;color:#22c55e;">-</div>
+              </div>
+            </div>
+            
+            <div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+              <table id="unaltaCargoTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                  <tr style="background:var(--surface);position:sticky;top:0;">
+                    <th style="padding:8px;text-align:left;border-bottom:2px solid var(--border);">Tarih</th>
+                    <th style="padding:8px;text-align:left;border-bottom:2px solid var(--border);">Alıcı</th>
+                    <th style="padding:8px;text-align:center;border-bottom:2px solid var(--border);">Ülke</th>
+                    <th style="padding:8px;text-align:center;border-bottom:2px solid var(--border);">Desi</th>
+                    <th style="padding:8px;text-align:right;border-bottom:2px solid var(--border);">Fiyat ($)</th>
+                    <th style="padding:8px;text-align:center;border-bottom:2px solid var(--border);">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="unaltaCargoTableBody">
+                  <tr>
+                    <td colspan="5" style="padding:20px;text-align:center;color:var(--muted);">Yükleniyor...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div style="margin-top:12px;padding:10px;background:rgba(245,158,11,0.1);border-radius:6px;font-size:11px;color:var(--muted);">
+              <strong>💡 Fiyatlandırma Kuralları:</strong><br>
+              • US & CA: Liste fiyatı<br>
+              • Avrupa: US fiyatı<br>
+              • Diğer ülkeler: US fiyatının 2 katı
             </div>
           </div>
         </div>
 
-        <!-- Etiket Yükleme Modal (Şeyma K. için) -->
-        <div id="cargoLabelModal" class="role-modal-overlay" style="display:none;">
-          <div class="role-modal" style="max-width:500px;">
-            <h3 style="margin:0 0 16px 0;">🏷️ Kargo Etiketi Yükle</h3>
-            <input type="hidden" id="cargoLabelOrderId" />
+        <!-- VIEW: ÜNALTA WALL ART SİPARİŞ -->
+        <div id="viewUnaltaWallArt" style="display:none;">
+          <div class="sectionTitle">🎨 Ünalta'ya Wall Art Sipariş</div>
+          <div class="card">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">LED Metal Wall Art ürün siparişi verin, Ünalta'ya bildirim gider.</p>
             
-            <div style="margin-bottom:16px;">
-              <label class="fieldLabel">Takip Numarası *</label>
-              <input id="cargoTakipNo" class="input" placeholder="FedEx takip numarası" />
+            <!-- Bakiye Özeti -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+              <div style="padding:14px;background:linear-gradient(135deg,#ef444411,#dc262611);border-radius:8px;border:1px solid #ef444433;">
+                <div style="font-size:11px;color:#ef4444;font-weight:600;margin-bottom:4px;">Ünalta'ya Borcumuz</div>
+                <div id="wallArtOurDebt" style="font-size:20px;font-weight:700;color:#ef4444;">$0.00</div>
+              </div>
+              <div style="padding:14px;background:linear-gradient(135deg,#22c55e11,#16a34a11);border-radius:8px;border:1px solid #22c55e33;">
+                <div style="font-size:11px;color:#22c55e;font-weight:600;margin-bottom:4px;">Kargo Alacağımız</div>
+                <div id="wallArtTheirDebt" style="font-size:20px;font-weight:700;color:#22c55e;">$0.00</div>
+              </div>
+              <div style="padding:14px;background:linear-gradient(135deg,#3b82f611,#2563eb11);border-radius:8px;border:1px solid #3b82f633;">
+                <div style="font-size:11px;color:#3b82f6;font-weight:600;margin-bottom:4px;">Net Bakiye</div>
+                <div id="wallArtNetBalance" style="font-size:20px;font-weight:700;color:#3b82f6;">$0.00</div>
+              </div>
             </div>
             
-            <div style="margin-bottom:16px;">
-              <label class="fieldLabel">Etiket PDF Dosyası *</label>
-              <div style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;" onclick="document.getElementById('cargoLabelPdfInput').click()">
-                <input type="file" id="cargoLabelPdfInput" accept=".pdf" style="display:none;" onchange="previewCargoLabel(this)" />
-                <div id="cargoLabelPreview" style="display:none;">
-                  <div style="font-size:48px;margin-bottom:8px;">📄</div>
-                  <div id="cargoLabelFileName" style="font-weight:600;color:var(--primary);"></div>
-                  <p style="margin:8px 0 0;font-size:12px;color:var(--muted);">Değiştirmek için tıklayın</p>
+            <!-- Sipariş Formu -->
+            <div style="background:var(--surface);border-radius:10px;padding:16px;margin-bottom:16px;">
+              <div style="font-weight:600;margin-bottom:12px;">➕ Yeni Sipariş</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">Ürün Kodu *</label>
+                  <select id="wallArtProductCode" class="input" style="font-size:13px;" onchange="onWallArtProductChange()">
+                    <option value="">Seçiniz...</option>
+                  </select>
                 </div>
-                <div id="cargoLabelPlaceholder">
-                  <div style="font-size:48px;margin-bottom:8px;">📁</div>
-                  <div style="color:var(--muted);">PDF dosyası seçmek için tıklayın</div>
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">Boyut *</label>
+                  <select id="wallArtSize" class="input" style="font-size:13px;" onchange="calculateWallArtPrice()">
+                    <option value="">Önce ürün seçin</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">LED Renk 1 *</label>
+                  <select id="wallArtColor1" class="input" style="font-size:13px;">
+                    <option value="">Önce ürün seçin</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">LED Renk 2</label>
+                  <select id="wallArtColor2" class="input" style="font-size:13px;">
+                    <option value="">Opsiyonel</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">Adet *</label>
+                  <input id="wallArtQty" type="number" min="1" value="1" class="input" style="font-size:13px;" onchange="calculateWallArtPrice()" />
+                </div>
+                <div>
+                  <label class="fieldLabel" style="font-size:11px;">Fiyat ($)</label>
+                  <input id="wallArtPrice" type="text" class="input" readonly style="font-size:13px;font-weight:600;background:var(--muted-bg);color:#22c55e;" value="-" />
+                </div>
+              </div>
+              <div style="margin-top:12px;">
+                <label class="fieldLabel" style="font-size:11px;">Not (Opsiyonel)</label>
+                <input id="wallArtNote" class="input" placeholder="Ek bilgi..." style="font-size:13px;" />
+              </div>
+              <button onclick="addToWallArtCart()" class="actionBtn" style="margin-top:12px;width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);">🛒 SEPETE EKLE</button>
+            </div>
+            
+            <!-- Sepet -->
+            <div id="wallArtCartSection" style="display:none;background:var(--surface);border-radius:10px;padding:16px;margin-bottom:16px;border:2px dashed #f59e0b;">
+              <div style="font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <span>🛒 Sepet (<span id="wallArtCartCount">0</span> ürün)</span>
+                <span id="wallArtCartTotal" style="font-weight:700;color:#22c55e;">$0.00</span>
+              </div>
+              <div id="wallArtCartItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="clearWallArtCart()" style="flex:1;padding:10px;background:#ef4444;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">🗑️ Sepeti Temizle</button>
+                <button onclick="submitWallArtOrder()" class="actionBtn" style="flex:2;padding:10px;">📤 SİPARİŞİ GÖNDER</button>
+              </div>
+            </div>
+            
+            <!-- Sipariş Listesi -->
+            <div style="font-weight:600;margin-bottom:10px;">📋 Siparişler</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+              <button class="custom-order-filter-btn active" onclick="filterWallArtOrders('all', this)">Tümü</button>
+              <button class="custom-order-filter-btn" onclick="filterWallArtOrders('PENDING', this)">Bekleyen</button>
+              <button class="custom-order-filter-btn" onclick="filterWallArtOrders('READY', this)">Hazır</button>
+              <button class="custom-order-filter-btn" onclick="filterWallArtOrders('SHIPPED', this)">Gönderildi</button>
+            </div>
+            <div id="wallArtOrdersList" style="max-height:350px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+              <div style="padding:20px;text-align:center;color:var(--muted);">Yükleniyor...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: ÜNALTA WALL ART (Ünalta rolü) -->
+        <div id="viewUnaltaWA" style="display:none;">
+          <div style="background:var(--card-bg);border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+            <h2 style="margin:0 0 20px 0;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📎</span> Led Siparişleri
+            </h2>
+            
+            <!-- Filtre Butonları -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+              <button class="custom-order-filter-btn" data-status="all" onclick="filterUnaltaWallArtOrders('all', this)">Tümü</button>
+              <button class="custom-order-filter-btn active" data-status="PENDING" onclick="filterUnaltaWallArtOrders('PENDING', this)">Bekleyen</button>
+              <button class="custom-order-filter-btn" data-status="READY" onclick="filterUnaltaWallArtOrders('READY', this)">Hazır</button>
+              <button class="custom-order-filter-btn" data-status="SHIPPED" onclick="filterUnaltaWallArtOrders('SHIPPED', this)">Tamamlandı</button>
+            </div>
+            
+            <!-- Sipariş Listesi -->
+            <div id="unaltaWallArtOrdersList" style="display:flex;flex-direction:column;gap:32px;">
+              <!-- Dinamik olarak doldurulacak -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: KARGO ETİKETİ -->
+        <div id="viewCargo" style="display:none;">
+          
+          <!-- TALEP EDEN FİRMALAR İÇİN FORM (Ünalta, Osman A.) -->
+          <div id="cargoRequesterView">
+            <!-- Ünalta için bakiye gösterimi -->
+            <div id="unaltaBalanceCard" style="margin-bottom:24px;display:none;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:16px;padding:24px;box-shadow:0 8px 32px rgba(102,126,234,0.3);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:12px;opacity:0.85;text-transform:uppercase;letter-spacing:1px;">Toplam Borç</div>
+                  <div id="unaltaUserBalance" style="font-size:36px;font-weight:800;margin-top:4px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">$0.00</div>
+                </div>
+                <div style="text-align:right;">
+                  <div id="unaltaUserShipments" style="font-size:14px;opacity:0.9;">0 gönderi</div>
                 </div>
               </div>
             </div>
             
+            <!-- Yeni Talep Formu - Etsy Yapıştır -->
+            <div style="background:var(--card-bg);border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+              <h2 style="margin:0 0 24px 0;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:24px;">📦</span> Yeni Kargo Talebi
+              </h2>
+              
+              <!-- Etsy Yapıştır Alanı -->
+              <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">📋 Etsy Adresini Yapıştır *</label>
+                <textarea id="cargoEtsyPaste" class="input" rows="5" style="font-size:15px;padding:14px 16px;border-radius:12px;resize:none;font-family:monospace;line-height:1.6;" placeholder="Etsy'den kopyalanan adresi buraya yapıştırın...&#10;&#10;Örnek:&#10;Sara Klostermann&#10;17481 Glossy Pomelo Way&#10;WINTER GARDEN, FL 34787-6821&#10;United States" oninput="parseEtsyAddress()"></textarea>
+              </div>
+              
+              <!-- Parsed Preview -->
+              <div id="etsyParsedPreview" style="display:none;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:12px;border:2px solid #22c55e;">
+                <div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:10px;display:flex;align-items:center;gap:6px;">✅ Ayrıştırılmış Bilgiler</div>
+                <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;">
+                  <span style="font-weight:600;color:var(--muted);">Ad:</span>
+                  <span id="parsedName" style="font-weight:700;color:var(--text);"></span>
+                  <span style="font-weight:600;color:var(--muted);">Adres:</span>
+                  <span id="parsedAddress" style="color:var(--text);"></span>
+                  <span style="font-weight:600;color:var(--muted);">Şehir/Eyalet/Posta:</span>
+                  <span id="parsedCityState" style="color:var(--text);"></span>
+                  <span style="font-weight:600;color:var(--muted);">Ülke:</span>
+                  <span id="parsedCountry" style="font-weight:600;color:#4a6cf7;"></span>
+                </div>
+              </div>
+
+              <!-- Telefon (opsiyonel, ayrı kalsın) -->
+              <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Telefon (opsiyonel)</label>
+                <input id="cargoTelefon" class="input" style="font-size:16px;padding:14px 16px;border-radius:12px;" placeholder="+1 XXX XXX XXXX" />
+              </div>
+              
+              <!-- Gizli alanlar (parse sonucu doldurulacak) -->
+              <input type="hidden" id="cargoAliciAd" value="" />
+              <input type="hidden" id="cargoAdres" value="" />
+              <input type="hidden" id="cargoUlke" value="" />
+              <input type="hidden" id="cargoNot" value="" />
+              
+              <!-- Gönder Butonu -->
+              <button onclick="createCargoRequest()" style="width:100%;padding:18px 24px;font-size:17px;font-weight:700;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 15px rgba(102,126,234,0.4);transition:all 0.2s ease;">
+                <span style="font-size:20px;">📤</span> ETİKET TALEP ET
+              </button>
+            </div>
+            
+            <!-- Taleplerim - Minimalist Liste -->
+            <div style="margin-top:24px;">
+              <h3 style="font-size:16px;font-weight:600;margin:0 0 16px 0;display:flex;align-items:center;gap:8px;">
+                <span>📋</span> Taleplerim
+              </h3>
+              <div id="myCargoRequestsList" style="display:flex;flex-direction:column;gap:12px;">
+                <!-- Dinamik olarak doldurulacak -->
+              </div>
+            </div>
+            
+          </div>
+          
+          <!-- ŞEYMA K. / ADMİN İÇİN TALEP LİSTESİ -->
+          <div id="cargoLabelMakerView" style="display:none;">
+            <div class="sectionTitle">📦 FedEx Kargo Etiketi</div>
+            
+            <!-- Filtre -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+              <button class="custom-order-filter-btn active" data-status="all" onclick="filterCargoRequests('all', this)">Tümü</button>
+              <button class="custom-order-filter-btn" data-status="PENDING" onclick="filterCargoRequests('PENDING', this)">Bekleyen</button>
+              <button class="custom-order-filter-btn" data-status="LABEL_READY" onclick="filterCargoRequests('LABEL_READY', this)">Etiket Basıldı</button>
+            </div>
+            
+            <!-- Kargo Listesi -->
+            <div id="cargoRequestsList" class="card">
+              <div style="text-align:center;padding:40px;color:var(--muted);">
+                <div style="font-size:48px;margin-bottom:12px;">📦</div>
+                <div>Yükleniyor...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Paket Ölçü Giriş Modal (Şeyma K. / Gökmen için) -->
+        <div id="cargoDimensionModal" class="role-modal-overlay" style="display:none;">
+          <div class="role-modal" style="max-width:450px;">
+            <h3 style="margin:0 0 16px 0;">📐 Paket Ölçülerini Gir</h3>
+            <input type="hidden" id="cargoDimOrderId" />
+            <div id="cargoDimAliciInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;padding:10px;background:var(--surface);border-radius:8px;"></div>
+            
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
+              <div>
+                <label class="fieldLabel">En (cm) *</label>
+                <input id="cargoDimEn" type="number" step="0.1" min="0" class="input" style="font-size:16px;font-weight:600;text-align:center;" placeholder="0" oninput="calculateDimModalDesi()" />
+              </div>
+              <div>
+                <label class="fieldLabel">Boy (cm) *</label>
+                <input id="cargoDimBoy" type="number" step="0.1" min="0" class="input" style="font-size:16px;font-weight:600;text-align:center;" placeholder="0" oninput="calculateDimModalDesi()" />
+              </div>
+              <div>
+                <label class="fieldLabel">Yükseklik (cm) *</label>
+                <input id="cargoDimYukseklik" type="number" step="0.1" min="0" class="input" style="font-size:16px;font-weight:600;text-align:center;" placeholder="0" oninput="calculateDimModalDesi()" />
+              </div>
+              <div>
+                <label class="fieldLabel">Ağırlık (kg) *</label>
+                <input id="cargoDimAgirlik" type="number" step="0.1" min="0" class="input" style="font-size:16px;font-weight:600;text-align:center;" placeholder="0" oninput="calculateDimModalDesi()" />
+              </div>
+            </div>
+            
+            <div style="padding:14px;background:linear-gradient(135deg,#667eea11,#764ba211);border-radius:10px;border:2px solid #667eea33;text-align:center;margin-bottom:16px;">
+              <div style="font-size:11px;color:#667eea;font-weight:600;margin-bottom:4px;">Hesaplanan Desi</div>
+              <div id="cargoDimDesi" style="font-size:28px;font-weight:800;color:#667eea;">-</div>
+            </div>
+            
             <div class="role-modal-buttons">
-              <button class="btn-cancel" onclick="closeCargoLabelModal()">İptal</button>
-              <button class="actionBtn" onclick="submitCargoLabel()" style="flex:2;">ETİKETİ YÜKLE VE BİLDİR</button>
+              <button class="btn-cancel" onclick="closeDimensionModal()">İptal</button>
+              <button class="actionBtn" onclick="submitCargoDimensions()" style="flex:2;">📐 ÖLÇÜ KAYDET</button>
             </div>
           </div>
         </div>
@@ -3763,10 +4086,11 @@
     const PAINTER_PINS = new Set(["87654","87655"]);
     const COMMISSION_PINS = new Set(["23764","190706","190707","14698","76312","31849","62957","48731","95126","52384"]);
     const PAGE_MANAGER_PINS = new Set(["38471","62914","47293"]); // Sayfa yöneticileri - Mirza (Elf Metal), Zehra (Grandmix), Faruk (Milonsa)
-    const DESIGNER_PINS = new Set(["72541","19583","85246"]); // Tasarımcılar - Emre K. (Lazerci), Müşerref Keçe, Melike Çapraz
+    const DESIGNER_PINS = new Set(["72541","19583","85246","85247"]); // Tasarımcılar - Emre K. (Lazerci), Müşerref Keçe, Melike Çapraz, Melike Dağlı (Freelance)
     const CUSTOM_ORDER_VIEWERS = new Set(["61704"]); // Kişiye özel siparişleri görebilen ek kullanıcılar - Veli
-    const CARGO_LABEL_USERS = new Set(["41927"]); // Kargo etiketi hazırlayabilen kullanıcılar - Şeyma K.
-    const CARGO_REQUESTER_PINS = new Set(["54821", "63947"]); // Kargo etiketi talep eden firmalar - Ünalta, Osman A.
+    const CARGO_LABEL_USERS = new Set(["41927", "45823", "61704"]); // Kargo etiketi hazırlayabilen kullanıcılar - Şeyma K., Gökmen, Veli
+    const CARGO_REQUESTER_PINS = new Set(["54821", "63947", "1968"]); // Kargo etiketi talep eden firmalar - Ünalta, Osman A., Ali Ünal (Ünalta Sahibi)
+    const UNALTA_OWNER_PIN = "1968"; // Ali Ünal - Ünalta sahibi (fiyat bilgilerini görebilir)
 
     // PIN setlerini global scope'a ekle
     window.ADMIN_PINS = ADMIN_PINS;
@@ -3782,6 +4106,7 @@
     window.CUSTOM_ORDER_VIEWERS = CUSTOM_ORDER_VIEWERS;
     window.CARGO_LABEL_USERS = CARGO_LABEL_USERS;
     window.CARGO_REQUESTER_PINS = CARGO_REQUESTER_PINS;
+    window.UNALTA_OWNER_PIN = UNALTA_OWNER_PIN;
 
     // ========== MESAİ PLANLARI VE KULLANICI GRUPLARI ==========
     
@@ -3877,8 +4202,10 @@
       "47293": "Faruk - Milonsa",
       "19583": "Müşerref Keçe",
       "85246": "Melike Çapraz",
+      "85247": "Melike Dağlı (Freelance)",
       "54821": "Ünalta",
-      "63947": "Osman A."
+      "63947": "Osman A.",
+      "1968": "Ali Ünal (Ünalta)"
     };
 
     // Puantaj yöneticileri - hangi kullanıcı hangi rollerin puantajını yönetebilir
@@ -4072,6 +4399,7 @@
     const tabCustomOrders= document.getElementById("tabCustomOrders");
     const tabDesignerBonus= document.getElementById("tabDesignerBonus");
     const tabCargo= document.getElementById("tabCargo");
+    const tabUnaltaWA= document.getElementById("tabUnaltaWA");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -4096,6 +4424,9 @@
     const viewCustomOrders= document.getElementById("viewCustomOrders");
     const viewDesignerBonus= document.getElementById("viewDesignerBonus");
     const viewCargo= document.getElementById("viewCargo");
+    const viewUnaltaKargo= document.getElementById("viewUnaltaKargo");
+    const viewUnaltaWallArt= document.getElementById("viewUnaltaWallArt");
+    const viewUnaltaWA= document.getElementById("viewUnaltaWA");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -4553,13 +4884,33 @@
       // Mevcut seçimi kaydet
       const currentSelection = outProductCode.value || "";
       
+      // Filtre input
+      const filterInput = document.getElementById('clearProductFilter');
+      const filterText = (filterInput?.value || "").trim().toLowerCase();
+      
       // Ürün listesini oluştur
       if(productListContainer){
         productListContainer.innerHTML = "";
-        keys.forEach(k => {
+        const filteredKeys = filterText ? keys.filter(k => k.toLowerCase().includes(filterText)) : keys;
+        
+        if(filteredKeys.length === 0 && filterText) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.style.cssText = 'padding:10px;text-align:center;color:var(--muted);font-size:12px;';
+          emptyDiv.textContent = '"' + filterInput.value + '" ile eşleşen ürün yok';
+          productListContainer.appendChild(emptyDiv);
+        }
+        
+        filteredKeys.forEach(k => {
           const div = document.createElement('div');
           div.className = 'product-item';
-          div.textContent = k;
+          
+          // Renk varsa ayrı göster
+          const parts = k.split('_');
+          if(parts.length > 1) {
+            div.innerHTML = `<strong>${parts[0]}</strong> <span style="font-size:11px;color:#7c3aed;">• ${parts.slice(1).join('_')}</span> <span style="color:var(--muted);font-size:11px;">(${products[k]})</span>`;
+          } else {
+            div.textContent = k + ' (' + products[k] + ')';
+          }
           div.dataset.productCode = k;
           
           // Eğer bu ürün seçiliyse selected class ekle
@@ -4620,6 +4971,7 @@
 
     outShelfNum?.addEventListener("change", refreshClearMode);
     outShelfNum?.addEventListener("input", refreshClearMode);
+    document.getElementById('clearProductFilter')?.addEventListener('input', refreshClearMode);
 
     function runSearch(){
       setStatusBox(statusSearch, "Aranıyor...", "");
@@ -4629,18 +4981,28 @@
       const code = (searchCode.value || "").trim();
       if(!code) return setStatusBox(statusSearch, "Ürün kodu boş olamaz.", "error");
 
+      const codeLower = code.toLowerCase();
       const results = [];
       for(const [raf, data] of Object.entries(shelvesCache)){
-        const qty = Number((data.products && data.products[code]) || 0);
-        if(qty > 0) results.push({ raf, qty });
+        const products = data.products || {};
+        for(const [pCode, pQty] of Object.entries(products)) {
+          if(pCode.toLowerCase().includes(codeLower) && Number(pQty) > 0) {
+            results.push({ raf, product: pCode, qty: Number(pQty) });
+          }
+        }
       }
 
       if(results.length === 0) return setStatusBox(statusSearch, "Bulunamadı.", "error");
 
-      results.sort((a,b)=>a.raf.localeCompare(b.raf));
+      results.sort((a,b)=> a.product.localeCompare(b.product) || a.raf.localeCompare(b.raf));
+      // Tablo başlığını güncelle
+      const thead = searchBody.parentElement?.querySelector('thead');
+      if(thead) thead.innerHTML = '<tr><th>Raf</th><th>Ürün</th><th>Adet</th></tr>';
       for(const r of results){
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${r.raf}</td><td>${r.qty}</td>`;
+        const parts = r.product.split('_');
+        const displayName = parts.length > 1 ? `${parts[0]} <span style="color:#7c3aed;font-size:12px;">• ${parts.slice(1).join('_')}</span>` : r.product;
+        tr.innerHTML = `<td>${r.raf}</td><td>${displayName}</td><td>${r.qty}</td>`;
         searchBody.appendChild(tr);
       }
       searchWrap.style.display = "block";
@@ -4676,7 +5038,7 @@
 
     function setActiveTab(target){
       currentActiveTab = target; // Aktif sekmeyi kaydet
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabCargo, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabCargo, tabUnaltaWA, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -4702,6 +5064,9 @@
         viewCustomOrders && (viewCustomOrders.style.display="none");
         viewDesignerBonus && (viewDesignerBonus.style.display="none");
         viewCargo && (viewCargo.style.display="none");
+        viewUnaltaKargo && (viewUnaltaKargo.style.display="none");
+        viewUnaltaWallArt && (viewUnaltaWallArt.style.display="none");
+        viewUnaltaWA && (viewUnaltaWA.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -4816,6 +5181,17 @@
           }catch(e){console.error(e);} 
         },50); 
       }
+      if(target==="unaltaWA"){ 
+        tabUnaltaWA?.classList.add("active"); 
+        viewUnaltaWA.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof loadUnaltaWallArtOrders === "function") {
+              loadUnaltaWallArtOrders();
+            }
+          }catch(e){console.error(e);} 
+        },50); 
+      }
       if(target==="admin"){ 
         tabAdmin?.classList.add("active"); 
         viewAdmin.style.display="block"; 
@@ -4869,6 +5245,30 @@
           }catch(e){console.error("❌ Admin sekmesi yükleme hatası:", e);} 
         },100); 
       }
+      if(target==="unaltaKargo"){ 
+        viewUnaltaKargo.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof loadUnaltaCargos === "function") {
+              console.log("📦 Ünalta kargo faturalandırma yükleniyor...");
+              loadUnaltaCargos();
+            }
+          }catch(e){console.error(e);} 
+        },50); 
+      }
+      if(target==="unaltaWallArt"){ 
+        viewUnaltaWallArt.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof initWallArtProductSelect === "function") {
+              console.log("🎨 Wall Art sipariş sistemi yükleniyor...");
+              initWallArtProductSelect();
+              loadWallArtOrders();
+              loadWallArtBalance();
+            }
+          }catch(e){console.error(e);} 
+        },50); 
+      }
     }
 
     function setTabsByRole(r){
@@ -4896,6 +5296,10 @@
         [tabPlatformPayments, viewPlatformPayments],
         [tabAttendance, viewAttendance],
         [tabCustomOrders, viewCustomOrders],
+        [tabDesignerBonus, viewDesignerBonus],
+        [tabFreelanceWorks, viewFreelanceWorks],
+        [tabCargo, viewCargo],
+        [tabUnaltaWA, viewUnaltaWA],
         [tabAdmin, viewAdmin]
       ];
 
@@ -4917,6 +5321,11 @@
         // Sadece 2001 ve 45823 (Gökmen) şifresi ile giriş yapan paketçi talep sekmelerini görebilir
         const currentPin = window.__SESSION?.pin;
         
+        // Veli (61704) rafa ürün ekleme yetkisi
+        if(currentPin === "61704") {
+          tabPut.style.display="block";
+        }
+        
         // Veli (61704) kişiye özel siparişleri görebilir
         if(window.CUSTOM_ORDER_VIEWERS?.has(currentPin)) {
           tabCustomOrders.style.display="block";
@@ -4928,7 +5337,8 @@
         }
         
         let colCount = 5; // Temel sekmeler
-        if(currentPin === "2001" || currentPin === "45823"){
+        if(currentPin === "61704") colCount++; // Rafa ürün koy
+        if(currentPin === "2001" || currentPin === "45823" || currentPin === "61704"){
           tabRequest.style.display="block";
           tabMaterialRequest.style.display="block";
           colCount += 2;
@@ -5015,19 +5425,44 @@
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
         
+        const currentPin = window.__SESSION?.pin;
+        
         tabCustomOrders.style.display="block";
         tabInstructions.style.display="block";
-        tabDesignerBonus.style.display="block";
         tabAttendance.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr";
+        
+        let colCount = 3;
+        
+        // Ünalta (54821) ve Osman A. (63947) için prim sekmesi gösterilmez
+        if(currentPin !== "54821" && currentPin !== "63947") {
+          tabDesignerBonus.style.display="block";
+          colCount++;
+        }
+        
+        // Melike Dağlı (85247) için freelance hakediş sekmesi
+        if(currentPin === "85247") {
+          tabFreelanceWorks.style.display="block";
+          colCount++;
+        }
+        
+        tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
         setActiveTab("customOrders");
       }else if(r==="cargo_requester"){
-        // Kargo Talep Eden (Ünalta, Osman A.): Sadece Kargo sekmesi
+        // Kargo Talep Eden (Ünalta, Osman A.)
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
         
-        tabCargo.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr";
+        const currentPin = window.__SESSION?.pin;
+        
+        // Ünalta (54821) ve Ali Ünal (1968) için Wall Art sekmesi de göster
+        if(currentPin === "54821" || currentPin === "1968") {
+          tabCargo.style.display="block";
+          tabUnaltaWA.style.display="block";
+          tabbar.style.gridTemplateColumns = "1fr 1fr";
+        } else {
+          tabCargo.style.display="block";
+          tabbar.style.gridTemplateColumns = "1fr";
+        }
         setActiveTab("cargo");
       }else{
         tabbar.style.display="flex";
@@ -5186,6 +5621,7 @@
         tabCustomOrders && (tabCustomOrders.onclick = ()=>setActiveTab("customOrders"));
         tabDesignerBonus && (tabDesignerBonus.onclick = ()=>setActiveTab("designerBonus"));
         tabCargo && (tabCargo.onclick = ()=>setActiveTab("cargo"));
+        tabUnaltaWA && (tabUnaltaWA.onclick = ()=>setActiveTab("unaltaWA"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>{
@@ -5700,7 +6136,9 @@
         btnPut && (btnPut.onclick = async () => {
           setStatusBox(statusPut, "İşlem yapılıyor...", "");
 
-          const code = (inProduct.value || "").trim();
+          let code = (inProduct.value || "").trim();
+          const color = document.getElementById("inProductColor")?.value || "";
+          if(color) code = code + "_" + color;
           const shelfName = (inShelfNum.value || "").trim();
           const qty  = Number(inQty.value || 0);
 
@@ -5762,6 +6200,7 @@
             }
 
             inProduct.value = "";
+            if(document.getElementById("inProductColor")) document.getElementById("inProductColor").value = "";
             inShelfNum.value = "";
             inQty.value = "1";
           }catch(e){
@@ -10030,28 +10469,120 @@
     // ============ KİŞİYE ÖZEL SİPARİŞ SİSTEMİ ============
     let currentCustomOrderFilter = "all";
     let currentReviseOrderId = null;
-
-    // Sipariş oluştur (Sayfa Yöneticisi)
-    async function createCustomOrder() {
-      const orderNo = document.getElementById("coOrderNo").value.trim();
+    
+    // ===== KİŞİYE ÖZEL SEPET SİSTEMİ =====
+    let customOrderCart = [];
+    
+    function addToCustomOrderCart() {
       const productUrl = document.getElementById("coProductUrl").value.trim();
       const size = document.getElementById("coSize").value.trim();
       const color = document.getElementById("coColor").value.trim();
       const customization = document.getElementById("coCustomization").value.trim();
-
-      if(!orderNo || !productUrl || !customization) {
-        alert("Lütfen zorunlu alanları doldurun!");
+      
+      if(!productUrl || !customization) {
+        alert("Lütfen ürün linki ve kişiselleştirme bilgilerini doldurun!");
         return;
       }
+      
+      customOrderCart.push({
+        productUrl: productUrl,
+        size: size || "",
+        color: color || "",
+        customizationInfo: customization
+      });
+      
+      // Formu temizle (sipariş no hariç)
+      document.getElementById("coProductUrl").value = "";
+      document.getElementById("coSize").value = "";
+      document.getElementById("coColor").value = "";
+      document.getElementById("coCustomization").value = "";
+      
+      renderCustomOrderCart();
+    }
+    window.addToCustomOrderCart = addToCustomOrderCart;
+    
+    function removeFromCustomOrderCart(index) {
+      customOrderCart.splice(index, 1);
+      renderCustomOrderCart();
+    }
+    window.removeFromCustomOrderCart = removeFromCustomOrderCart;
+    
+    function clearCustomOrderCart() {
+      if(customOrderCart.length === 0) return;
+      if(!confirm("Sepeti temizlemek istediğinize emin misiniz?")) return;
+      customOrderCart = [];
+      renderCustomOrderCart();
+    }
+    window.clearCustomOrderCart = clearCustomOrderCart;
+    
+    function renderCustomOrderCart() {
+      const section = document.getElementById("coCartSection");
+      const itemsEl = document.getElementById("coCartItems");
+      const countEl = document.getElementById("coCartCount");
+      
+      if(!section || !itemsEl) return;
+      
+      if(customOrderCart.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+      
+      section.style.display = "block";
+      countEl.textContent = customOrderCart.length;
+      
+      let html = '';
+      customOrderCart.forEach((item, idx) => {
+        // URL'den kısa isim çıkar
+        let shortUrl = item.productUrl;
+        try { shortUrl = new URL(item.productUrl).hostname + '/...'; } catch(e) {}
+        
+        html += `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px;background:var(--card-bg);border-radius:8px;border:1px solid var(--border);">
+          <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#7c3aed;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${idx+1}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;color:#3b82f6;word-break:break-all;">🔗 ${shortUrl}</div>
+            ${item.size ? `<div style="font-size:11px;color:var(--muted);">📐 ${item.size}</div>` : ''}
+            ${item.color ? `<div style="font-size:11px;color:var(--muted);">🎨 ${item.color}</div>` : ''}
+            <div style="font-size:12px;margin-top:2px;">✏️ ${item.customizationInfo}</div>
+          </div>
+          <button onclick="removeFromCustomOrderCart(${idx})" style="background:#ef4444;color:white;border:none;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
+        </div>`;
+      });
+      
+      itemsEl.innerHTML = html;
+    }
+    
+    // Sipariş oluştur (Sayfa Yöneticisi) - Çoklu ürün desteği
+    async function createCustomOrder() {
+      const orderNo = document.getElementById("coOrderNo").value.trim();
+
+      if(!orderNo) {
+        alert("Lütfen sipariş numarasını girin!");
+        return;
+      }
+      
+      if(customOrderCart.length === 0) {
+        alert("Sepet boş! Önce ürün ekleyin.");
+        return;
+      }
+      
+      if(!confirm(`${customOrderCart.length} ürünlü siparişi göndermek istediğinize emin misiniz?`)) return;
 
       try {
         const now = new Date();
         const orderData = {
           orderNo: orderNo,
-          productUrl: productUrl,
-          size: size || "",
-          color: color || "",
-          customizationInfo: customization,
+          items: customOrderCart.map(item => ({
+            productUrl: item.productUrl,
+            size: item.size,
+            color: item.color,
+            customizationInfo: item.customizationInfo
+          })),
+          itemCount: customOrderCart.length,
+          // Geriye dönük uyumluluk: ilk ürünün bilgilerini root'a da yaz
+          productUrl: customOrderCart[0].productUrl,
+          size: customOrderCart[0].size,
+          color: customOrderCart[0].color,
+          customizationInfo: customOrderCart[0].customizationInfo,
           status: "PENDING_DESIGN",
           createdAt: now,
           createdBy: window.__SESSION?.pin || "unknown",
@@ -10064,17 +10595,20 @@
             by: window.__SESSION?.pin,
             byName: window.PIN_NAMES?.[window.__SESSION?.pin] || window.__SESSION?.pin,
             at: now.toISOString(),
-            note: "Sipariş oluşturuldu"
+            note: `Sipariş oluşturuldu (${customOrderCart.length} ürün)`
           }]
         };
 
         await addDoc(collection(db, "customOrders"), orderData);
         
         // Bildirim gönder - Tasarımcılara ve Adminlere
+        const itemsSummary = customOrderCart.length > 1 
+          ? `\n\n📦 ${customOrderCart.length} farklı ürün var.` 
+          : '';
         const notificationData = {
           type: "custom_order_created",
           title: "🎨 Yeni Kişiye Özel Sipariş",
-          body: `Sipariş No: ${orderNo}${size ? '\nÖlçü: ' + size : ''}${color ? '\nRenk: ' + color : ''}\n\nKişiselleştirme: ${customization}\n\nÜrün Linki: ${productUrl}`,
+          body: `Sipariş No: ${orderNo}${customOrderCart[0].size ? '\nÖlçü: ' + customOrderCart[0].size : ''}${customOrderCart[0].color ? '\nRenk: ' + customOrderCart[0].color : ''}\n\nKişiselleştirme: ${customOrderCart[0].customizationInfo}\n\nÜrün Linki: ${customOrderCart[0].productUrl}${itemsSummary}`,
           targetRoles: ["designer", "admin"],
           createdAt: now,
           createdBy: window.__SESSION?.pin,
@@ -10082,12 +10616,14 @@
         };
         await addDoc(collection(db, "notifications"), notificationData);
 
-        // Formu temizle
+        // Formu ve sepeti temizle
         document.getElementById("coOrderNo").value = "";
         document.getElementById("coProductUrl").value = "";
         document.getElementById("coSize").value = "";
         document.getElementById("coColor").value = "";
         document.getElementById("coCustomization").value = "";
+        customOrderCart = [];
+        renderCustomOrderCart();
         
         loadCustomOrders();
       } catch(err) {
@@ -10187,14 +10723,38 @@
           html += `
             <div class="custom-order-card" data-order-id="${orderId}">
               <div class="custom-order-card-header">
-                <h4>📦 Sipariş: ${data.orderNo}</h4>
+                <h4>📦 Sipariş: ${data.orderNo}${(data.items && data.items.length > 1) ? ` <span style="background:#7c3aed22;color:#7c3aed;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${data.items.length} ürün</span>` : ''}</h4>
                 <span class="custom-order-status ${statusClass}">${statusText}</span>
               </div>
               <div class="custom-order-card-body">
-                <p><strong>Ürün:</strong> <a href="${data.productUrl}" target="_blank">${data.productUrl}</a></p>
-                ${data.size ? `<p><strong>Ölçü:</strong> ${data.size}</p>` : ''}
-                ${data.color ? `<p><strong>Renk:</strong> ${data.color}</p>` : ''}
-                <p><strong>Kişiselleştirme:</strong> ${data.customizationInfo}</p>
+          `;
+          
+          // Çoklu ürün desteği: items array varsa her ürünü göster, yoksa eski format
+          const coItems = data.items || [{
+            productUrl: data.productUrl,
+            size: data.size,
+            color: data.color,
+            customizationInfo: data.customizationInfo
+          }];
+          
+          if(coItems.length > 1) {
+            coItems.forEach((item, iIdx) => {
+              html += `<div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid #7c3aed;">
+                <div style="font-weight:600;font-size:12px;color:#7c3aed;margin-bottom:4px;">Ürün ${iIdx+1}</div>
+                <p style="margin:2px 0;"><strong>Link:</strong> <a href="${item.productUrl}" target="_blank" style="font-size:12px;word-break:break-all;">${item.productUrl}</a></p>
+                ${item.size ? `<p style="margin:2px 0;"><strong>Ölçü:</strong> ${item.size}</p>` : ''}
+                ${item.color ? `<p style="margin:2px 0;"><strong>Renk:</strong> ${item.color}</p>` : ''}
+                <p style="margin:2px 0;"><strong>Kişiselleştirme:</strong> ${item.customizationInfo}</p>
+              </div>`;
+            });
+          } else {
+            html += `<p><strong>Ürün:</strong> <a href="${coItems[0].productUrl}" target="_blank">${coItems[0].productUrl}</a></p>`;
+            if(coItems[0].size) html += `<p><strong>Ölçü:</strong> ${coItems[0].size}</p>`;
+            if(coItems[0].color) html += `<p><strong>Renk:</strong> ${coItems[0].color}</p>`;
+            html += `<p><strong>Kişiselleştirme:</strong> ${coItems[0].customizationInfo}</p>`;
+          }
+          
+          html += `
                 <p><strong>Oluşturan:</strong> ${data.createdByName || data.createdBy} - ${createdDate}</p>
                 ${data.driveUrl ? `<p><strong>Drive Linki:</strong> <a href="${data.driveUrl}" target="_blank">📁 Dosyalara Git</a></p>` : ''}
           `;
@@ -10333,6 +10893,195 @@
       }
     }
     window.deleteCustomOrder = deleteCustomOrder;
+
+    // ===== FREELANCE HAKEDIŞ FUNCTIONS (Melike Dağlı) =====
+    
+    const FREELANCE_WORK_TYPES = {
+      "üretim_talimatı": { label: "Üretim Talimatı", price: 100 },
+      "paketleme_talimatı": { label: "Paketleme Talimatı", price: 100 },
+      "full_set": { label: "Full Set (7-8 görsel + Her İkisi)", price: 400 },
+      "amazon_listingi": { label: "Premium Amazon Listingi", price: 600 }
+    };
+
+    let currentFreelanceFilter = "all";
+
+    function updateFreelancePrice() {
+      const workType = document.getElementById("freelanceWorkType").value;
+      const priceDisplay = document.getElementById("freelancePrice");
+      
+      if(workType && FREELANCE_WORK_TYPES[workType]) {
+        priceDisplay.value = FREELANCE_WORK_TYPES[workType].price + " ₺";
+      } else {
+        priceDisplay.value = "0 ₺";
+      }
+    }
+    window.updateFreelancePrice = updateFreelancePrice;
+
+    async function addFreelanceWork() {
+      const workType = document.getElementById("freelanceWorkType").value;
+      const driveLink = document.getElementById("freelanceDriveLink").value.trim();
+      const statusDiv = document.getElementById("freelanceStatus");
+
+      if(!workType) {
+        statusDiv.innerHTML = '⚠️ İş türü seçiniz!';
+        statusDiv.style.display = "block";
+        return;
+      }
+
+      if(!driveLink) {
+        statusDiv.innerHTML = '⚠️ Google Drive linki giriniz!';
+        statusDiv.style.display = "block";
+        return;
+      }
+
+      if(!driveLink.includes("drive.google.com")) {
+        statusDiv.innerHTML = '⚠️ Geçerli bir Google Drive linki giriniz!';
+        statusDiv.style.display = "block";
+        return;
+      }
+
+      try {
+        statusDiv.innerHTML = '⏳ Kaydediliyor...';
+        statusDiv.style.display = "block";
+
+        const now = new Date();
+        const workData = {
+          pin: "85247", // Melike Dağlı
+          pinName: "Melike Dağlı (Freelance)",
+          workType: workType,
+          workTypeLabel: FREELANCE_WORK_TYPES[workType].label,
+          driveLink: driveLink,
+          price: FREELANCE_WORK_TYPES[workType].price,
+          createdAt: now,
+          status: "pending"
+        };
+
+        await addDoc(collection(db, "freelanceWorks"), workData);
+
+        // Formu temizle
+        document.getElementById("freelanceWorkType").value = "";
+        document.getElementById("freelanceDriveLink").value = "";
+        updateFreelancePrice();
+
+        statusDiv.innerHTML = '✅ İş başarıyla kaydedildi!';
+        statusDiv.style.background = "#10b98133";
+        statusDiv.style.color = "#059669";
+        
+        setTimeout(() => {
+          statusDiv.style.display = "none";
+        }, 3000);
+
+        loadFreelanceWorks();
+      } catch(err) {
+        console.error("Freelance iş ekleme hatası:", err);
+        statusDiv.innerHTML = '❌ Hata: ' + err.message;
+        statusDiv.style.background = "#ef444433";
+        statusDiv.style.color = "#dc2626";
+        statusDiv.style.display = "block";
+      }
+    }
+    window.addFreelanceWork = addFreelanceWork;
+
+    async function loadFreelanceWorks() {
+      const listContainer = document.getElementById("freelanceWorksList");
+      if(!listContainer) return;
+
+      try {
+        const q = query(
+          collection(db, "freelanceWorks"),
+          where("pin", "==", "85247"),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+
+        let totalPrice = 0;
+        let html = "";
+
+        if(snapshot.empty) {
+          html = '<div style="text-align:center;padding:40px;color:var(--muted);">Henüz iş kaydı yok.</div>';
+        } else {
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const docId = docSnap.id;
+            
+            // Filtre
+            if(currentFreelanceFilter !== "all" && data.workType !== currentFreelanceFilter) {
+              return;
+            }
+
+            totalPrice += data.price || 0;
+
+            const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString("tr-TR") : "-";
+            
+            html += `
+              <div style="background:var(--surface);border-radius:8px;padding:14px;display:flex;justify-content:space-between;align-items:start;border-left:4px solid #667eea;">
+                <div style="flex:1;">
+                  <div style="font-weight:600;color:#667eea;margin-bottom:4px;">${data.workTypeLabel}</div>
+                  <div style="font-size:13px;color:var(--muted);margin-bottom:6px;word-break:break-all;">
+                    🔗 <a href="${data.driveLink}" target="_blank" style="color:#667eea;text-decoration:none;">Google Drive Linki</a>
+                  </div>
+                  <div style="font-size:12px;color:var(--muted);">📅 ${createdDate}</div>
+                </div>
+                <div style="text-align:right;margin-left:12px;">
+                  <div style="font-weight:700;color:#667eea;font-size:18px;margin-bottom:8px;">${data.price} ₺</div>
+                  <button onclick="deleteFreelanceWork('${docId}')" class="deleteBtn" style="padding:6px 10px;font-size:12px;">🗑️</button>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        listContainer.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--muted);">Seçilen filtreye uygun iş yok.</div>';
+
+        // Toplam güncelle
+        const totalDisplay = document.getElementById("freelanceTotalEarnings");
+        if(totalDisplay) {
+          totalDisplay.textContent = totalPrice + " ₺";
+        }
+
+        const countDisplay = document.getElementById("freelanceWorkCount");
+        if(countDisplay) {
+          const visibleCount = document.querySelectorAll("#freelanceWorksList > div[style*='surface']").length;
+          countDisplay.textContent = visibleCount + " iş";
+        }
+
+      } catch(err) {
+        console.error("Freelance works yükleme hatası:", err);
+        listContainer.innerHTML = `<p style="color:red;">Hata: ${err.message}</p>`;
+      }
+    }
+    window.loadFreelanceWorks = loadFreelanceWorks;
+
+    async function deleteFreelanceWork(docId) {
+      if(!confirm("Bu işi silmek istediğinizden emin misiniz?")) return;
+
+      try {
+        await deleteDoc(doc(db, "freelanceWorks", docId));
+        loadFreelanceWorks();
+      } catch(err) {
+        console.error("Silme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.deleteFreelanceWork = deleteFreelanceWork;
+
+    function filterFreelanceWorks(workType, btn) {
+      currentFreelanceFilter = workType;
+      
+      // Aktif butonu güncelle
+      document.querySelectorAll('.custom-order-filter-btn').forEach(b => {
+        if(b.parentElement.id === "freelanceWorksList" || b.parentElement.id === undefined) {
+          // Check if button is in freelance section by getting parent
+        }
+      });
+      
+      const allBtns = document.querySelectorAll('#viewFreelanceWorks .custom-order-filter-btn');
+      allBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      loadFreelanceWorks();
+    }
+    window.filterFreelanceWorks = filterFreelanceWorks;
 
     // Filtre değiştir
     function filterCustomOrders(status, btn) {
@@ -11000,13 +11749,1143 @@
     // ========== KARGO ETİKETİ SİSTEMİ ==========
     let currentCargoFilter = "all";
 
+    // FedEx Fiyat Listesi (Ünalta için)
+    const FEDEX_PRICES = {
+      0.5: { US: 20, CA: 21 },
+      1: { US: 20.5, CA: 21.5 },
+      1.5: { US: 21, CA: 22 },
+      2: { US: 21.5, CA: 22.5 },
+      2.5: { US: 22, CA: 23 },
+      3: { US: 23, CA: 24 },
+      3.5: { US: 24, CA: 25 },
+      4: { US: 25, CA: 26 },
+      4.5: { US: 26.5, CA: 27.5 },
+      5: { US: 27, CA: 28 },
+      5.5: { US: 29, CA: 30 },
+      6: { US: 30, CA: 31 },
+      6.5: { US: 32, CA: 33 },
+      7: { US: 33.5, CA: 34.5 },
+      7.5: { US: 35.5, CA: 36.5 },
+      8: { US: 37.5, CA: 38.5 },
+      8.5: { US: 40, CA: 41 },
+      9: { US: 43, CA: 44 },
+      9.5: { US: 45, CA: 46 },
+      10: { US: 47, CA: 48 },
+      11: { US: 56, CA: 57 },
+      12: { US: 70, CA: 71 }
+    };
+
+    // Avrupa ülkeleri listesi
+    const EUROPE_COUNTRIES = [
+      "Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina",
+      "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia",
+      "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland",
+      "Italy", "Kosovo", "Latvia", "Lithuania", "Luxembourg", "Malta", "Moldova",
+      "Monaco", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland",
+      "Portugal", "Romania", "Russia", "Serbia", "Slovakia", "Slovenia", "Spain",
+      "Sweden", "Switzerland", "Turkey", "Ukraine", "United Kingdom"
+    ];
+
+    // Kargo fiyatını hesapla
+    function calculateCargoPrice(desi, country) {
+      if(!desi || !country) return 0;
+      
+      // Fiyat tablosundaki anahtarları sırala
+      const desiKeys = Object.keys(FEDEX_PRICES).map(Number).sort((a, b) => a - b);
+      
+      // Desi değerine eşit veya bir üst kademeyi bul
+      let matchedDesi = null;
+      for(const key of desiKeys) {
+        if(key >= desi) {
+          matchedDesi = key;
+          break;
+        }
+      }
+      // Tüm kademelerden büyükse en yüksek kademeyi kullan
+      if(matchedDesi === null) matchedDesi = desiKeys[desiKeys.length - 1];
+      
+      const priceData = FEDEX_PRICES[matchedDesi];
+      if(!priceData) return 0;
+      
+      // Ülkeye göre fiyat belirle
+      if(country === "United States") {
+        return priceData.US;
+      } else if(country === "Canada") {
+        return priceData.CA;
+      } else if(EUROPE_COUNTRIES.includes(country)) {
+        return priceData.US;
+      } else {
+        return priceData.US * 2;
+      }
+    }
+    window.calculateCargoPrice = calculateCargoPrice;
+
+    // ========== WALL ART SİPARİŞ SİSTEMİ ==========
+    
+    // Ürün Listesi
+    const WALL_ART_PRODUCTS = {
+      "L001": { name: "Yılbaşı Ağacı", sizes: ["18x12", "24x16", "32x21", "40x26", "48x32"], colors: ["siyah-yeşil led", "siyah-kırmızı led", "siyah-beyaz led", "kırmızı-yeşil led", "kırmızı-beyaz led"] },
+      "L002": { name: "Hellcat Logo", sizes: ["19x17", "27x24", "35x31", "39x34"], colors: ["beyaz", "kırmızı", "sarı"], color2: ["mavi (göz)"] },
+      "L003": { name: "Cincinnati Bengals", sizes: ["19x15", "27x21", "35x27", "39x31"], colors: ["sarı"] },
+      "L004": { name: "Kansas City Chiefs", sizes: ["19x13", "27x18", "35x23"], colors: ["kırmızı"] },
+      "L005": { name: "New York Jets", sizes: ["19x11", "27x15", "35x20"], colors: ["yeşil"] },
+      "L006": { name: "Philadelphia Eagles", sizes: ["19x9", "27x13", "35x17"], colors: ["yeşil", "beyaz"] },
+      "L007": { name: "San Francisco 49ers", sizes: ["19x11", "27x16", "35x21", "39x23"], colors: ["mavi", "kırmızı", "sarı", "beyaz", "beyaz-kırmızı"] },
+      "L008": { name: "Balonlu Kız", sizes: ["16x5", "19x7", "24x8", "32x11", "39x14"], colors: ["mavi", "kırmızı", "sarı", "beyaz", "yeşil"] },
+      "L009": { name: "Hello Kitty", sizes: ["16x13", "19x16", "24x19", "32x26", "39x32"], colors: ["mavi", "pembe", "kırmızı", "beyaz", "sarı"] },
+      "L010": { name: "Hells Angel Logo", sizes: ["19x19", "24x24", "27x27", "35x35", "39x39"], colors: ["kırmızı", "sarı"] },
+      "L011": { name: "Among Us", sizes: ["20x12", "24x15", "28x17"], colors: ["sarı-kırmızı-mavi (tek varyant)"] },
+      "L012": { name: "Jordan", sizes: ["17x18.5", "24.5x25.3", "32.2x33.2", "35.2x36.4"], colors: ["mavi (top turuncu)", "kırmızı", "beyaz (top turuncu)"] },
+      "L013": { name: "Harley Bar Shield", sizes: ["19x15", "27x21", "35x27", "39x31"], colors: ["amber", "kırmızı", "beyaz-amber"] },
+      "L014": { name: "Yüzüklerin Efendisi", sizes: ["20x20", "35x35", "39x39"], colors: ["amber"] },
+      "L015": { name: "Harley Yuvarlak Logo", sizes: ["15x13", "19x17", "23x20", "27x24", "31x27", "39x34"], colors: ["amber"] },
+      "L016": { name: "Harley Kanatlı Logo", sizes: ["37x11", "45x13"], colors: ["amber", "kırmızı"] }
+    };
+    
+    // Fiyat Tablosu (en uzun kenara göre - USD)
+    const WALL_ART_PRICES = {
+      15: 25, 16: 27.5, 17: 30, 18: 32, 19: 36, 20: 36,
+      23: 40, 24: 40, 24.5: 40, 27: 44, 28: 45,
+      31: 48, 32: 48, 32.2: 48, 35: 90, 35.2: 51,
+      37: 60, 39: 70, 40: 70, 45: 80, 48: 80
+    };
+    
+    // Boyuttan en uzun kenarı çıkar
+    function getLongestEdge(sizeStr) {
+      const parts = sizeStr.replace(/[^\d.x]/g, '').split('x').map(Number);
+      return Math.max(...parts);
+    }
+    
+    // Renk adından arka plan ve yazı rengi çıkar
+    function getColorStyle(colorName) {
+      const c = colorName.toLowerCase().trim();
+      const map = {
+        'kırmızı':    { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
+        'mavi':       { bg: '#dbeafe', text: '#2563eb', border: '#93c5fd' },
+        'yeşil':      { bg: '#dcfce7', text: '#16a34a', border: '#86efac' },
+        'sarı':       { bg: '#fef9c3', text: '#a16207', border: '#fde047' },
+        'beyaz':      { bg: '#f8fafc', text: '#475569', border: '#cbd5e1' },
+        'siyah':      { bg: '#1e293b', text: '#f1f5f9', border: '#475569' },
+        'pembe':      { bg: '#fce7f3', text: '#db2777', border: '#f9a8d4' },
+        'turuncu':    { bg: '#fff7ed', text: '#c2410c', border: '#fdba74' },
+        'amber':      { bg: '#fffbeb', text: '#b45309', border: '#fcd34d' },
+        'mor':        { bg: '#f3e8ff', text: '#7c3aed', border: '#c4b5fd' },
+      };
+      // Direkt eşleşme
+      if(map[c]) return map[c];
+      // Kısmi eşleşme
+      for(const [key, val] of Object.entries(map)) {
+        if(c.includes(key)) return val;
+      }
+      // Varsayılan
+      return { bg: '#f1f5f9', text: '#475569', border: '#cbd5e1' };
+    }
+    
+    // Fiyat hesapla
+    function getWallArtPrice(sizeStr) {
+      const edge = getLongestEdge(sizeStr);
+      // Exact match veya en yakın fiyatı bul
+      if(WALL_ART_PRICES[edge]) return WALL_ART_PRICES[edge];
+      // En yakın fiyatı bul
+      const edges = Object.keys(WALL_ART_PRICES).map(Number).sort((a,b) => a-b);
+      for(let i = 0; i < edges.length; i++) {
+        if(edges[i] >= edge) return WALL_ART_PRICES[edges[i]];
+      }
+      return WALL_ART_PRICES[edges[edges.length - 1]];
+    }
+    
+    // Admin paneli yüklendiğinde ürün listesini doldur
+    function initWallArtProductSelect() {
+      const select = document.getElementById("wallArtProductCode");
+      if(!select) return;
+      
+      select.innerHTML = '<option value="">Seçiniz...</option>';
+      for(const [code, product] of Object.entries(WALL_ART_PRODUCTS)) {
+        const opt = document.createElement("option");
+        opt.value = code;
+        opt.textContent = `${code} - ${product.name}`;
+        select.appendChild(opt);
+      }
+    }
+    
+    // Ürün seçildiğinde boyut ve renk listelerini güncelle
+    function onWallArtProductChange() {
+      const code = document.getElementById("wallArtProductCode").value;
+      const sizeSelect = document.getElementById("wallArtSize");
+      const color1Select = document.getElementById("wallArtColor1");
+      const color2Select = document.getElementById("wallArtColor2");
+      
+      if(!code || !WALL_ART_PRODUCTS[code]) {
+        sizeSelect.innerHTML = '<option value="">Önce ürün seçin</option>';
+        color1Select.innerHTML = '<option value="">Önce ürün seçin</option>';
+        color2Select.innerHTML = '<option value="">Opsiyonel</option>';
+        document.getElementById("wallArtPrice").value = "-";
+        return;
+      }
+      
+      const product = WALL_ART_PRODUCTS[code];
+      
+      // Boyutları doldur
+      sizeSelect.innerHTML = '<option value="">Seçiniz...</option>';
+      product.sizes.forEach(size => {
+        const price = getWallArtPrice(size);
+        const opt = document.createElement("option");
+        opt.value = size;
+        opt.textContent = `${size} inches ($${price})`;
+        sizeSelect.appendChild(opt);
+      });
+      
+      // Renk 1 doldur
+      color1Select.innerHTML = '<option value="">Seçiniz...</option>';
+      product.colors.forEach(color => {
+        const opt = document.createElement("option");
+        opt.value = color;
+        opt.textContent = color;
+        color1Select.appendChild(opt);
+      });
+      
+      // Renk 2 doldur (opsiyonel)
+      color2Select.innerHTML = '<option value="">Yok</option>';
+      if(product.color2) {
+        product.color2.forEach(color => {
+          const opt = document.createElement("option");
+          opt.value = color;
+          opt.textContent = color;
+          color2Select.appendChild(opt);
+        });
+      }
+      // Renk 1'deki renkler de 2. renk olabilir
+      product.colors.forEach(color => {
+        const opt = document.createElement("option");
+        opt.value = color;
+        opt.textContent = color;
+        color2Select.appendChild(opt);
+      });
+      
+      document.getElementById("wallArtPrice").value = "-";
+    }
+    window.onWallArtProductChange = onWallArtProductChange;
+    
+    // Fiyat hesapla
+    function calculateWallArtPrice() {
+      const size = document.getElementById("wallArtSize")?.value;
+      const qty = parseInt(document.getElementById("wallArtQty")?.value) || 1;
+      const priceEl = document.getElementById("wallArtPrice");
+      
+      if(!size || !priceEl) {
+        if(priceEl) priceEl.value = "-";
+        return;
+      }
+      
+      const unitPrice = getWallArtPrice(size);
+      const total = unitPrice * qty;
+      priceEl.value = `$${total.toFixed(2)}`;
+    }
+    window.calculateWallArtPrice = calculateWallArtPrice;
+    
+    // ===== SEPET (CART) SİSTEMİ =====
+    let wallArtCart = [];
+    
+    function addToWallArtCart() {
+      const code = document.getElementById("wallArtProductCode").value;
+      const size = document.getElementById("wallArtSize").value;
+      const color1 = document.getElementById("wallArtColor1").value;
+      const color2 = document.getElementById("wallArtColor2").value;
+      const qty = parseInt(document.getElementById("wallArtQty").value) || 1;
+      const note = document.getElementById("wallArtNote").value.trim();
+      
+      if(!code || !size || !color1) {
+        alert("Lütfen ürün, boyut ve LED renk 1 seçin!");
+        return;
+      }
+      
+      const product = WALL_ART_PRODUCTS[code];
+      const unitPrice = getWallArtPrice(size);
+      const totalPrice = unitPrice * qty;
+      
+      wallArtCart.push({
+        productCode: code,
+        productName: product.name,
+        size: size,
+        color1: color1,
+        color2: color2 || null,
+        quantity: qty,
+        unitPrice: unitPrice,
+        totalPrice: totalPrice,
+        note: note
+      });
+      
+      // Formu temizle
+      document.getElementById("wallArtProductCode").value = "";
+      onWallArtProductChange();
+      document.getElementById("wallArtQty").value = "1";
+      document.getElementById("wallArtNote").value = "";
+      
+      renderWallArtCart();
+    }
+    window.addToWallArtCart = addToWallArtCart;
+    
+    function removeFromWallArtCart(index) {
+      wallArtCart.splice(index, 1);
+      renderWallArtCart();
+    }
+    window.removeFromWallArtCart = removeFromWallArtCart;
+    
+    function clearWallArtCart() {
+      if(wallArtCart.length === 0) return;
+      if(!confirm("Sepeti temizlemek istediğinize emin misiniz?")) return;
+      wallArtCart = [];
+      renderWallArtCart();
+    }
+    window.clearWallArtCart = clearWallArtCart;
+    
+    function renderWallArtCart() {
+      const section = document.getElementById("wallArtCartSection");
+      const itemsEl = document.getElementById("wallArtCartItems");
+      const countEl = document.getElementById("wallArtCartCount");
+      const totalEl = document.getElementById("wallArtCartTotal");
+      
+      if(!section || !itemsEl) return;
+      
+      if(wallArtCart.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+      
+      section.style.display = "block";
+      countEl.textContent = wallArtCart.length;
+      
+      let grandTotal = 0;
+      let html = '';
+      wallArtCart.forEach((item, idx) => {
+        grandTotal += item.totalPrice;
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--card-bg);border-radius:8px;border:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:13px;">${item.productCode} - ${item.productName}</div>
+            <div style="font-size:11px;color:var(--muted);">${item.size} | ${item.color1}${item.color2 ? ' + ' + item.color2 : ''} | x${item.quantity}</div>
+            ${item.note ? `<div style="font-size:10px;color:#f59e0b;margin-top:2px;">📝 ${item.note}</div>` : ''}
+          </div>
+          <div style="font-weight:700;color:#22c55e;font-size:13px;white-space:nowrap;">$${item.totalPrice.toFixed(2)}</div>
+          <button onclick="removeFromWallArtCart(${idx})" style="background:#ef4444;color:white;border:none;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
+        </div>`;
+      });
+      
+      itemsEl.innerHTML = html;
+      totalEl.textContent = `$${grandTotal.toFixed(2)}`;
+    }
+    
+    // Sipariş gönder (çoklu ürün)
+    async function submitWallArtOrder() {
+      if(wallArtCart.length === 0) {
+        alert("Sepet boş! Önce ürün ekleyin.");
+        return;
+      }
+      
+      const grandTotal = wallArtCart.reduce((sum, item) => sum + item.totalPrice, 0);
+      const totalQty = wallArtCart.reduce((sum, item) => sum + item.quantity, 0);
+      
+      if(!confirm(`${wallArtCart.length} kalem, toplam ${totalQty} adet, $${grandTotal.toFixed(2)} tutarında sipariş göndermek istediğinize emin misiniz?`)) return;
+      
+      try {
+        const now = new Date();
+        const orderData = {
+          items: wallArtCart.map(item => ({
+            productCode: item.productCode,
+            productName: item.productName,
+            size: item.size,
+            color1: item.color1,
+            color2: item.color2 || null,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            note: item.note || ""
+          })),
+          totalPrice: grandTotal,
+          totalQuantity: totalQty,
+          itemCount: wallArtCart.length,
+          status: "PENDING",
+          createdAt: now,
+          createdBy: window.__SESSION?.pin || "admin"
+        };
+        
+        const docRef = await addDoc(collection(db, "wallArtOrders"), orderData);
+        
+        // Ünalta'ya bildirim gönder (PIN: 54821)
+        try {
+          const itemsSummary = wallArtCart.map(i => `${i.quantity}x ${i.productCode}`).join(', ');
+          const notificationDoc = {
+            type: 'wall_art_order',
+            title: '🎨 Yeni Wall Art Siparişi',
+            body: `${wallArtCart.length} kalem sipariş: ${itemsSummary}. Toplam: $${grandTotal.toFixed(2)}`,
+            targetPin: '54821',
+            orderId: docRef.id,
+            createdAt: now
+          };
+          await addDoc(collection(db, "notifications"), notificationDoc);
+        } catch(e) { console.warn("Bildirim hatası:", e); }
+        
+        // Sepeti temizle
+        wallArtCart = [];
+        renderWallArtCart();
+        
+        alert("✅ Sipariş oluşturuldu! Ünalta'ya bildirim gönderildi.");
+        loadWallArtOrders();
+        loadWallArtBalance();
+        
+      } catch(err) {
+        console.error("Sipariş hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.submitWallArtOrder = submitWallArtOrder;
+    
+    let currentWallArtFilter = "all";
+    
+    // Siparişleri yükle
+    async function loadWallArtOrders() {
+      const listEl = document.getElementById("wallArtOrdersList");
+      if(!listEl) return;
+      
+      listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Yükleniyor...</div>';
+      
+      try {
+        const q = query(collection(db, "wallArtOrders"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        if(snapshot.empty) {
+          listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Henüz sipariş yok.</div>';
+          return;
+        }
+        
+        let html = '';
+        let visibleCount = 0;
+        
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          
+          if(currentWallArtFilter !== "all" && d.status !== currentWallArtFilter) return;
+          visibleCount++;
+          
+          const statusColors = {
+            "PENDING": { bg: "#fef3c7", color: "#d97706", text: "Bekliyor" },
+            "READY": { bg: "#dcfce7", color: "#16a34a", text: "Hazır" },
+            "SHIPPED": { bg: "#dbeafe", color: "#2563eb", text: "Gönderildi" }
+          };
+          const status = statusColors[d.status] || statusColors["PENDING"];
+          const date = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString("tr-TR") : "-";
+          
+          // Eski format (tek ürün) mi yeni format (items array) mi?
+          const items = d.items || [{
+            productCode: d.productCode,
+            productName: d.productName,
+            size: d.size,
+            color1: d.color1,
+            color2: d.color2,
+            quantity: d.quantity,
+            unitPrice: d.unitPrice,
+            totalPrice: d.totalPrice,
+            note: d.note
+          }];
+          const orderTotal = d.totalPrice || 0;
+          
+          html += `<div style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid var(--border);">`;
+          // Başlık satırı
+          html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">`;
+          html += `<div style="display:flex;align-items:center;gap:8px;">`;
+          html += `<span style="font-size:11px;color:var(--muted);">${date}</span>`;
+          html += `<span style="background:#7c3aed22;color:#7c3aed;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">${items.length} kalem</span>`;
+          html += `</div>`;
+          html += `<div style="display:flex;align-items:center;gap:6px;">`;
+          html += `<span style="background:${status.bg};color:${status.color};padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600;">${status.text}</span>`;
+          html += `<span style="font-weight:700;color:#22c55e;font-size:13px;">$${orderTotal.toFixed(2)}</span>`;
+          html += `</div></div>`;
+          
+          // Ürünler
+          items.forEach(item => {
+            html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--card-bg);border-radius:6px;margin-bottom:4px;font-size:12px;">`;
+            html += `<div style="flex:1;min-width:0;">`;
+            html += `<strong>${item.productCode}</strong> - ${item.productName || ''} `;
+            html += `<span style="color:var(--muted);">(${item.size})</span> `;
+            html += `<span style="font-size:10px;">${item.color1}${item.color2 ? ' + ' + item.color2 : ''}</span>`;
+            html += `</div>`;
+            html += `<span style="font-weight:600;white-space:nowrap;">x${item.quantity}</span>`;
+            html += `<span style="font-weight:600;color:#22c55e;white-space:nowrap;">$${(item.totalPrice || 0).toFixed(2)}</span>`;
+            html += `</div>`;
+          });
+          
+          // İşlem butonları
+          html += `<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">`;
+          if(d.status === "READY") {
+            html += `<button onclick="markWallArtShipped('${docSnap.id}')" style="background:#3b82f6;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">📦 Alındı</button>`;
+          }
+          html += `<button onclick="deleteWallArtOrder('${docSnap.id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️ Sil</button>`;
+          html += `</div></div>`;
+        });
+        
+        if(visibleCount === 0) {
+          listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Bu filtreye uygun sipariş yok.</div>';
+        } else {
+          listEl.innerHTML = html;
+        }
+        
+      } catch(err) {
+        console.error("Wall Art siparişleri yükleme hatası:", err);
+        listEl.innerHTML = `<div style="padding:20px;text-align:center;color:#ef4444;">Hata: ${err.message}</div>`;
+      }
+    }
+    window.loadWallArtOrders = loadWallArtOrders;
+    
+    // Filtrele
+    function filterWallArtOrders(status, btn) {
+      currentWallArtFilter = status;
+      document.querySelectorAll('#wallArtOrdersList').closest('.card')?.querySelectorAll('.custom-order-filter-btn').forEach(b => b.classList.remove('active'));
+      btn?.classList.add('active');
+      loadWallArtOrders();
+    }
+    window.filterWallArtOrders = filterWallArtOrders;
+    
+    // Sipariş alındı olarak işaretle
+    async function markWallArtShipped(orderId) {
+      if(!confirm("Siparişi aldığınızı onaylıyor musunuz?")) return;
+      
+      try {
+        await updateDoc(doc(db, "wallArtOrders", orderId), {
+          status: "SHIPPED",
+          shippedAt: new Date()
+        });
+        loadWallArtOrders();
+        loadWallArtBalance();
+      } catch(err) {
+        console.error("Güncelleme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.markWallArtShipped = markWallArtShipped;
+    
+    // Bakiye hesapla
+    async function loadWallArtBalance() {
+      const ourDebtEl = document.getElementById("wallArtOurDebt");
+      const theirDebtEl = document.getElementById("wallArtTheirDebt");
+      const netEl = document.getElementById("wallArtNetBalance");
+      
+      if(!ourDebtEl || !theirDebtEl || !netEl) return;
+      
+      try {
+        // Bizim Ünalta'ya borcumuz (Wall Art siparişleri - PENDING veya READY olanlar)
+        const ordersSnap = await getDocs(collection(db, "wallArtOrders"));
+        let ourDebt = 0;
+        ordersSnap.forEach(doc => {
+          const d = doc.data();
+          // Tüm siparişleri say (teslim edilenler dahil - borç olarak)
+          ourDebt += d.totalPrice || 0;
+        });
+        
+        // Ünalta'nın bize borcu (Kargo alacağımız)
+        const cargoSnap = await getDocs(query(
+          collection(db, "cargoRequests"),
+          where("requesterPin", "in", ["54821", "1968"])
+        ));
+        let theirDebt = 0;
+        cargoSnap.forEach(doc => {
+          const d = doc.data();
+          if(d.desi && d.ulke) {
+            theirDebt += calculateCargoPrice(d.desi, d.ulke);
+          }
+        });
+        
+        const net = theirDebt - ourDebt;
+        
+        ourDebtEl.textContent = `$${ourDebt.toFixed(2)}`;
+        theirDebtEl.textContent = `$${theirDebt.toFixed(2)}`;
+        
+        if(net > 0) {
+          netEl.textContent = `+$${net.toFixed(2)}`;
+          netEl.style.color = "#22c55e";
+        } else if(net < 0) {
+          netEl.textContent = `-$${Math.abs(net).toFixed(2)}`;
+          netEl.style.color = "#ef4444";
+        } else {
+          netEl.textContent = "$0.00";
+          netEl.style.color = "#3b82f6";
+        }
+        
+      } catch(err) {
+        console.error("Bakiye hesaplama hatası:", err);
+      }
+    }
+    window.loadWallArtBalance = loadWallArtBalance;
+    
+    // ========== ÜNALTA İÇİN WALL ART SİPARİŞLERİ ==========
+    
+    // Ünalta için gelen siparişleri yükle
+    let allUnaltaWallArtOrders = [];
+    async function loadUnaltaWallArtOrders() {
+      const list = document.getElementById("unaltaWallArtOrdersList");
+      if(!list) return;
+      
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Yükleniyor...</div>';
+      
+      try {
+        const snapshot = await getDocs(query(
+          collection(db, "wallArtOrders"),
+          orderBy("createdAt", "desc")
+        ));
+        
+        allUnaltaWallArtOrders = [];
+        snapshot.forEach(doc => {
+          allUnaltaWallArtOrders.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderUnaltaWallArtOrders(allUnaltaWallArtOrders.filter(o => o.status === 'PENDING'));
+      } catch(err) {
+        console.error("Sipariş yükleme hatası:", err);
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Siparişler yüklenemedi.</div>';
+      }
+    }
+    window.loadUnaltaWallArtOrders = loadUnaltaWallArtOrders;
+    
+    function renderUnaltaWallArtOrders(orders) {
+      const list = document.getElementById("unaltaWallArtOrdersList");
+      if(!list) return;
+      
+      if(orders.length === 0) {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);background:var(--card-bg);border-radius:12px;">📭 Henüz sipariş yok.</div>';
+        return;
+      }
+      
+      // Hazır (READY) siparişleri en üste al, sonra PENDING, sonra SHIPPED
+      const statusOrder = { "READY": 0, "PENDING": 1, "SHIPPED": 2 };
+      const sorted = [...orders].sort((a, b) => {
+        const sa = statusOrder[a.status] ?? 9;
+        const sb = statusOrder[b.status] ?? 9;
+        if(sa !== sb) return sa - sb;
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return tb - ta;
+      });
+      
+      let html = '';
+      sorted.forEach(order => {
+        const statusColors = {
+          "PENDING": { bg: "#dc2626", text: "#ffffff", label: "Bekliyor" },
+          "READY": { bg: "#16a34a", text: "#ffffff", label: "Hazır" },
+          "SHIPPED": { bg: "#2563eb", text: "#ffffff", label: "Teslim Edildi" }
+        };
+        const st = statusColors[order.status] || statusColors.PENDING;
+        
+        // Eski format (tek ürün) mi yeni format (items array) mi?
+        const items = order.items || [{
+          productCode: order.productCode,
+          productName: order.productName,
+          size: order.size,
+          color1: order.color1,
+          color2: order.color2,
+          quantity: order.quantity,
+          unitPrice: order.unitPrice,
+          totalPrice: order.totalPrice,
+          note: order.note
+        }];
+        
+        // Termin badge hesapla
+        let terminBadge = '';
+        if(order.status === 'PENDING' && order.createdAt?.toDate) {
+          const created = order.createdAt.toDate().getTime();
+          let dl = created + (48 * 60 * 60 * 1000);
+          const dd = new Date(dl);
+          const dy = dd.getDay(), dh = dd.getHours();
+          if((dy === 6 && dh >= 12) || dy === 0 || (dy === 1 && dh < 14)) {
+            const mon = new Date(dd);
+            if(dy === 6) mon.setDate(mon.getDate() + 2);
+            else if(dy === 0) mon.setDate(mon.getDate() + 1);
+            mon.setHours(14, 0, 0, 0);
+            dl = mon.getTime();
+          }
+          const rem = dl - Date.now();
+          if(rem > 0) {
+            const h = Math.floor(rem / (1000 * 60 * 60));
+            const m = Math.floor((rem % (1000 * 60 * 60)) / (1000 * 60));
+            const tc = rem > 24*3600000 ? '#22c55e' : rem > 12*3600000 ? '#f59e0b' : '#ef4444';
+            terminBadge = `<div data-countdown-deadline="${dl}" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:20px;font-size:15px;font-weight:800;background:${tc};color:#ffffff;border:2px solid ${tc};box-shadow:0 3px 12px ${tc}66;letter-spacing:0.3px;">⏱ Kalan Süre: <strong>${h}s ${m}dk</strong></div>`;
+          } else {
+            terminBadge = `<div style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:20px;font-size:15px;font-weight:800;background:#dc2626;color:#ffffff;border:2px solid #dc2626;box-shadow:0 3px 12px #dc262666;letter-spacing:0.3px;">🚨 Kalan Süre: <strong>Doldu!</strong></div>`;
+          }
+        }
+        
+        html += `<div style="background:var(--card-bg);border-radius:16px;padding:20px;border:3px solid ${order.status === 'READY' ? '#22c55e' : '#94a3b8'};box-shadow:0 4px 20px rgba(0,0,0,0.12);${order.status === 'READY' ? 'box-shadow:0 0 0 3px #22c55e44,0 4px 20px rgba(0,0,0,0.12);' : ''}">
+          <!-- Üst satır: Sipariş başlığı + Durum badge -->
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <div style="font-weight:700;font-size:15px;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              📦 Sipariş
+              <span style="padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44;">${items.length} kalem</span>
+            </div>
+            <span style="display:inline-block;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:800;letter-spacing:0.5px;background:${st.bg};color:${st.text};box-shadow:0 2px 8px ${st.bg}55;text-transform:uppercase;white-space:nowrap;">${st.label}</span>
+          </div>`;
+        
+        // Her ürünü ayrı bir satır olarak göster
+        items.forEach((item, idx) => {
+          html += `<div style="background:var(--surface);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border);">`;
+          // Ürün adı + adet
+          html += `<div style="font-weight:700;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            ${item.productCode} - ${item.productName || ''}
+            ${item.quantity > 1 ? `<span style="padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">⚠️ x${item.quantity}</span>` : `<span style="padding:3px 10px;border-radius:6px;font-size:13px;font-weight:800;background:#7c3aed;color:#ffffff;border:1px solid #6d28d9;">x1</span>`}
+          </div>`;
+          // Ölçü
+          html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:14px;font-weight:700;background:#fdf2e9;color:#b45309;border:2px solid #b45309;min-width:130px;">📐 ${item.size}</span>
+          </div>`;
+          // Renkler
+          html += `<div style="display:flex;flex-wrap:wrap;gap:8px;">`;
+          const cs = getColorStyle(item.color1);
+          html += `<span style="display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:14px;font-weight:700;background:${cs.bg};color:${cs.text};border:2.5px solid ${cs.border};min-width:130px;">${item.color1}</span>`;
+          if(item.color2) {
+            const cs2 = getColorStyle(item.color2);
+            html += `<span style="display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:14px;font-weight:700;background:${cs2.bg};color:${cs2.text};border:2.5px solid ${cs2.border};min-width:130px;">${item.color2}</span>`;
+          }
+          html += `</div>`;
+          // Not
+          if(item.note) {
+            html += `<div style="margin-top:6px;font-size:12px;color:#f59e0b;">📝 ${item.note}</div>`;
+          }
+          html += `</div>`;
+        });
+        
+        // Alt satır: Fiyat + Kalan Süre
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            ${(order.status === 'SHIPPED' && (window.ADMIN_PINS?.has(window.__SESSION?.pin) || window.__SESSION?.pin === '1968')) ? `<div style="font-size:18px;font-weight:700;color:#667eea;">$${(order.totalPrice || 0).toFixed(2)}</div>` : '<div></div>'}
+            ${terminBadge}
+          </div>`;
+        
+        // Butonlar
+        if(order.status === 'PENDING') {
+          html += `<div style="margin-top:14px;display:flex;justify-content:center;"><button onclick="markWallArtReady('${order.id}')" style="width:40%;padding:12px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            ✅ Sipariş Hazır
+          </button></div>`;
+        }
+        if(window.ADMIN_PINS?.has(window.__SESSION?.pin)) {
+          html += `<button onclick="deleteWallArtOrder('${order.id}')" style="width:100%;margin-top:8px;padding:10px;background:#ef4444;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:12px;">🗑️ Siparişi Sil</button>`;
+        }
+        html += `</div>`;
+      });
+      
+      list.innerHTML = html;
+      
+      // Geri sayım sayacını her dakika güncelle
+      if(window._unaltaCountdownInterval) clearInterval(window._unaltaCountdownInterval);
+      window._unaltaCountdownInterval = setInterval(() => {
+        const countdownEls = document.querySelectorAll('[data-countdown-deadline]');
+        if(countdownEls.length === 0) { clearInterval(window._unaltaCountdownInterval); return; }
+        countdownEls.forEach(el => {
+          const deadline = parseInt(el.dataset.countdownDeadline);
+          const remaining = deadline - Date.now();
+          if(remaining > 0) {
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const barColor = remaining > 24*3600000 ? '#22c55e' : remaining > 12*3600000 ? '#f59e0b' : '#ef4444';
+            el.textContent = `${hours}s ${minutes}dk`;
+            el.style.color = barColor;
+          } else {
+            el.textContent = 'Süre doldu';
+            el.style.color = '#ef4444';
+          }
+        });
+      }, 60000);
+    }
+    
+    function filterUnaltaWallArtOrders(status, btn) {
+      // Buton aktif stili
+      document.querySelectorAll('#unaltaWallArtOrdersList').forEach(el => {
+        const parent = el.parentElement;
+        if(parent) {
+          parent.querySelectorAll('.custom-order-filter-btn').forEach(b => b.classList.remove('active'));
+        }
+      });
+      if(btn) btn.classList.add('active');
+      
+      let filtered = allUnaltaWallArtOrders;
+      if(status && status !== 'all') {
+        filtered = allUnaltaWallArtOrders.filter(o => o.status === status);
+      }
+      renderUnaltaWallArtOrders(filtered);
+    }
+    window.filterUnaltaWallArtOrders = filterUnaltaWallArtOrders;
+    
+    // Siparişi hazır olarak işaretle
+    async function markWallArtReady(orderId) {
+      if(!confirm("Siparişi HAZIR olarak işaretlemek istediğinize emin misiniz?")) return;
+      
+      try {
+        await updateDoc(doc(db, "wallArtOrders", orderId), {
+          status: "READY",
+          readyAt: serverTimestamp()
+        });
+        
+        // Admin'e bildirim gönder
+        await addDoc(collection(db, "notifications"), {
+          toPin: "22683", // Admin PIN
+          title: "🎨 Wall Art Siparişi Hazır",
+          message: "Ünalta bir siparişinizi hazırladı.",
+          type: "wall-art-ready",
+          read: false,
+          createdAt: serverTimestamp()
+        });
+        
+        alert("Sipariş hazır olarak işaretlendi!");
+        loadUnaltaWallArtOrders();
+        
+      } catch(err) {
+        console.error("Sipariş güncelleme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.markWallArtReady = markWallArtReady;
+    
+    // ========== WALL ART SİSTEMİ SONU ==========
+
+    // Ünalta'nın kargo taleplerini yükle ve fiyatlandır
+    async function loadUnaltaCargos() {
+      const tableBody = document.getElementById("unaltaCargoTableBody");
+      const totalShipmentsEl = document.getElementById("unaltaTotalShipments");
+      const totalDebtEl = document.getElementById("unaltaTotalDebt");
+      
+      if(!tableBody || !totalShipmentsEl || !totalDebtEl) return;
+      
+      tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--muted);">Yükleniyor...</td></tr>';
+      
+      try {
+        // Ünalta'nın kargo taleplerini çek (PIN: 54821 ve Ali Ünal: 1968)
+        const q = query(
+          collection(db, "cargoRequests"), 
+          where("requesterPin", "in", ["54821", "1968"]),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+        
+        if(snapshot.empty) {
+          tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--muted);">Henüz kargo talebi yok.</td></tr>';
+          totalShipmentsEl.textContent = "0";
+          totalDebtEl.textContent = "$0.00";
+          return;
+        }
+        
+        let html = '';
+        let totalDebt = 0;
+        let totalCount = 0;
+        
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          totalCount++;
+          
+          const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString("tr-TR") : "-";
+          
+          // Durum belirleme
+          let statusColor, statusText;
+          if(data.status === "LABEL_READY") {
+            statusColor = "#22c55e";
+            statusText = "Etiket Basıldı";
+          } else if(data.desi) {
+            statusColor = "#3b82f6";
+            statusText = "Ölçü Girildi";
+          } else {
+            statusColor = "#f59e0b";
+            statusText = "Bekliyor";
+          }
+          
+          // Desi varsa fiyat hesapla
+          let price = 0;
+          if(data.desi && data.ulke) {
+            price = calculateCargoPrice(data.desi, data.ulke);
+            totalDebt += price;
+          }
+          
+          html += `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px;">${createdDate}</td>
+            <td style="padding:8px;">
+              ${data.aliciAd || '-'}
+              <div style="font-size:10px;color:var(--muted);">📞 ${data.aliciTel || '-'}</div>
+              <span style="background:${statusColor}22;color:${statusColor};padding:2px 6px;border-radius:4px;font-size:10px;margin-top:2px;display:inline-block;">${statusText}</span>
+            </td>
+            <td style="padding:8px;text-align:center;">${data.ulke || '-'}</td>
+            <td style="padding:8px;text-align:center;font-weight:600;">${data.desi || '<span style="color:#f59e0b;font-size:10px;">⏳</span>'}</td>
+            <td style="padding:8px;text-align:right;font-weight:600;color:#22c55e;">${data.desi ? '$' + price.toFixed(2) : '<span style="color:var(--muted);font-size:11px;">-</span>'}</td>
+            <td style="padding:8px;text-align:center;"><button onclick="deleteCargoRequest('${docSnap.id}')" style="background:#ef4444;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;">🗑️</button></td>
+          </tr>`;
+        });
+        
+        tableBody.innerHTML = html;
+        
+        totalShipmentsEl.textContent = totalCount;
+        totalDebtEl.textContent = `$${totalDebt.toFixed(2)}`;
+        
+      } catch(err) {
+        console.error("Ünalta kargo yükleme hatası:", err);
+        tableBody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#ef4444;">Hata: ${err.message}</td></tr>`;
+      }
+    }
+    window.loadUnaltaCargos = loadUnaltaCargos;
+
+    // Ünalta kullanıcısı için bakiye gösterimi (sadece Ali Ünal ve Admin görür)
+    async function loadUnaltaUserBalance() {
+      const balanceCard = document.getElementById("unaltaBalanceCard");
+      const balanceEl = document.getElementById("unaltaUserBalance");
+      const shipmentsEl = document.getElementById("unaltaUserShipments");
+      
+      if(!balanceCard || !balanceEl) return;
+      
+      const currentPin = window.__SESSION?.pin;
+      const canSeeBalance = currentPin === "1968" || window.ADMIN_PINS?.has(currentPin);
+      
+      // Sadece Ali Ünal ve Admin bakiye görebilir
+      if(!canSeeBalance) {
+        balanceCard.style.display = "none";
+        return;
+      }
+      
+      balanceCard.style.display = "block";
+      balanceEl.textContent = "Yükleniyor...";
+      
+      try {
+        const q = query(
+          collection(db, "cargoRequests"), 
+          where("requesterPin", "in", ["54821", "1968"]),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+        
+        let totalDebt = 0;
+        let shipmentCount = 0;
+        
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if(data.desi && data.ulke) {
+            const price = calculateCargoPrice(data.desi, data.ulke);
+            totalDebt += price;
+            shipmentCount++;
+          }
+        });
+        
+        balanceEl.textContent = `$${totalDebt.toFixed(2)}`;
+        if(shipmentsEl) shipmentsEl.textContent = `${shipmentCount} gönderi`;
+        
+      } catch(err) {
+        console.error("Bakiye yükleme hatası:", err);
+        balanceEl.textContent = "Hata";
+      }
+    }
+    window.loadUnaltaUserBalance = loadUnaltaUserBalance;
+
+    // Başarı mesajı göster
+    function showCargoSuccessMessage(aliciAd) {
+      // Mevcut overlay varsa kaldır
+      const existing = document.getElementById("cargoSuccessOverlay");
+      if(existing) existing.remove();
+      
+      const overlay = document.createElement("div");
+      overlay.id = "cargoSuccessOverlay";
+      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.2s ease;";
+      
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:32px 40px;text-align:center;max-width:340px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:scaleIn 0.3s ease;">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(34,197,94,0.4);">
+            <span style="font-size:36px;">✓</span>
+          </div>
+          <h3 style="margin:0 0 8px;font-size:22px;color:#1f2937;">Talep Oluşturuldu!</h3>
+          <p style="margin:0 0 20px;color:#6b7280;font-size:14px;line-height:1.5;">
+            <strong style="color:#374151;">${aliciAd}</strong> için kargo etiketi talebi gönderildi.
+          </p>
+          <div style="background:#f3f4f6;border-radius:10px;padding:12px;font-size:13px;color:#6b7280;">
+            📋 Şeyma K. etiketi hazırladığında size bildirim gelecek.
+          </div>
+          <button onclick="this.closest('#cargoSuccessOverlay').remove()" style="margin-top:20px;padding:14px 32px;font-size:15px;font-weight:600;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:12px;cursor:pointer;width:100%;">Tamam</button>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      // 5 saniye sonra otomatik kapat
+      setTimeout(() => {
+        if(overlay.parentNode) overlay.remove();
+      }, 5000);
+    }
+
+    // Ünalta için kendi taleplerini yükle
+    async function loadMyCargoRequests() {
+      const listContainer = document.getElementById("myCargoRequestsList");
+      if(!listContainer) return;
+      
+      const currentPin = window.__SESSION?.pin;
+      if(!currentPin) return;
+      
+      listContainer.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);">Yükleniyor...</div>';
+      
+      try {
+        // Ali Ünal (1968) tüm Ünalta taleplerini görür, diğerleri sadece kendininkileri
+        let q;
+        if(currentPin === "1968") {
+          q = query(
+            collection(db, "cargoRequests"),
+            where("requesterPin", "in", ["54821", "1968"]),
+            orderBy("createdAt", "desc"),
+            limit(20)
+          );
+        } else {
+          q = query(
+            collection(db, "cargoRequests"),
+            where("requesterPin", "==", currentPin),
+            orderBy("createdAt", "desc"),
+            limit(10)
+          );
+        }
+        const snapshot = await getDocs(q);
+        
+        if(snapshot.empty) {
+          listContainer.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:14px;">Henüz talep yok</div>';
+          return;
+        }
+        
+        let html = '';
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const createdDate = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+          const dateStr = createdDate.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+          
+          const statusConfig = {
+            "PENDING": { bg: "#fef3c7", color: "#d97706", text: "Bekliyor", icon: "⏳" },
+            "LABEL_READY": { bg: "#dcfce7", color: "#16a34a", text: "Etiket Basıldı", icon: "✅" }
+          };
+          const status = statusConfig[data.status] || statusConfig["PENDING"];
+          
+          // Kargo ücreti hesapla (desi girilmişse) - sadece Ali Ünal ve Admin görür
+          let cargoPriceBadge = '';
+          const canSeePrice = window.__SESSION?.pin === '1968' || window.ADMIN_PINS?.has(window.__SESSION?.pin);
+          if(canSeePrice && data.desi && data.ulke) {
+            const price = calculateCargoPrice(data.desi, data.ulke);
+            if(price > 0) {
+              cargoPriceBadge = `<span style="background:#eff6ff;color:#2563eb;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid #bfdbfe;">💲${price.toFixed(2)}</span>`;
+            }
+          }
+          
+          html += `
+            <div style="background:var(--card-bg);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${data.aliciAd}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${data.ulke || '-'} ${data.desi ? '• ' + data.desi + ' desi' : ''} ${cargoPriceBadge}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:12px;color:var(--muted);">${dateStr}</span>
+                <span style="background:${status.bg};color:${status.color};padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;">${status.icon} ${status.text}</span>
+                ${(window.ADMIN_PINS?.has(window.__SESSION?.pin) || (window.__SESSION?.pin === '41927' && !data.desi)) ? `<button onclick="deleteCargoRequest('${docSnap.id}')" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}
+              </div>
+            </div>
+          `;
+        });
+        
+        listContainer.innerHTML = html;
+        
+      } catch(err) {
+        console.error("Talepler yükleme hatası:", err);
+        listContainer.innerHTML = '<div style="text-align:center;padding:24px;color:#ef4444;font-size:13px;">Yüklenirken hata oluştu</div>';
+      }
+    }
+    window.loadMyCargoRequests = loadMyCargoRequests;
+
+    // Desi hesaplama fonksiyonu
+    function calculateDesi() {
+      const en = parseFloat(document.getElementById("cargoEn")?.value) || 0;
+      const boy = parseFloat(document.getElementById("cargoBoy")?.value) || 0;
+      const yukseklik = parseFloat(document.getElementById("cargoYukseklik")?.value) || 0;
+      const agirlik = parseFloat(document.getElementById("cargoAgirlik")?.value) || 0;
+      
+      const desiInput = document.getElementById("cargoDesi");
+      const desiInfo = document.getElementById("desiInfo");
+      
+      if(!en || !boy || !yukseklik || !agirlik) {
+        if(desiInput) desiInput.value = "-";
+        if(desiInfo) desiInfo.innerHTML = "";
+        return null;
+      }
+      
+      // Hacimsel desi = (En × Boy × Yükseklik) / 5000
+      const hacimselDesi = (en * boy * yukseklik) / 5000;
+      
+      // Hangisi büyükse o esas alınır
+      const esasDesi = Math.max(hacimselDesi, agirlik);
+      
+      // Yuvarlama kuralları:
+      // 10'a kadar: 0.5'e yuvarla (1.3 → 1.5, 1.6 → 2.0)
+      // 10 sonrası: tam sayıya yuvarla (10.3 → 11)
+      let sonucDesi;
+      if(esasDesi <= 10) {
+        sonucDesi = Math.ceil(esasDesi * 2) / 2; // 0.5'e yuvarla
+      } else {
+        sonucDesi = Math.ceil(esasDesi); // Tam sayıya yuvarla
+      }
+      
+      if(desiInput) desiInput.value = sonucDesi;
+      
+      // Bilgi metni
+      if(desiInfo) {
+        const hacimselStr = hacimselDesi.toFixed(2);
+        const kaynakStr = hacimselDesi >= agirlik ? "hacimsel" : "ağırlık";
+        desiInfo.innerHTML = `Hacimsel: ${hacimselStr} desi | Ağırlık: ${agirlik} kg | <strong>Esas: ${kaynakStr}</strong>`;
+      }
+      
+      return sonucDesi;
+    }
+    window.calculateDesi = calculateDesi;
+
+    // Etsy adres parse fonksiyonu
+    function parseEtsyAddress() {
+      const raw = document.getElementById("cargoEtsyPaste")?.value?.trim() || '';
+      const preview = document.getElementById("etsyParsedPreview");
+      const nameEl = document.getElementById("parsedName");
+      const addrEl = document.getElementById("parsedAddress");
+      const cityEl = document.getElementById("parsedCityState");
+      const countryEl = document.getElementById("parsedCountry");
+      
+      if(!raw || !preview) {
+        if(preview) preview.style.display = 'none';
+        document.getElementById("cargoAliciAd").value = '';
+        document.getElementById("cargoAdres").value = '';
+        document.getElementById("cargoUlke").value = '';
+        return;
+      }
+      
+      const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      
+      if(lines.length < 3) {
+        preview.style.display = 'none';
+        return;
+      }
+      
+      // Format: Line1=Name, Last line=Country, Line before last=City/State/Zip, Middle lines=Street address
+      const name = lines[0];
+      const country = lines[lines.length - 1];
+      const cityStateLine = lines[lines.length - 2];
+      const streetLines = lines.slice(1, lines.length - 2);
+      const street = streetLines.join(', ');
+      
+      // Full address = street + city/state/zip
+      const fullAddress = street ? `${street}, ${cityStateLine}` : cityStateLine;
+      
+      // Fill hidden fields
+      document.getElementById("cargoAliciAd").value = name;
+      document.getElementById("cargoAdres").value = fullAddress;
+      document.getElementById("cargoUlke").value = country;
+      
+      // Show preview
+      nameEl.textContent = name;
+      addrEl.textContent = street || '-';
+      cityEl.textContent = cityStateLine;
+      countryEl.textContent = country;
+      preview.style.display = 'block';
+      preview.style.borderColor = '#22c55e';
+    }
+    window.parseEtsyAddress = parseEtsyAddress;
+
     async function createCargoRequest() {
       const aliciAd = document.getElementById("cargoAliciAd").value.trim();
       const telefon = document.getElementById("cargoTelefon").value.trim();
       const adres = document.getElementById("cargoAdres").value.trim();
-      const ilce = document.getElementById("cargoIlce").value.trim();
-      const il = document.getElementById("cargoIl").value.trim();
-      const postaKodu = document.getElementById("cargoPostaKodu").value.trim();
       const ulke = document.getElementById("cargoUlke").value.trim();
       const not = document.getElementById("cargoNot").value.trim();
       
@@ -11014,7 +12893,7 @@
       // Firma adı otomatik olarak giriş yapan kişinin adı
       const firma = window.PIN_NAMES?.[currentPin] || "Bilinmeyen Firma";
 
-      if(!aliciAd || !telefon || !adres || !ilce || !il || !ulke) {
+      if(!aliciAd || !adres || !ulke) {
         alert("Lütfen zorunlu alanları doldurun!");
         return;
       }
@@ -11027,11 +12906,14 @@
           aliciAd: aliciAd,
           telefon: telefon,
           adres: adres,
-          ilce: ilce,
-          il: il,
-          postaKodu: postaKodu,
           ulke: ulke,
           not: not,
+          // Ölçüler teslim esnasında Şeyma/Gökmen tarafından girilecek
+          en: 0,
+          boy: 0,
+          yukseklik: 0,
+          agirlik: 0,
+          desi: 0,
           status: "PENDING",
           createdAt: now,
           createdBy: currentPin,
@@ -11045,7 +12927,7 @@
           const notificationDoc = {
             type: 'cargo_request',
             title: '📦 Yeni Kargo Etiketi Talebi',
-            body: `${firma} yeni bir kargo etiketi talep etti. Alıcı: ${aliciAd}, ${il}`,
+            body: `${firma} yeni bir kargo etiketi talep etti. Alıcı: ${aliciAd}`,
             targetPin: '41927', // Şeyma K.
             cargoId: docRef.id,
             createdAt: now
@@ -11059,14 +12941,24 @@
         document.getElementById("cargoAliciAd").value = "";
         document.getElementById("cargoTelefon").value = "";
         document.getElementById("cargoAdres").value = "";
-        document.getElementById("cargoIlce").value = "";
-        document.getElementById("cargoIl").value = "";
-        document.getElementById("cargoPostaKodu").value = "";
-        document.getElementById("cargoUlke").value = "Türkiye";
+        document.getElementById("cargoUlke").value = "";
         document.getElementById("cargoNot").value = "";
+        // Etsy paste alanını temizle
+        const etsyPaste = document.getElementById("cargoEtsyPaste");
+        if(etsyPaste) etsyPaste.value = "";
+        const etsyPreview = document.getElementById("etsyParsedPreview");
+        if(etsyPreview) etsyPreview.style.display = "none";
 
-        alert("✅ Kargo etiketi talebiniz oluşturuldu! Şeyma K. etiketi hazırladığında bildirim alacaksınız.");
+        // Başarı mesajı göster
+        showCargoSuccessMessage(aliciAd);
+        
+        // Talep listelerini güncelle
         loadCargoRequests();
+        if(currentPin === "54821" || currentPin === "1968") {
+          loadUnaltaUserBalance();
+          loadMyCargoRequests();
+          loadUnaltaWallArtOrders();
+        }
       } catch(err) {
         console.error("Kargo talebi oluşturma hatası:", err);
         alert("Hata: " + err.message);
@@ -11091,6 +12983,17 @@
         if(isRequester) {
           requesterView.style.display = "block";
           labelMakerView.style.display = "none";
+          
+          // Ünalta kullanıcısı veya Ali Ünal için ülke default olarak United States ve bakiye göster
+          if(currentPin === "54821" || currentPin === "1968") {
+            // Bakiye kartını göster ve yükle
+            loadUnaltaUserBalance();
+            // Kendi taleplerini yükle
+            loadMyCargoRequests();
+          }
+          // Genel kargo listesini gizle (requester'lar için)
+          listContainer.style.display = "none";
+          return;
         } else if(isCargoUser || isAdmin) {
           requesterView.style.display = "none";
           labelMakerView.style.display = "block";
@@ -11115,6 +13018,7 @@
             <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">Alıcı</th>
             <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">Telefon</th>
             <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">Adres</th>
+            <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">Ölçü / Desi</th>
             <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">Durum</th>
             <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">İşlem</th>
           </tr>
@@ -11135,18 +13039,32 @@
 
           const statusText = {
             "PENDING": "Bekliyor",
-            "LABEL_READY": "Etiket Hazır",
-            "DOWNLOADED": "İndirildi"
+            "LABEL_READY": data.desi ? "Tamamlandı" : "Etiket Basıldı"
           }[data.status] || data.status;
 
           const statusColor = {
             "PENDING": "#f59e0b",
-            "LABEL_READY": "#22c55e",
-            "DOWNLOADED": "#3b82f6"
+            "LABEL_READY": data.desi ? "#22c55e" : "#3b82f6"
           }[data.status] || "#6b7280";
 
           const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString("tr-TR") : "-";
-          const fullAdres = `${data.adres}, ${data.ilce}, ${data.il}${data.postaKodu ? ' ' + data.postaKodu : ''}, ${data.ulke}`;
+          const fullAdres = `${data.adres}${data.ulke ? ', ' + data.ulke : ''}`;
+          
+          // Ölçü bilgisi
+          const olcuBilgisi = (data.en && data.boy && data.yukseklik) 
+            ? `${data.en}×${data.boy}×${data.yukseklik} cm` 
+            : '<span style="color:#f59e0b;font-weight:600;">⏳ Ölçü bekleniyor</span>';
+          const agirlikBilgisi = data.agirlik ? `${data.agirlik} kg` : '';
+          const desiBilgisi = data.desi ? `<strong>${data.desi}</strong> desi` : '';
+          
+          // Kargo ücreti (desi girilmişse) - sadece Admin görür
+          let cargoPriceInfo = '';
+          if(data.desi && data.ulke && window.ADMIN_PINS?.has(window.__SESSION?.pin)) {
+            const cprice = calculateCargoPrice(data.desi, data.ulke);
+            if(cprice > 0) {
+              cargoPriceInfo = `<div style="color:#2563eb;font-weight:700;margin-top:3px;font-size:12px;">💲${cprice.toFixed(2)}</div>`;
+            }
+          }
 
           html += `<tr style="border-bottom:1px solid var(--border);" data-cargo-id="${cargoId}">
             <td style="padding:10px;">
@@ -11154,33 +13072,34 @@
               <div style="font-size:11px;color:var(--muted);">${createdDate}</div>
             </td>
             <td style="padding:10px;">${data.aliciAd}</td>
-            <td style="padding:10px;">${data.telefon}</td>
-            <td style="padding:10px;max-width:200px;font-size:12px;">
-              ${fullAdres}
+            <td style="padding:10px;">${data.telefon || '-'}</td>
+            <td style="padding:10px;max-width:250px;font-size:12px;">
+              <div style="margin-bottom:2px;">${data.adres}</div>
+              ${data.ulke ? `<div style="font-weight:600;color:#4a6cf7;font-size:11px;margin-top:3px;">🌍 ${data.ulke}</div>` : ''}
               ${data.not ? `<div style="color:#8b5cf6;font-size:11px;margin-top:4px;">📝 ${data.not}</div>` : ''}
+            </td>
+            <td style="padding:10px;text-align:center;font-size:11px;">
+              <div>${olcuBilgisi}</div>
+              <div style="color:var(--muted);">${agirlikBilgisi}</div>
+              <div style="color:#3b82f6;margin-top:2px;">${desiBilgisi}</div>
+              ${cargoPriceInfo}
             </td>
             <td style="padding:10px;text-align:center;">
               <span style="background:${statusColor}22;color:${statusColor};padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500;">${statusText}</span>
-              ${data.takipNo ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">📦 ${data.takipNo}</div>` : ''}
             </td>
             <td style="padding:10px;text-align:center;">`;
 
-          // Şeyma K. / Admin butonları
+          // Şeyma K. / Gökmen / Admin - PENDING ise önce "Etiket Basıldı" butonu
           if(data.status === "PENDING" && (isAdmin || isCargoUser)) {
-            html += `<button onclick="openCargoLabelModal('${cargoId}')" style="background:#3b82f6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🏷️ Etiket Yükle</button>`;
+            html += `<button onclick="markLabelSent('${cargoId}')" style="background:#3b82f6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-bottom:4px;display:block;width:100%;">🏷️ Etiket Basıldı</button>`;
           }
           
-          // Requester (Ünalta, Osman A.) etiket hazırsa indirebilir
-          if(data.status === "LABEL_READY" && isRequester && data.labelBase64) {
-            html += `<button onclick="downloadCargoLabel('${cargoId}', '${data.aliciAd}')" style="background:#22c55e;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">📥 PDF İndir</button>`;
-          }
-          
-          // Şeyma K. / Admin etiket hazırsa görüntüleyebilir
-          if((data.status === "LABEL_READY" || data.status === "DOWNLOADED") && (isAdmin || isCargoUser) && data.labelBase64) {
-            html += `<button onclick="viewCargoLabel('${cargoId}')" style="background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:4px;">👁️ Görüntüle</button>`;
+          // Şeyma K. / Gökmen / Admin - Etiket basıldıktan sonra ölçü girişi (desi yoksa)
+          if(data.status === "LABEL_READY" && !data.desi && (isAdmin || isCargoUser)) {
+            html += `<button onclick="openDimensionModal('${cargoId}', '${data.aliciAd}', '${data.firma}')" style="background:#f59e0b;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-bottom:4px;display:block;width:100%;">📐 Ölçü Gir</button>`;
           }
 
-          if(isAdmin) {
+          if(isAdmin || (currentPin === '41927' && !data.desi)) {
             html += ` <button onclick="deleteCargoRequest('${cargoId}')" style="background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:4px;">🗑️</button>`;
           }
 
@@ -11210,170 +13129,128 @@
     }
     window.filterCargoRequests = filterCargoRequests;
 
-    function openCargoLabelModal(cargoId) {
-      document.getElementById("cargoLabelOrderId").value = cargoId;
-      document.getElementById("cargoTakipNo").value = "";
-      document.getElementById("cargoLabelPdfInput").value = "";
-      document.getElementById("cargoLabelPreview").style.display = "none";
-      document.getElementById("cargoLabelPlaceholder").style.display = "block";
-      window.cargoLabelBase64 = null;
-      document.getElementById("cargoLabelModal").style.display = "flex";
-    }
-    window.openCargoLabelModal = openCargoLabelModal;
-
-    function closeCargoLabelModal() {
-      document.getElementById("cargoLabelModal").style.display = "none";
-      window.cargoLabelBase64 = null;
-    }
-    window.closeCargoLabelModal = closeCargoLabelModal;
-
-    function previewCargoLabel(input) {
-      if(input.files && input.files[0]) {
-        const file = input.files[0];
-        if(file.type !== 'application/pdf') {
-          alert("Lütfen PDF dosyası seçin!");
-          input.value = "";
-          return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          window.cargoLabelBase64 = e.target.result;
-          document.getElementById("cargoLabelFileName").textContent = file.name;
-          document.getElementById("cargoLabelPreview").style.display = "block";
-          document.getElementById("cargoLabelPlaceholder").style.display = "none";
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-    window.previewCargoLabel = previewCargoLabel;
-
-    async function submitCargoLabel() {
-      const cargoId = document.getElementById("cargoLabelOrderId").value;
-      const takipNo = document.getElementById("cargoTakipNo").value.trim();
-      const labelBase64 = window.cargoLabelBase64;
-
-      if(!takipNo) {
-        alert("Takip numarası zorunludur!");
-        return;
-      }
+    // Etiket gönderildi olarak işaretle
+    async function markLabelSent(cargoId) {
+      if(!confirm("Etiket basıldı olarak işaretlensin mi?")) return;
       
-      if(!labelBase64) {
-        alert("Lütfen PDF dosyası yükleyin!");
-        return;
-      }
-
       try {
-        // Önce cargo request verilerini alalım
         const cargoDoc = await getDoc(doc(db, "cargoRequests", cargoId));
         const cargoData = cargoDoc.data();
         
-        const now = new Date();
         await updateDoc(doc(db, "cargoRequests", cargoId), {
           status: "LABEL_READY",
-          takipNo: takipNo,
-          labelBase64: labelBase64,
-          labelPreparedAt: now,
-          labelPreparedBy: window.__SESSION?.pin,
-          labelPreparedByName: window.PIN_NAMES?.[window.__SESSION?.pin] || "Bilinmeyen"
+          labelSentAt: new Date(),
+          labelSentBy: window.__SESSION?.pin,
+          labelSentByName: window.PIN_NAMES?.[window.__SESSION?.pin] || "Bilinmeyen"
         });
 
         // Talep edene bildirim gönder
         if(cargoData?.requesterPin) {
           try {
-            const notificationDoc = {
+            await addDoc(collection(db, "notifications"), {
               type: 'cargo_label_ready',
-              title: '✅ Kargo Etiketiniz Hazır',
-              body: `${cargoData.aliciAd} için kargo etiketi hazırlandı. Takip No: ${takipNo}`,
+              title: '✅ Kargo Etiketiniz Gönderildi',
+              body: `${cargoData.aliciAd} için kargo etiketi gönderildi.`,
               targetPin: cargoData.requesterPin,
               cargoId: cargoId,
-              createdAt: now
-            };
-            await addDoc(collection(db, "notifications"), notificationDoc);
+              createdAt: new Date()
+            });
           } catch(notifErr) {
             console.warn("Bildirim gönderilemedi:", notifErr);
           }
         }
 
-        closeCargoLabelModal();
-        alert("✅ Etiket yüklendi ve firmaya bildirim gönderildi!");
+        alert("✅ Etiket basıldı olarak işaretlendi! Şimdi ölçü girebilirsiniz.");
         loadCargoRequests();
       } catch(err) {
-        console.error("Etiket kaydetme hatası:", err);
+        console.error("İşaretleme hatası:", err);
         alert("Hata: " + err.message);
       }
     }
-    window.submitCargoLabel = submitCargoLabel;
+    window.markLabelSent = markLabelSent;
 
-    async function downloadCargoLabel(cargoId, aliciAd) {
+    // ========== PAKET ÖLÇÜ GİRİŞ MODAL ==========
+    function openDimensionModal(cargoId, aliciAd, firma) {
+      document.getElementById("cargoDimOrderId").value = cargoId;
+      document.getElementById("cargoDimAliciInfo").innerHTML = `<strong>${firma}</strong> → ${aliciAd}`;
+      document.getElementById("cargoDimEn").value = "";
+      document.getElementById("cargoDimBoy").value = "";
+      document.getElementById("cargoDimYukseklik").value = "";
+      document.getElementById("cargoDimAgirlik").value = "";
+      document.getElementById("cargoDimDesi").textContent = "-";
+      document.getElementById("cargoDimensionModal").style.display = "flex";
+    }
+    window.openDimensionModal = openDimensionModal;
+
+    function closeDimensionModal() {
+      document.getElementById("cargoDimensionModal").style.display = "none";
+    }
+    window.closeDimensionModal = closeDimensionModal;
+
+    function calculateDimModalDesi() {
+      const en = parseFloat(document.getElementById("cargoDimEn").value) || 0;
+      const boy = parseFloat(document.getElementById("cargoDimBoy").value) || 0;
+      const yukseklik = parseFloat(document.getElementById("cargoDimYukseklik").value) || 0;
+      const agirlik = parseFloat(document.getElementById("cargoDimAgirlik").value) || 0;
+      
+      const desiEl = document.getElementById("cargoDimDesi");
+      
+      if(en > 0 && boy > 0 && yukseklik > 0) {
+        const hacimDesi = (en * boy * yukseklik) / 5000;
+        const desi = Math.max(hacimDesi, agirlik);
+        const result = Math.ceil(desi * 10) / 10;
+        desiEl.textContent = result;
+        return result;
+      } else {
+        desiEl.textContent = "-";
+        return 0;
+      }
+    }
+    window.calculateDimModalDesi = calculateDimModalDesi;
+
+    async function submitCargoDimensions() {
+      const cargoId = document.getElementById("cargoDimOrderId").value;
+      const en = parseFloat(document.getElementById("cargoDimEn").value) || 0;
+      const boy = parseFloat(document.getElementById("cargoDimBoy").value) || 0;
+      const yukseklik = parseFloat(document.getElementById("cargoDimYukseklik").value) || 0;
+      const agirlik = parseFloat(document.getElementById("cargoDimAgirlik").value) || 0;
+
+      if(!en || !boy || !yukseklik || !agirlik) {
+        alert("Lütfen tüm ölçüleri girin!");
+        return;
+      }
+
+      const desi = calculateDimModalDesi();
+      if(!desi) {
+        alert("Desi hesaplanamadı!");
+        return;
+      }
+
       try {
-        const cargoDoc = await getDoc(doc(db, "cargoRequests", cargoId));
-        const data = cargoDoc.data();
-        
-        if(!data?.labelBase64) {
-          alert("PDF bulunamadı!");
-          return;
-        }
-        
-        // Base64'ü blob'a çevir ve indir
-        const byteCharacters = atob(data.labelBase64.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for(let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], {type: 'application/pdf'});
-        
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `kargo_etiketi_${aliciAd.replace(/\s+/g, '_')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        // Durumu "İndirildi" olarak güncelle
         await updateDoc(doc(db, "cargoRequests", cargoId), {
-          status: "DOWNLOADED",
-          downloadedAt: new Date()
+          en: en,
+          boy: boy,
+          yukseklik: yukseklik,
+          agirlik: agirlik,
+          desi: desi,
+          dimensionsEnteredBy: window.__SESSION?.pin,
+          dimensionsEnteredAt: new Date()
         });
-        
-        loadCargoRequests();
-      } catch(err) {
-        console.error("PDF indirme hatası:", err);
-        alert("Hata: " + err.message);
-      }
-    }
-    window.downloadCargoLabel = downloadCargoLabel;
 
-    async function viewCargoLabel(cargoId) {
-      try {
-        const cargoDoc = await getDoc(doc(db, "cargoRequests", cargoId));
-        const data = cargoDoc.data();
-        
-        if(!data?.labelBase64) {
-          alert("PDF bulunamadı!");
-          return;
-        }
-        
-        // Base64'ü blob'a çevir ve yeni sekmede aç
-        const byteCharacters = atob(data.labelBase64.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for(let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], {type: 'application/pdf'});
-        
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        closeDimensionModal();
+        alert(`Ölçüler kaydedildi! Desi: ${desi}`);
+        loadCargoRequests();
+        // Bakiyeleri güncelle
+        if(typeof loadUnaltaUserBalance === "function") loadUnaltaUserBalance();
+        if(typeof loadWallArtBalance === "function") loadWallArtBalance();
+        if(typeof loadMyCargoRequests === "function") loadMyCargoRequests();
       } catch(err) {
-        console.error("PDF görüntüleme hatası:", err);
+        console.error("Ölçü kaydetme hatası:", err);
         alert("Hata: " + err.message);
       }
     }
-    window.viewCargoLabel = viewCargoLabel;
+    window.submitCargoDimensions = submitCargoDimensions;
+    // ========== PAKET ÖLÇÜ GİRİŞ MODAL SONU ==========
 
     async function markCargoShipped(cargoId) {
       if(!confirm("Kargo gönderildi olarak işaretlensin mi?")) return;
@@ -11395,17 +13272,63 @@
     window.markCargoShipped = markCargoShipped;
 
     async function deleteCargoRequest(cargoId) {
+      const currentPin = window.__SESSION?.pin;
+      const isAdmin = window.ADMIN_PINS?.has(currentPin);
+      const isSeyma = currentPin === "41927";
+      
+      if(!isAdmin && !isSeyma) {
+        alert("Bu işlem için yetkiniz yok.");
+        return;
+      }
+      
+      // Şeyma ise desi kontrolü yap - desi girilmişse silemez
+      if(isSeyma && !isAdmin) {
+        try {
+          const cargoSnap = await getDoc(doc(db, "cargoRequests", cargoId));
+          if(cargoSnap.exists() && cargoSnap.data().desi) {
+            alert("Ölçü girilmiş gönderileri sadece yönetici silebilir.");
+            return;
+          }
+        } catch(e) {
+          console.error("Kargo kontrol hatası:", e);
+          return;
+        }
+      }
+      
       if(!confirm("Bu kargo talebini silmek istediğinizden emin misiniz?")) return;
 
       try {
         await deleteDoc(doc(db, "cargoRequests", cargoId));
         loadCargoRequests();
+        if(typeof loadUnaltaCargos === "function") loadUnaltaCargos();
+        if(typeof loadWallArtBalance === "function") loadWallArtBalance();
       } catch(err) {
         console.error("Kargo silme hatası:", err);
         alert("Hata: " + err.message);
       }
     }
     window.deleteCargoRequest = deleteCargoRequest;
+
+    // Wall Art siparişi silme (sadece admin)
+    async function deleteWallArtOrder(orderId) {
+      const currentPin = window.__SESSION?.pin;
+      if(!window.ADMIN_PINS?.has(currentPin)) {
+        alert("Bu işlem için yetkiniz yok.");
+        return;
+      }
+      if(!confirm("Bu Wall Art siparişini silmek istediğinizden emin misiniz?")) return;
+      try {
+        await deleteDoc(doc(db, "wallArtOrders", orderId));
+        alert("✅ Sipariş silindi.");
+        if(typeof loadWallArtOrders === "function") loadWallArtOrders();
+        if(typeof loadWallArtBalance === "function") loadWallArtBalance();
+        if(typeof loadUnaltaWallArtOrders === "function") loadUnaltaWallArtOrders();
+      } catch(err) {
+        console.error("Wall Art silme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.deleteWallArtOrder = deleteWallArtOrder;
 
     // Kesim Tamamlandı (Lazerci)
     async function markCuttingComplete(orderId) {

@@ -311,6 +311,21 @@ exports.createNotificationRequest = functions.firestore
             });
           }
           
+          // Emre K. (72541) - Hem tasarımcı hem lazerci, lazerci bildirimlerini de alsın
+          const isLaserNotification = targetRoles && targetRoles.includes('laser');
+          if (isLaserNotification) {
+            const emreSnapshot = await db.collection('telegramUsers').where('pin', '==', '72541').get();
+            emreSnapshot.forEach(doc => {
+              const userData = doc.data();
+              // Eğer rolü laser değilse (yani designer olarak kayıtlıysa) bildirim gönder
+              if (userData.chatId && userData.role !== 'laser') {
+                const message = `<b>${title}</b>\n\n${body}`;
+                console.log(`Emre K.'ya lazerci bildirimi gönderiliyor (ikinci rol): ${userData.chatId}`);
+                telegramPromises.push(sendTelegramMessage(botToken, userData.chatId, message));
+              }
+            });
+          }
+          
           if (telegramPromises.length > 0) {
             console.log(`${telegramPromises.length} Telegram mesajı gönderiliyor...`);
             const telegramResults = await Promise.allSettled(telegramPromises);
@@ -436,11 +451,8 @@ exports.checkShiftAttendance = functions.pubsub
           // İkindi molası başlangıç - Herkes (15:00)
           { hour: 15, minute: 0, message: "☕ İkindi Molası!", body: "Biraz dinlenelim!", teams: "all", skipSaturday: true },
           
-          // İkindi molası bitiş - Diğer ekipler (15:15)
-          { hour: 15, minute: 15, message: "⏰ İkindi Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "others", skipSaturday: true },
-          
-          // İkindi molası bitiş - Ekip 1 (15:25)
-          { hour: 15, minute: 25, message: "⏰ İkindi Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "team1", skipSaturday: true },
+          // İkindi molası bitiş - Herkes (15:15)
+          { hour: 15, minute: 15, message: "⏰ İkindi Molası Bitti!", body: "Kolay gelsin, çalışmaya devam!", teams: "all", skipSaturday: true },
           
           // ========== MESAİ BİTİŞ BİLDİRİMLERİ ==========
           // Ekip 1 ve Ekip 3 (sabah vardiyası) - 17:00
