@@ -799,6 +799,12 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--text);
+      transition: all 0.15s ease;
+    }
+    .product-tag:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border-color: rgba(0,200,83,0.5);
     }
     .product-tag-code {
       color: #00c853;
@@ -1111,6 +1117,19 @@
         <div class="context-menu-item danger" id="contextMenuDelete">Talebi Sil</div>
       </div>
 
+      <!-- Product Type Change Modal -->
+      <div id="productTypeModal" class="role-modal-overlay">
+        <div class="role-modal" style="width:min(360px,90vw);text-align:center;">
+          <div id="productTypeModalIcon" style="font-size:48px;margin-bottom:12px;">📦</div>
+          <h3 id="productTypeModalTitle" style="margin:0 0 8px 0;font-size:18px;"></h3>
+          <p id="productTypeModalDesc" style="margin:0 0 20px 0;font-size:14px;color:var(--muted);"></p>
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button id="btnProductTypeCancel" style="padding:12px 24px;border:2px solid var(--border);background:white;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;">İptal</button>
+            <button id="btnProductTypeConfirm" style="padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;color:white;"></button>
+          </div>
+        </div>
+      </div>
+
       <!-- Role Switch Modal -->
       <div id="roleSwitchModal" class="role-modal-overlay">
         <div class="role-modal">
@@ -1322,6 +1341,12 @@
 
             <label class="fieldLabel">Raf Numarası</label>
             <select id="inShelfNum" class="input">
+            </select>
+
+            <label class="fieldLabel">Ürün Tipi</label>
+            <select id="inProductType" class="input">
+              <option value="stock">📦 Stok Ürün</option>
+              <option value="order">🛒 Sipariş İçin Ayrılmış</option>
             </select>
 
             <label class="fieldLabel">Adet</label>
@@ -2888,6 +2913,8 @@
                   <option value="">Seçiniz...</option>
                   <option value="üretim_talimatı">Üretim Talimatı (100₺)</option>
                   <option value="paketleme_talimatı">Paketleme Talimatı (100₺)</option>
+                  <option value="üretim_talimatı_varyant">Üretim Talimatı Varyant (50₺)</option>
+                  <option value="paketleme_talimatı_varyant">Paketleme Talimatı Varyant (50₺)</option>
                   <option value="full_set">Full Set (400₺)</option>
                   <option value="amazon_listingi">Premium Amazon Listingi (600₺)</option>
                 </select>
@@ -4793,11 +4820,12 @@
       return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
     }
     
-    function productsHTML(products, productTimestamps){
+    function productsHTML(products, productTimestamps, productTypes, shelfName){
       if(!products || Object.keys(products).length===0) {
         return '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>';
       }
       const timestamps = productTimestamps || {};
+      const types = productTypes || {};
       return Object.entries(products)
         .map(([code, qty]) => {
           let waitText = '';
@@ -4817,10 +4845,22 @@
               waitText = `<span class="product-tag-wait" style="font-size:10px;color:#22c55e;margin-left:4px;">yeni</span>`;
             }
           }
+          
+          // Ürün tipi badge'i
+          const pType = types[code] || 'stock';
+          const typeBadge = pType === 'order' 
+            ? `<span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>`
+            : `<span style="font-size:9px;background:#22c55e;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">STOK</span>`;
+          
+          // Tıklanabilir ürün tag'i
+          const clickAction = pType === 'order' 
+            ? `onclick="event.stopPropagation(); window.toggleProductType('${shelfName}','${code}','stock')" title="Stoka dönüştür"`
+            : `onclick="event.stopPropagation(); window.toggleProductType('${shelfName}','${code}','order')" title="Siparişe dönüştür"`;
+          
           return `
-            <div class="product-tag">
+            <div class="product-tag" style="cursor:pointer;" ${clickAction}>
               <span class="product-tag-code">${code}</span>
-              <span class="product-tag-qty">×${qty}</span>${waitText}
+              <span class="product-tag-qty">×${qty}</span>${waitText}${typeBadge}
             </div>
           `;
         }).join('');
@@ -4993,9 +5033,10 @@
       const results = [];
       for(const [raf, data] of Object.entries(shelvesCache)){
         const products = data.products || {};
+        const productTypes = data.productTypes || {};
         for(const [pCode, pQty] of Object.entries(products)) {
           if(pCode.toLowerCase().includes(codeLower) && Number(pQty) > 0) {
-            results.push({ raf, product: pCode, qty: Number(pQty) });
+            results.push({ raf, product: pCode, qty: Number(pQty), type: productTypes[pCode] || 'stock' });
           }
         }
       }
@@ -5005,12 +5046,18 @@
       results.sort((a,b)=> a.product.localeCompare(b.product) || a.raf.localeCompare(b.raf));
       // Tablo başlığını güncelle
       const thead = searchBody.parentElement?.querySelector('thead');
-      if(thead) thead.innerHTML = '<tr><th>Raf</th><th>Ürün</th><th>Adet</th></tr>';
+      if(thead) thead.innerHTML = '<tr><th>Raf</th><th>Ürün</th><th>Adet</th><th>Tip</th><th>İşlem</th></tr>';
       for(const r of results){
         const tr = document.createElement("tr");
         const parts = r.product.split('_');
         const displayName = parts.length > 1 ? `${parts[0]} <span style="color:#7c3aed;font-size:12px;">• ${parts.slice(1).join('_')}</span>` : r.product;
-        tr.innerHTML = `<td>${r.raf}</td><td>${displayName}</td><td>${r.qty}</td>`;
+        const typeBadge = r.type === 'order' 
+          ? `<span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">SİPARİŞ</span>`
+          : `<span style="background:#22c55e;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">STOK</span>`;
+        const toggleBtn = r.type === 'stock'
+          ? `<button onclick="window.toggleProductType('${r.raf}','${r.product}','order')" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Siparişe Dönüştür</button>`
+          : `<button onclick="window.toggleProductType('${r.raf}','${r.product}','stock')" style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Stoka Dönüştür</button>`;
+        tr.innerHTML = `<td>${r.raf}</td><td>${displayName}</td><td>${r.qty}</td><td>${typeBadge}</td><td>${toggleBtn}</td>`;
         searchBody.appendChild(tr);
       }
       searchWrap.style.display = "block";
@@ -5018,6 +5065,86 @@
     }
     btnSearch && (btnSearch.onclick = runSearch);
     searchCode && searchCode.addEventListener("keydown",(e)=>{ if(e.key==="Enter") runSearch(); });
+
+    // Product Type Modal İşlemleri
+    let pendingTypeChange = null;
+    const productTypeModal = document.getElementById('productTypeModal');
+    const productTypeModalIcon = document.getElementById('productTypeModalIcon');
+    const productTypeModalTitle = document.getElementById('productTypeModalTitle');
+    const productTypeModalDesc = document.getElementById('productTypeModalDesc');
+    const btnProductTypeConfirm = document.getElementById('btnProductTypeConfirm');
+    const btnProductTypeCancel = document.getElementById('btnProductTypeCancel');
+
+    function showProductTypeModal(shelfName, productCode, newType){
+      pendingTypeChange = { shelfName, productCode, newType };
+      
+      if(newType === 'order'){
+        productTypeModalIcon.textContent = '🛒';
+        productTypeModalTitle.textContent = `${productCode}`;
+        productTypeModalDesc.innerHTML = `Bu ürünü <strong style="color:#ef4444;">sipariş için ayrılmış</strong> olarak işaretlemek istiyor musunuz?`;
+        btnProductTypeConfirm.textContent = 'Siparişe Ayır';
+        btnProductTypeConfirm.style.background = '#ef4444';
+      } else {
+        productTypeModalIcon.textContent = '📦';
+        productTypeModalTitle.textContent = `${productCode}`;
+        productTypeModalDesc.innerHTML = `Bu ürünü <strong style="color:#22c55e;">stok</strong> olarak işaretlemek istiyor musunuz?`;
+        btnProductTypeConfirm.textContent = 'Stoka Al';
+        btnProductTypeConfirm.style.background = '#22c55e';
+      }
+      
+      productTypeModal.classList.add('active');
+    }
+
+    function hideProductTypeModal(){
+      productTypeModal.classList.remove('active');
+      pendingTypeChange = null;
+    }
+
+    btnProductTypeCancel && (btnProductTypeCancel.onclick = hideProductTypeModal);
+    productTypeModal && (productTypeModal.onclick = (e) => { if(e.target === productTypeModal) hideProductTypeModal(); });
+
+    btnProductTypeConfirm && (btnProductTypeConfirm.onclick = async () => {
+      if(!pendingTypeChange) return;
+      
+      const { shelfName, productCode, newType } = pendingTypeChange;
+      const typeText = newType === 'order' ? 'SİPARİŞ' : 'STOK';
+      
+      try{
+        const shelfData = shelvesCache[shelfName];
+        if(!shelfData) { alert('Raf bulunamadı!'); hideProductTypeModal(); return; }
+        
+        const oldType = shelfData.productTypes?.[productCode] || 'stock';
+        const productTypes = { ...(shelfData.productTypes || {}) };
+        productTypes[productCode] = newType;
+        
+        await updateDoc(doc(db, "shelves", shelfName), { productTypes, updated: serverTimestamp() });
+        await addDoc(collection(db, "logs"), { 
+          action: "TYPE_CHANGE", 
+          shelf: shelfName, 
+          product: productCode, 
+          qty: 0, 
+          detail: `Ürün tipi ${oldType === 'order' ? 'SİPARİŞ' : 'STOK'} → ${typeText} olarak değiştirildi`,
+          ts: serverTimestamp(),
+          role: window.__SESSION?.role || "-",
+          pin: window.__SESSION?.pin || "-"
+        });
+        
+        hideProductTypeModal();
+        
+        // Arama sonuçlarını güncelle (eğer arama yapılmışsa)
+        if(searchWrap && searchWrap.style.display === 'block') {
+          runSearch();
+        }
+      } catch(e){
+        alert('Hata: ' + e.message);
+        hideProductTypeModal();
+      }
+    });
+
+    // Ürün tipini değiştir (raf görünümünden tıklanarak)
+    window.toggleProductType = function(shelfName, productCode, newType){
+      showProductTypeModal(shelfName, productCode, newType);
+    };
 
     function computeSummary(){
       const names = Object.keys(shelvesCache);
@@ -5384,9 +5511,17 @@
         tabWelderRequests.style.display="block";
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
-        tabCustomOrders.style.display="block";
         tabAttendance.style.display="block";
-        tabbar.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr";
+        
+        // İlhami (28573) ve Emin (64829) raf durumunu görebilir
+        const currentPin = window.__SESSION?.pin;
+        let colCount = 5;
+        if(currentPin === "28573" || currentPin === "64829") {
+          tabRack.style.display="block";
+          colCount = 6;
+        }
+        
+        tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
         setActiveTab("attendance");
       }else if(r==="purchase"){
         tabbar.style.display="flex";
@@ -5922,7 +6057,8 @@
             const name = d.name || docSnap.id;
             const products = d.products || {};
             const productTimestamps = d.productTimestamps || {};
-            shelvesCache[name] = { ...d, name, products, productTimestamps };
+            const productTypes = d.productTypes || {};
+            shelvesCache[name] = { ...d, name, products, productTimestamps, productTypes };
 
             const empty = Object.keys(products).length===0;
             if(empty) emptyCount++; else fullCount++;
@@ -5946,7 +6082,7 @@
             
             const statusClass = empty ? 'empty' : 'full';
             const statusText = empty ? 'BOŞ' : 'DOLU';
-            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps);
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name);
             
             card.innerHTML = `
               <div class="rack-card-header">
@@ -5955,13 +6091,6 @@
               </div>
               <div class="rack-card-products">${productsText}</div>
             `;
-            
-            // Dolu raflara tıklama özelliği ekle
-            if(!empty){
-              card.style.cursor = 'pointer';
-              card.title = 'Rafı boşaltmak için tıkla';
-              card.onclick = () => window.clearRackByClick(name, products);
-            }
             
             // Dolu/boş rafları ayrı gruplara ekle
             if(empty && rackGridEmpty) {
@@ -6162,6 +6291,7 @@
           if(color) code = code + "_" + color;
           const shelfName = (inShelfNum.value || "").trim();
           const qty  = Number(inQty.value || 0);
+          const productType = document.getElementById("inProductType")?.value || "stock";
 
           if(!code) return setStatusBox(statusPut, "Ürün kodu boş olamaz.", "error");
           if(!shelfName) return setStatusBox(statusPut, "Lütfen bir raf seçiniz.", "error");
@@ -6172,17 +6302,20 @@
 
           const products = { ...(shelfData.products || {}) };
           const productTimestamps = { ...(shelfData.productTimestamps || {}) };
+          const productTypes = { ...(shelfData.productTypes || {}) };
           
           // Eğer bu ürün rafta yoksa timestamp ekle (varsa mevcut timestamp'ı koru)
           if(!products[code]){
             productTimestamps[code] = serverTimestamp();
           }
           products[code] = (products[code] || 0) + qty;
+          productTypes[code] = productType;
 
           try{
-            await updateDoc(doc(shelvesCol, shelfName), { products, productTimestamps, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products, productTimestamps, productTypes, updated: serverTimestamp() });
 
-            await writeLog({ action: "PUT", shelf: shelfName, product: code, qty, detail: "Rafa ürün eklendi" });
+            const typeLabel = productType === "order" ? "Sipariş için ayrıldı" : "Stok olarak eklendi";
+            await writeLog({ action: "PUT", shelf: shelfName, product: code, qty, detail: `Rafa ürün eklendi (${typeLabel})` });
 
             // Bildirim gönder (Admin tarafından seçilen kullanıcılara)
             const recipients = window.notificationRecipients.shelf_product_added || [];
@@ -6191,7 +6324,7 @@
                 eventType: 'shelf_product_added',
                 targetPins: recipients,
                 title: '📦 Rafa Ürün Eklendi',
-                body: `${code} ürününden ${qty} adet ${shelfName} rafına konuldu`
+                body: `${code} ürününden ${qty} adet ${shelfName} rafına konuldu (${typeLabel})`
               });
             }
 
@@ -6237,7 +6370,7 @@
           if(!confirmed) return;
           
           try{
-            await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
             await writeLog({ action: "CLEAR_SHELF_CLICK", shelf: shelfName, product: "-", qty: 0, detail: `Raf tıklanarak boşaltıldı. İçerik: ${productList}` });
             alert(`✅ ${shelfName} rafı boşaltıldı.`);
           } catch(e){
@@ -6267,7 +6400,7 @@
 
               // qty=1 => rafı komple boşalt
               if(onlyQty <= 1){
-                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, updated: serverTimestamp() });
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
                 await writeLog({ action: "CLEAR_SHELF", shelf: shelfName, product: "-", qty: 0, detail: "Raf tamamen boşaltıldı" });
 
                 setStatusBox(statusClear, "Raf boşaltıldı.", "ok");
@@ -6285,7 +6418,7 @@
               const newQty = onlyQty - reduce;
 
               if(newQty <= 0){
-                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, updated: serverTimestamp() });
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
                 await writeLog({ action: "REMOVE_PRODUCT_ALL", shelf: shelfName, product: onlyCode, qty: reduce, detail: `Ürün tamamen çıkarıldı (Mevcut ${onlyQty})` });
                 setStatusBox(statusClear, "Ürün tamamen çıkarıldı.", "ok");
               }else{
@@ -6317,19 +6450,21 @@
 
             const newQty = currentQty - reduce;
             
-            // Timestamp güncellemesi için
+            // Timestamp ve Type güncellemesi için
             const productTimestamps = { ...(shelfData.productTimestamps || {}) };
+            const productTypes = { ...(shelfData.productTypes || {}) };
 
             if(newQty <= 0){
               delete productsNow[code];
               delete productTimestamps[code];
+              delete productTypes[code];
               await writeLog({ action: "REMOVE_PRODUCT", shelf: shelfName, product: code, qty: reduce, detail: `Ürün çıkarıldı (Mevcut ${currentQty})` });
             }else{
               productsNow[code] = newQty;
               await writeLog({ action: "DECREASE_QTY", shelf: shelfName, product: code, qty: reduce, detail: `Adet azaltıldı: ${currentQty} → ${newQty}` });
             }
 
-            await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, productTimestamps, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, productTimestamps, productTypes, updated: serverTimestamp() });
 
             setStatusBox(
               statusClear,
@@ -10920,6 +11055,8 @@
     const FREELANCE_WORK_TYPES = {
       "üretim_talimatı": { label: "Üretim Talimatı", price: 100 },
       "paketleme_talimatı": { label: "Paketleme Talimatı", price: 100 },
+      "üretim_talimatı_varyant": { label: "Üretim Talimatı Varyant", price: 50 },
+      "paketleme_talimatı_varyant": { label: "Paketleme Talimatı Varyant", price: 50 },
       "full_set": { label: "Full Set (7-8 görsel + Her İkisi)", price: 400 },
       "amazon_listingi": { label: "Premium Amazon Listingi", price: 600 }
     };
