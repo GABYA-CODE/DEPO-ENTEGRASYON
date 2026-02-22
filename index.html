@@ -2868,7 +2868,7 @@
 
         <!-- VIEW: FREELANCE HAKEDIŞ (Melike Dağlı) -->
         <div id="viewFreelanceWorks" style="display:none;">
-          <div class="sectionTitle">Freelance Hakediş - Melike Dağlı</div>
+          <div class="sectionTitle">💼 Freelance Hakediş - Melike Dağlı</div>
           
           <!-- Toplam Hakediş Kutusu -->
           <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:20px;color:white;margin-bottom:20px;box-shadow:0 4px 15px rgba(102,126,234,0.4);">
@@ -2877,41 +2877,49 @@
             <div style="font-size:12px;opacity:0.8;margin-top:4px;" id="freelanceWorkCount">0 iş</div>
           </div>
           
-          <!-- Yeni İş Ekleme Formu -->
+          <!-- İş Ekleme Formu -->
           <div class="card" style="margin-bottom:20px;">
-            <h3 style="margin-top:0;">➕ Yeni İş Ekle</h3>
+            <h3 style="margin-top:0;">➕ Yapılan İş Kaydet</h3>
             
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
               <div>
                 <label class="fieldLabel">İş Türü *</label>
                 <select id="freelanceWorkType" class="input" onchange="updateFreelancePrice()">
                   <option value="">Seçiniz...</option>
-                  <option value="üretim_talimatı">Üretim Talimatı</option>
-                  <option value="paketleme_talimatı">Paketleme Talimatı</option>
-                  <option value="full_set">Full Set (7-8 görsel + Talimatlı)</option>
-                  <option value="amazon_listingi">Premium Amazon Listingi</option>
+                  <option value="üretim_talimatı">Üretim Talimatı (100₺)</option>
+                  <option value="paketleme_talimatı">Paketleme Talimatı (100₺)</option>
+                  <option value="full_set">Full Set (400₺)</option>
+                  <option value="amazon_listingi">Premium Amazon Listingi (600₺)</option>
                 </select>
               </div>
               <div>
-                <label class="fieldLabel">Fiyat</label>
+                <label class="fieldLabel">Birim Fiyat</label>
                 <input id="freelancePrice" class="input" readonly style="background:var(--muted-bg);font-weight:600;color:#667eea;" value="0 ₺" />
+              </div>
+              <div>
+                <label class="fieldLabel">Adet *</label>
+                <input id="freelanceQuantity" class="input" type="number" min="1" max="999" value="1" onchange="updateFreelanceTotalPrice()" oninput="updateFreelanceTotalPrice()" />
+              </div>
+              <div>
+                <label class="fieldLabel">Toplam Tutar</label>
+                <input id="freelanceTotalPrice" class="input" readonly style="background:var(--muted-bg);font-weight:600;color:#667eea;font-size:16px;" value="0 ₺" />
               </div>
             </div>
             
             <div style="margin-top:14px;">
-              <label class="fieldLabel">Google Drive Linki *</label>
-              <input id="freelanceDriveLink" class="input" placeholder="https://drive.google.com/..." />
+              <label class="fieldLabel">Google Drive Linki (İsteğe Bağlı)</label>
+              <input id="freelanceDriveLink" class="input" type="url" placeholder="https://drive.google.com/..." />
             </div>
             
-            <button class="actionBtn" onclick="addFreelanceWork()" style="margin-top:14px;width:100%;">✅ İŞİ EKLE</button>
+            <button class="actionBtn" onclick="addFreelanceWork()" style="margin-top:14px;width:100%;background:#10b981;">✅ YAPILDI OLARAK İŞARETLE</button>
             <div class="statusBox" id="freelanceStatus" style="display:none;margin-top:12px;"></div>
           </div>
           
           <!-- İşler Listesi -->
           <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
             <button class="custom-order-filter-btn active" onclick="filterFreelanceWorks('all', this)">Tümü</button>
-            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('üretim_talimatı', this)">Üretim Talim.</button>
-            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('paketleme_talimatı', this)">Paketleme Talim.</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('üretim_talimatı', this)">Üretim</button>
+            <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('paketleme_talimatı', this)">Paketleme</button>
             <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('full_set', this)">Full Set</button>
             <button class="custom-order-filter-btn" onclick="filterFreelanceWorks('amazon_listingi', this)">Amazon</button>
           </div>
@@ -4086,7 +4094,7 @@
     const PAINTER_PINS = new Set(["87654","87655"]);
     const COMMISSION_PINS = new Set(["23764","190706","190707","14698","76312","31849","62957","48731","95126","52384"]);
     const PAGE_MANAGER_PINS = new Set(["38471","62914","47293"]); // Sayfa yöneticileri - Mirza (Elf Metal), Zehra (Grandmix), Faruk (Milonsa)
-    const DESIGNER_PINS = new Set(["72541","19583","85246","85247"]); // Tasarımcılar - Emre K. (Lazerci), Müşerref Keçe, Melike Çapraz, Melike Dağlı (Freelance)
+    const DESIGNER_PINS = new Set(["72541","19583","85246","85248"]); // Tasarımcılar - Emre K. (Lazerci), Müşerref Keçe, Melike Çapraz, Melike Dağlı
     const CUSTOM_ORDER_VIEWERS = new Set(["61704"]); // Kişiye özel siparişleri görebilen ek kullanıcılar - Veli
     const CARGO_LABEL_USERS = new Set(["41927", "45823", "61704"]); // Kargo etiketi hazırlayabilen kullanıcılar - Şeyma K., Gökmen, Veli
     const CARGO_REQUESTER_PINS = new Set(["54821", "63947", "1968"]); // Kargo etiketi talep eden firmalar - Ünalta, Osman A., Ali Ünal (Ünalta Sahibi)
@@ -4202,7 +4210,7 @@
       "47293": "Faruk - Milonsa",
       "19583": "Müşerref Keçe",
       "85246": "Melike Çapraz",
-      "85247": "Melike Dağlı (Freelance)",
+      "85248": "Melike Dağlı",
       "54821": "Ünalta",
       "63947": "Osman A.",
       "1968": "Ali Ünal (Ünalta)"
@@ -5038,7 +5046,7 @@
 
     function setActiveTab(target){
       currentActiveTab = target; // Aktif sekmeyi kaydet
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabCargo, tabUnaltaWA, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabFreelanceWorks, tabCargo, tabUnaltaWA, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -5063,6 +5071,7 @@
         viewAttendance && (viewAttendance.style.display="none");
         viewCustomOrders && (viewCustomOrders.style.display="none");
         viewDesignerBonus && (viewDesignerBonus.style.display="none");
+        viewFreelanceWorks && (viewFreelanceWorks.style.display="none");
         viewCargo && (viewCargo.style.display="none");
         viewUnaltaKargo && (viewUnaltaKargo.style.display="none");
         viewUnaltaWallArt && (viewUnaltaWallArt.style.display="none");
@@ -5169,6 +5178,15 @@
               monthSelector.value = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
             }
             loadDesignerBonuses();
+          }catch(e){console.error(e);} 
+        },50); 
+      }
+      if(target==="freelanceWorks"){ 
+        tabFreelanceWorks?.classList.add("active"); 
+        viewFreelanceWorks.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            loadFreelanceWorks();
           }catch(e){console.error(e);} 
         },50); 
       }
@@ -5427,26 +5445,28 @@
         
         const currentPin = window.__SESSION?.pin;
         
-        tabCustomOrders.style.display="block";
-        tabInstructions.style.display="block";
-        tabAttendance.style.display="block";
-        
-        let colCount = 3;
-        
-        // Ünalta (54821) ve Osman A. (63947) için prim sekmesi gösterilmez
-        if(currentPin !== "54821" && currentPin !== "63947") {
-          tabDesignerBonus.style.display="block";
-          colCount++;
-        }
-        
-        // Melike Dağlı (85247) için freelance hakediş sekmesi
-        if(currentPin === "85247") {
+        // Ahmet (85248) Freelance - sadece Freelance Hakediş sekmesi
+        if(currentPin === "85248") {
           tabFreelanceWorks.style.display="block";
-          colCount++;
+          tabbar.style.gridTemplateColumns = "1fr";
+          setActiveTab("freelanceWorks");
+        } else {
+          // Diğer tasarımcılar
+          tabCustomOrders.style.display="block";
+          tabInstructions.style.display="block";
+          tabAttendance.style.display="block";
+          
+          let colCount = 3;
+          
+          // Ünalta (54821) ve Osman A. (63947) için prim sekmesi gösterilmez
+          if(currentPin !== "54821" && currentPin !== "63947") {
+            tabDesignerBonus.style.display="block";
+            colCount++;
+          }
+          
+          tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
+          setActiveTab("customOrders");
         }
-        
-        tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
-        setActiveTab("customOrders");
       }else if(r==="cargo_requester"){
         // Kargo Talep Eden (Ünalta, Osman A.)
         tabbar.style.display="flex";
@@ -5620,6 +5640,7 @@
         tabAttendance && (tabAttendance.onclick = ()=>setActiveTab("attendance"));
         tabCustomOrders && (tabCustomOrders.onclick = ()=>setActiveTab("customOrders"));
         tabDesignerBonus && (tabDesignerBonus.onclick = ()=>setActiveTab("designerBonus"));
+        tabFreelanceWorks && (tabFreelanceWorks.onclick = ()=>{setActiveTab("freelanceWorks"); loadFreelanceWorks();});
         tabCargo && (tabCargo.onclick = ()=>setActiveTab("cargo"));
         tabUnaltaWA && (tabUnaltaWA.onclick = ()=>setActiveTab("unaltaWA"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
@@ -10894,7 +10915,7 @@
     }
     window.deleteCustomOrder = deleteCustomOrder;
 
-    // ===== FREELANCE HAKEDIŞ FUNCTIONS (Melike Dağlı) =====
+    // ===== FREELANCE HAKEDIŞ FUNCTIONS (Ahmet) =====
     
     const FREELANCE_WORK_TYPES = {
       "üretim_talimatı": { label: "Üretim Talimatı", price: 100 },
@@ -10911,59 +10932,78 @@
       
       if(workType && FREELANCE_WORK_TYPES[workType]) {
         priceDisplay.value = FREELANCE_WORK_TYPES[workType].price + " ₺";
+        updateFreelanceTotalPrice();
       } else {
         priceDisplay.value = "0 ₺";
+        updateFreelanceTotalPrice();
       }
     }
     window.updateFreelancePrice = updateFreelancePrice;
 
+    function updateFreelanceTotalPrice() {
+      const priceText = document.getElementById("freelancePrice").value;
+      const quantity = parseInt(document.getElementById("freelanceQuantity").value) || 1;
+      const price = parseInt(priceText.replace(" ₺", "")) || 0;
+      const total = price * quantity;
+      
+      document.getElementById("freelanceTotalPrice").value = total + " ₺";
+    }
+    window.updateFreelanceTotalPrice = updateFreelanceTotalPrice;
+
     async function addFreelanceWork() {
       const workType = document.getElementById("freelanceWorkType").value;
+      const quantity = parseInt(document.getElementById("freelanceQuantity").value) || 1;
       const driveLink = document.getElementById("freelanceDriveLink").value.trim();
       const statusDiv = document.getElementById("freelanceStatus");
 
       if(!workType) {
         statusDiv.innerHTML = '⚠️ İş türü seçiniz!';
         statusDiv.style.display = "block";
+        statusDiv.style.background = "#fbbf2433";
+        statusDiv.style.color = "#d97706";
         return;
       }
 
-      if(!driveLink) {
-        statusDiv.innerHTML = '⚠️ Google Drive linki giriniz!';
+      if(quantity < 1) {
+        statusDiv.innerHTML = '⚠️ Adet en az 1 olmalıdır!';
         statusDiv.style.display = "block";
-        return;
-      }
-
-      if(!driveLink.includes("drive.google.com")) {
-        statusDiv.innerHTML = '⚠️ Geçerli bir Google Drive linki giriniz!';
-        statusDiv.style.display = "block";
+        statusDiv.style.background = "#fbbf2433";
+        statusDiv.style.color = "#d97706";
         return;
       }
 
       try {
         statusDiv.innerHTML = '⏳ Kaydediliyor...';
         statusDiv.style.display = "block";
+        statusDiv.style.background = "#3b82f633";
+        statusDiv.style.color = "#1e40af";
 
         const now = new Date();
+        const workTypeInfo = FREELANCE_WORK_TYPES[workType];
+        const totalPrice = workTypeInfo.price * quantity;
+
         const workData = {
-          pin: "85247", // Melike Dağlı
-          pinName: "Melike Dağlı (Freelance)",
+          pin: "85248", // Melike Dağlı
+          pinName: "Melike Dağlı",
           workType: workType,
-          workTypeLabel: FREELANCE_WORK_TYPES[workType].label,
-          driveLink: driveLink,
-          price: FREELANCE_WORK_TYPES[workType].price,
+          workTypeLabel: workTypeInfo.label,
+          quantity: quantity,
+          unitPrice: workTypeInfo.price,
+          totalPrice: totalPrice,
+          driveLink: driveLink || null,
           createdAt: now,
-          status: "pending"
+          status: "completed"
         };
 
         await addDoc(collection(db, "freelanceWorks"), workData);
 
         // Formu temizle
         document.getElementById("freelanceWorkType").value = "";
+        document.getElementById("freelanceQuantity").value = "1";
         document.getElementById("freelanceDriveLink").value = "";
         updateFreelancePrice();
 
-        statusDiv.innerHTML = '✅ İş başarıyla kaydedildi!';
+        statusDiv.innerHTML = '✅ İş başarıyla kaydedildi! Toplam: ' + totalPrice + ' ₺';
         statusDiv.style.background = "#10b98133";
         statusDiv.style.color = "#059669";
         
@@ -10989,16 +11029,17 @@
       try {
         const q = query(
           collection(db, "freelanceWorks"),
-          where("pin", "==", "85247"),
+          where("pin", "==", "85248"),
           orderBy("createdAt", "desc")
         );
         const snapshot = await getDocs(q);
 
         let totalPrice = 0;
         let html = "";
+        let visibleCount = 0;
 
         if(snapshot.empty) {
-          html = '<div style="text-align:center;padding:40px;color:var(--muted);">Henüz iş kaydı yok.</div>';
+          html = '<div style="text-align:center;padding:40px;color:var(--muted);">Henüz rapor edilen iş yok.</div>';
         } else {
           snapshot.forEach(docSnap => {
             const data = docSnap.data();
@@ -11009,29 +11050,33 @@
               return;
             }
 
-            totalPrice += data.price || 0;
+            visibleCount++;
+            totalPrice += data.totalPrice || 0;
 
             const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString("tr-TR") : "-";
+            const createdTime = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleTimeString("tr-TR", {hour: "2-digit", minute: "2-digit"}) : "-";
             
             html += `
-              <div style="background:var(--surface);border-radius:8px;padding:14px;display:flex;justify-content:space-between;align-items:start;border-left:4px solid #667eea;">
+              <div style="background:var(--surface);border-radius:8px;padding:14px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #10b981;gap:12px;">
                 <div style="flex:1;">
-                  <div style="font-weight:600;color:#667eea;margin-bottom:4px;">${data.workTypeLabel}</div>
-                  <div style="font-size:13px;color:var(--muted);margin-bottom:6px;word-break:break-all;">
-                    🔗 <a href="${data.driveLink}" target="_blank" style="color:#667eea;text-decoration:none;">Google Drive Linki</a>
+                  <div style="font-weight:600;color:#10b981;margin-bottom:4px;font-size:14px;">${data.workTypeLabel}</div>
+                  <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">
+                    📊 ${data.quantity} × ${data.unitPrice} ₺ = <strong style="color:#10b981;">${data.totalPrice} ₺</strong>
                   </div>
-                  <div style="font-size:12px;color:var(--muted);">📅 ${createdDate}</div>
+                  ${data.driveLink ? `<div style="font-size:12px;margin-bottom:4px;">🔗 <a href="${data.driveLink}" target="_blank" style="color:#667eea;text-decoration:none;">Drive Linki</a></div>` : ''}
+                  <div style="font-size:12px;color:var(--muted);">📅 ${createdDate} ${createdTime}</div>
                 </div>
-                <div style="text-align:right;margin-left:12px;">
-                  <div style="font-weight:700;color:#667eea;font-size:18px;margin-bottom:8px;">${data.price} ₺</div>
-                  <button onclick="deleteFreelanceWork('${docId}')" class="deleteBtn" style="padding:6px 10px;font-size:12px;">🗑️</button>
-                </div>
+                <button onclick="deleteFreelanceWork('${docId}')" class="deleteBtn" style="padding:6px 10px;font-size:12px;white-space:nowrap;">🗑️</button>
               </div>
             `;
           });
         }
 
-        listContainer.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--muted);">Seçilen filtreye uygun iş yok.</div>';
+        if(html === "") {
+          html = '<div style="text-align:center;padding:40px;color:var(--muted);">Seçilen filtreye uygun iş yok.</div>';
+        }
+
+        listContainer.innerHTML = html;
 
         // Toplam güncelle
         const totalDisplay = document.getElementById("freelanceTotalEarnings");
@@ -11041,7 +11086,6 @@
 
         const countDisplay = document.getElementById("freelanceWorkCount");
         if(countDisplay) {
-          const visibleCount = document.querySelectorAll("#freelanceWorksList > div[style*='surface']").length;
           countDisplay.textContent = visibleCount + " iş";
         }
 
@@ -11053,7 +11097,7 @@
     window.loadFreelanceWorks = loadFreelanceWorks;
 
     async function deleteFreelanceWork(docId) {
-      if(!confirm("Bu işi silmek istediğinizden emin misiniz?")) return;
+      if(!confirm("Bu işi silmek istediğinizden emin misiniz?\n\nSilinen tutar hakediş toplamından çıkarılacaktır.")) return;
 
       try {
         await deleteDoc(doc(db, "freelanceWorks", docId));
@@ -11069,12 +11113,6 @@
       currentFreelanceFilter = workType;
       
       // Aktif butonu güncelle
-      document.querySelectorAll('.custom-order-filter-btn').forEach(b => {
-        if(b.parentElement.id === "freelanceWorksList" || b.parentElement.id === undefined) {
-          // Check if button is in freelance section by getting parent
-        }
-      });
-      
       const allBtns = document.querySelectorAll('#viewFreelanceWorks .custom-order-filter-btn');
       allBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
