@@ -3102,6 +3102,24 @@
               <span style="font-size:22px;">📎</span> Led Siparişleri
             </h2>
             
+            <!-- Bakiye Özeti (sadece 1968 için) -->
+            <div id="unaltaWABalanceSection" style="display:none;margin-bottom:20px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+                <div style="padding:14px;background:linear-gradient(135deg,#ef444411,#dc262611);border-radius:8px;border:1px solid #ef444433;">
+                  <div style="font-size:11px;color:#ef4444;font-weight:600;margin-bottom:4px;">Ünalta'ya Borcumuz</div>
+                  <div id="unaltaWAOurDebt" style="font-size:20px;font-weight:700;color:#ef4444;">$0.00</div>
+                </div>
+                <div style="padding:14px;background:linear-gradient(135deg,#22c55e11,#16a34a11);border-radius:8px;border:1px solid #22c55e33;">
+                  <div style="font-size:11px;color:#22c55e;font-weight:600;margin-bottom:4px;">Kargo Alacağımız</div>
+                  <div id="unaltaWATheirDebt" style="font-size:20px;font-weight:700;color:#22c55e;">$0.00</div>
+                </div>
+                <div style="padding:14px;background:linear-gradient(135deg,#3b82f611,#2563eb11);border-radius:8px;border:1px solid #3b82f633;">
+                  <div style="font-size:11px;color:#3b82f6;font-weight:600;margin-bottom:4px;">Net Bakiye</div>
+                  <div id="unaltaWANetBalance" style="font-size:20px;font-weight:700;color:#3b82f6;">$0.00</div>
+                </div>
+              </div>
+            </div>
+            
             <!-- Filtre Butonları -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
               <button class="custom-order-filter-btn" data-status="all" onclick="filterUnaltaWallArtOrders('all', this)">Tümü</button>
@@ -5518,7 +5536,13 @@
         let colCount = 5;
         if(currentPin === "28573" || currentPin === "64829") {
           tabRack.style.display="block";
-          colCount = 6;
+          colCount++;
+        }
+        
+        // Emre K. (72541) kişiye özel siparişleri görebilir
+        if(currentPin === "72541") {
+          tabCustomOrders.style.display="block";
+          colCount++;
         }
         
         tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
@@ -12512,12 +12536,72 @@
         });
         
         renderUnaltaWallArtOrders(allUnaltaWallArtOrders.filter(o => o.status === 'PENDING'));
+        
+        // 1968 PIN için bakiye göster
+        if(window.__SESSION?.pin === window.UNALTA_OWNER_PIN) {
+          loadUnaltaWABalance();
+        }
       } catch(err) {
         console.error("Sipariş yükleme hatası:", err);
         list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Siparişler yüklenemedi.</div>';
       }
     }
     window.loadUnaltaWallArtOrders = loadUnaltaWallArtOrders;
+    
+    // 1968 için bakiye hesapla ve göster (admin ile aynı formül)
+    async function loadUnaltaWABalance() {
+      const section = document.getElementById("unaltaWABalanceSection");
+      const ourDebtEl = document.getElementById("unaltaWAOurDebt");
+      const theirDebtEl = document.getElementById("unaltaWATheirDebt");
+      const netEl = document.getElementById("unaltaWANetBalance");
+      
+      if(!section || !ourDebtEl || !theirDebtEl || !netEl) return;
+      
+      try {
+        // Bizim Ünalta'ya borcumuz (Wall Art siparişleri - tümü)
+        const ordersSnap = await getDocs(collection(db, "wallArtOrders"));
+        let ourDebt = 0;
+        ordersSnap.forEach(doc => {
+          const d = doc.data();
+          ourDebt += d.totalPrice || 0;
+        });
+        
+        // Ünalta'nın bize borcu (Kargo alacağımız)
+        const cargoSnap = await getDocs(query(
+          collection(db, "cargoRequests"),
+          where("requesterPin", "in", ["54821", "1968"])
+        ));
+        let theirDebt = 0;
+        cargoSnap.forEach(doc => {
+          const d = doc.data();
+          if(d.desi && d.ulke) {
+            theirDebt += calculateCargoPrice(d.desi, d.ulke);
+          }
+        });
+        
+        const net = theirDebt - ourDebt;
+        
+        ourDebtEl.textContent = `$${ourDebt.toFixed(2)}`;
+        theirDebtEl.textContent = `$${theirDebt.toFixed(2)}`;
+        
+        if(net > 0) {
+          netEl.textContent = `+$${net.toFixed(2)}`;
+          netEl.style.color = "#22c55e";
+        } else if(net < 0) {
+          netEl.textContent = `-$${Math.abs(net).toFixed(2)}`;
+          netEl.style.color = "#ef4444";
+        } else {
+          netEl.textContent = "$0.00";
+          netEl.style.color = "#3b82f6";
+        }
+        
+        section.style.display = "block";
+        
+      } catch(err) {
+        console.error("Bakiye hesaplama hatası:", err);
+      }
+    }
+    window.loadUnaltaWABalance = loadUnaltaWABalance;
     
     function renderUnaltaWallArtOrders(orders) {
       const list = document.getElementById("unaltaWallArtOrdersList");
