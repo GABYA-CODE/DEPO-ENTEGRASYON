@@ -1119,13 +1119,20 @@
 
       <!-- Product Type Change Modal -->
       <div id="productTypeModal" class="role-modal-overlay">
-        <div class="role-modal" style="width:min(360px,90vw);text-align:center;">
+        <div class="role-modal" style="width:min(400px,92vw);text-align:center;">
           <div id="productTypeModalIcon" style="font-size:48px;margin-bottom:12px;">📦</div>
           <h3 id="productTypeModalTitle" style="margin:0 0 8px 0;font-size:18px;"></h3>
-          <p id="productTypeModalDesc" style="margin:0 0 20px 0;font-size:14px;color:var(--muted);"></p>
-          <div style="display:flex;gap:12px;justify-content:center;">
+          <p id="productTypeModalDesc" style="margin:0 0 12px 0;font-size:14px;color:var(--muted);"></p>
+          <div id="productTypeModalInfo" style="display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;"></div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">Siparişe ayrılacak adet:</label>
+            <input id="productTypeQtyInput" type="number" min="0" value="0" style="width:100px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:16px;font-weight:700;text-align:center;">
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
             <button id="btnProductTypeCancel" style="padding:12px 24px;border:2px solid var(--border);background:white;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;">İptal</button>
-            <button id="btnProductTypeConfirm" style="padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;color:white;"></button>
+            <button id="btnProductTypeToStock" style="padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;color:white;background:#22c55e;">📦 Tümü Stok</button>
+            <button id="btnProductTypeConfirm" style="padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;color:white;background:#ef4444;">✅ Onayla</button>
+            <button id="btnProductTypeRemove" style="padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;color:white;background:#f97316;">🗑️ Raftan Boşalt</button>
           </div>
         </div>
       </div>
@@ -1168,6 +1175,7 @@
         <div class="tab" id="tabClear">RAF BOŞALT</div>
         <div class="tab" id="tabSearch">ÜRÜN ARA</div>
         <div class="tab" id="tabRack">RAF DURUMU</div>
+        <div class="tab" id="tabProductionRack">ÜRETİM RAFLARI</div>
         <div class="tab" id="tabRequest">ÜRÜN TALEP</div>
         <div class="tab" id="tabMaterialRequest">MALZEME TALEP</div>
         <div class="tab" id="tabWelder">ÜRETİM GİRİŞİ</div>
@@ -1188,6 +1196,7 @@
         <div class="tab" id="tabFreelanceWorks">FREELANCE HAKEDİŞ</div>
         <div class="tab" id="tabCargo">KARGO ETİKETİ TALEP</div>
         <div class="tab" id="tabUnaltaWA" style="display:none;">LEDLİ ÜRÜN SİPARİŞLERİ</div>
+        <div class="tab" id="tabPackerTracker" style="display:none;">PAKETÇİ TAKİP</div>
         <div class="tab" id="tabAdmin">YÖNETİCİ</div>
       </div>
 
@@ -1287,6 +1296,7 @@
         <div class="tab-sub" data-target="put">Rafa Ürün Koy</div>
         <div class="tab-sub" data-target="clear">Raf Boşalt</div>
         <div class="tab-sub" data-target="rack">Raf Durumu</div>
+        <div class="tab-sub" data-target="productionRack">Üretim Rafları</div>
         <div class="tab-sub" data-target="search">Ürün Ara</div>
       </div>
       <div class="tab-group-content" id="group-talep">
@@ -1315,6 +1325,7 @@
         <div class="tab-sub" data-target="attendance">Mesai Kayıtları</div>
         <div class="tab-sub" data-target="customOrders">Kişiye Özel Siparişler</div>
         <div class="tab-sub" data-target="cargo">Kargo Etiketi</div>
+        <div class="tab-sub" data-target="packerTracker">Paketçi Takip</div>
       </div>
 
       <div class="content">
@@ -1508,6 +1519,114 @@
           </div>
         </div>
 
+        <!-- VIEW: PRODUCTION RACK (Üretim Rafları) -->
+        <div id="viewProductionRack" style="display:none;">
+          <div style="padding:16px 20px;background:var(--panel);border-bottom:1px solid var(--border);">
+            <div id="prodRackHint" style="font-size:14px;color:var(--muted);font-weight:600;"></div>
+          </div>
+
+          <div style="padding:20px;">
+            <!-- Üretim Raf Durumu Grafiği -->
+            <div id="prodRackStatsContainer" style="margin-bottom:32px;">
+              <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:center;">
+                <!-- Dairesel Grafik -->
+                <div style="position:relative;width:180px;height:180px;">
+                  <canvas id="prodRackPieChart" width="180" height="180"></canvas>
+                  <div id="prodRackChartCenter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                    <div style="font-size:28px;font-weight:700;color:var(--text);" id="prodRackTotalCount">0</div>
+                    <div style="font-size:12px;color:var(--muted);font-weight:500;">Toplam Raf</div>
+                  </div>
+                </div>
+                <!-- İstatistik Kartları -->
+                <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                  <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.2);border-radius:12px;padding:16px 24px;text-align:center;min-width:120px;">
+                    <div style="font-size:32px;font-weight:700;color:#00c853;" id="prodRackFullStat">0</div>
+                    <div style="font-size:13px;color:#00c853;font-weight:600;">Dolu Raf</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="prodRackFullPercent">%0</div>
+                  </div>
+                  <div style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);border-radius:12px;padding:16px 24px;text-align:center;min-width:120px;">
+                    <div style="font-size:32px;font-weight:700;color:#64748b;" id="prodRackEmptyStat">0</div>
+                    <div style="font-size:13px;color:#64748b;font-weight:600;">Boş Raf</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="prodRackEmptyPercent">%0</div>
+                  </div>
+                  <div style="background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.2);border-radius:12px;padding:16px 24px;text-align:center;min-width:140px;">
+                    <div style="font-size:28px;font-weight:700;color:#f97316;" id="prodAvgWaitTime">-</div>
+                    <div style="font-size:13px;color:#f97316;font-weight:600;">Ort. Bekleme</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="prodTotalProductCount">0 ürün</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Üretim - Ürün Ekleme Formu -->
+            <div class="card" style="margin-bottom:24px;">
+              <h3 style="margin-top:0;margin-bottom:16px;font-size:16px;color:var(--text);">📦 Ürün Ekle / Çıkar</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;">
+                <div>
+                  <label class="fieldLabel">Raf No</label>
+                  <select id="prodInShelfNum" class="input" style="margin:0;">
+                    <option value="">Seçiniz</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="fieldLabel">Ürün Kodu</label>
+                  <input id="prodInProduct" class="input" placeholder="Ürün kodu" style="margin:0;" />
+                </div>
+                <div>
+                  <label class="fieldLabel">Adet</label>
+                  <select id="prodInQty" class="input" style="margin:0;"></select>
+                </div>
+                <button class="actionBtn" id="btnProdPut" type="button" style="margin:0;height:42px;">EKLE</button>
+              </div>
+              <div class="statusBox" id="statusProdPut" style="display:none;margin-top:12px;"></div>
+            </div>
+
+            <!-- Dolu Raflar -->
+            <div style="margin-bottom:32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:#00c853;font-size:18px;">●</span>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text);">DOLU RAFLAR</h3>
+                <span id="prodFullRackCount" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
+              </div>
+              <div id="prodRackGridFull" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+              <div id="prodRackFullEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Dolu raf yok</div>
+            </div>
+            
+            <!-- Boş Raflar -->
+            <div id="prodEmptyRacksSection" style="margin-bottom:32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:var(--muted);font-size:18px;">●</span>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text);">BOŞ RAFLAR</h3>
+                <span id="prodEmptyRackCount" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
+              </div>
+              <div id="prodRackGridEmpty" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+              <div id="prodRackEmptyEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Boş raf yok</div>
+            </div>
+            
+            <!-- Ayrılan Siparişler -->
+            <div style="margin-bottom:32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:#3b82f6;font-size:18px;">●</span>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text);">AYRILAN SİPARİŞLER</h3>
+                <span id="prodOrderCount" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
+              </div>
+              <div id="prodOrdersList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
+              <div id="prodOrdersEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Ayrılmış sipariş yok</div>
+            </div>
+
+            <!-- Admin için kurulum -->
+            <div class="setupBox" id="prodSetupBox" style="margin-top:20px;display:none;">
+              <div class="setupTitle">Üretim Rafları Kurulumu</div>
+              <div class="setupRow">
+                <input id="prodSetupCount" class="input" type="number" min="1" value="100" style="margin:0;" />
+                <input id="prodSetupPrefix" class="input" value="P" style="margin:0;" />
+              </div>
+              <button class="setupBtn" id="btnProdSetup" type="button">ÜRETİM RAFLARINI OLUŞTUR</button>
+              <div class="hintLine" id="prodSetupStatus"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: REQUEST -->
         <div id="viewRequest" style="display:none;">
 
@@ -1582,6 +1701,87 @@
                   </tr>
                 </thead>
                 <tbody id="productionBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Ürün Bazlı Üretim İstatistikleri -->
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">📊 Ürün Bazlı Üretim Raporu</h3>
+            
+            <div class="formRow" style="margin-bottom:10px;">
+              <label style="font-weight:700;font-size:13px;">Ürün Kodu</label>
+              <input id="prodStatCode" class="input" type="text" placeholder="Ürün kodu (boş bırakılırsa tümü)" />
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+              <div style="flex:1;min-width:130px;">
+                <label style="font-weight:700;font-size:13px;display:block;margin-bottom:4px;">Başlangıç</label>
+                <input id="prodStatStart" class="input" type="date" style="width:100%;padding:10px;" />
+              </div>
+              <div style="flex:1;min-width:130px;">
+                <label style="font-weight:700;font-size:13px;display:block;margin-bottom:4px;">Bitiş</label>
+                <input id="prodStatEnd" class="input" type="date" style="width:100%;padding:10px;" />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+              <button class="searchBtn" id="btnProdStatToday" type="button" style="font-size:13px;padding:10px;flex:1;">BUGÜN</button>
+              <button class="searchBtn" id="btnProdStatWeek" type="button" style="font-size:13px;padding:10px;flex:1;">BU HAFTA</button>
+              <button class="searchBtn" id="btnProdStatMonth" type="button" style="font-size:13px;padding:10px;flex:1;">BU AY</button>
+              <button class="searchBtn" id="btnProdStat3Month" type="button" style="font-size:13px;padding:10px;flex:1;">3 AY</button>
+              <button class="actionBtn" id="btnProdStatSearch" type="button" style="font-size:13px;padding:10px;flex:1;">SORGULA</button>
+            </div>
+
+            <div class="statusBox" id="statusProdStat" style="margin-top:12px;display:none;"></div>
+
+            <!-- Özet kutuları -->
+            <div id="prodStatSummary" style="display:none;margin-top:14px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;">
+                <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:14px;border-radius:10px;text-align:center;">
+                  <div style="font-size:24px;font-weight:900;" id="prodStatTotalQty">0</div>
+                  <div style="font-size:11px;opacity:.8;">Toplam Üretim</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff;padding:14px;border-radius:10px;text-align:center;">
+                  <div style="font-size:24px;font-weight:900;" id="prodStatUniqueProducts">0</div>
+                  <div style="font-size:11px;opacity:.8;">Farklı Ürün</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff;padding:14px;border-radius:10px;text-align:center;">
+                  <div style="font-size:24px;font-weight:900;" id="prodStatRecordCount">0</div>
+                  <div style="font-size:11px;opacity:.8;">Kayıt Sayısı</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ürün bazlı tablo -->
+            <div class="tableWrap" id="prodStatWrap" style="display:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ürün Kodu</th>
+                    <th>Toplam Adet</th>
+                    <th>Kayıt Sayısı</th>
+                    <th>Durum Dağılımı</th>
+                  </tr>
+                </thead>
+                <tbody id="prodStatBody"></tbody>
+              </table>
+            </div>
+
+            <!-- Detay kayıtları -->
+            <div class="tableWrap" id="prodStatDetailWrap" style="display:none;margin-top:10px;">
+              <h4 style="margin:0 0 8px 0;font-size:14px;color:var(--muted);">📋 Detay Kayıtları</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Ürün</th>
+                    <th>Durum</th>
+                    <th>Adet</th>
+                    <th>Üretim</th>
+                  </tr>
+                </thead>
+                <tbody id="prodStatDetailBody"></tbody>
               </table>
             </div>
           </div>
@@ -3135,6 +3335,136 @@
           </div>
         </div>
 
+        <!-- VIEW: PAKETÇİ TAKİP -->
+        <div id="viewPackerTracker" style="display:none;">
+          <div class="sectionTitle">📦 Paketçi Takip Sistemi</div>
+          
+          <!-- Kayıt Ekleme Formu -->
+          <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;">➕ Paketleme Kaydı Ekle</h3>
+            
+            <label class="fieldLabel">Paketçi</label>
+            <select id="packerSelect" class="input" style="padding:10px;font-size:15px;">
+              <option value="">-- Paketçi Seçin --</option>
+              <option value="ŞA">ŞA - Şaban Aydemir</option>
+              <option value="GG">GG - Gökmen Genç</option>
+              <option value="BÖ">BÖ - Bahriye Özcimbit</option>
+              <option value="VCG">VCG - Veli Can Güven</option>
+            </select>
+
+            <label class="fieldLabel" style="margin-top:12px;">Sipariş Numarası</label>
+            <input id="packerOrderNo" class="input" placeholder="Örn: VİTA3456" style="text-transform:uppercase;" />
+
+            <label class="fieldLabel" style="margin-top:12px;">Müşteri İsmi</label>
+            <input id="packerCustomerName" class="input" placeholder="Müşteri adı" />
+
+            <label class="fieldLabel" style="margin-top:12px;">Zorluk Puanı (1-10)</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="packerScoreButtons">
+              <button type="button" class="packer-score-btn" data-score="1" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">1</button>
+              <button type="button" class="packer-score-btn" data-score="2" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">2</button>
+              <button type="button" class="packer-score-btn" data-score="3" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">3</button>
+              <button type="button" class="packer-score-btn" data-score="4" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">4</button>
+              <button type="button" class="packer-score-btn" data-score="5" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">5</button>
+              <button type="button" class="packer-score-btn" data-score="6" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">6</button>
+              <button type="button" class="packer-score-btn" data-score="7" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">7</button>
+              <button type="button" class="packer-score-btn" data-score="8" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">8</button>
+              <button type="button" class="packer-score-btn" data-score="9" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">9</button>
+              <button type="button" class="packer-score-btn" data-score="10" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">10</button>
+            </div>
+            <input type="hidden" id="packerScoreValue" value="" />
+
+            <button id="btnSavePackerRecord" class="searchBtn" style="margin-top:14px;width:100%;padding:12px;font-size:15px;font-weight:600;">
+              💾 Kaydet
+            </button>
+            <div id="statusPackerTracker" class="note" style="margin-top:8px;"></div>
+          </div>
+
+          <!-- Sipariş Arama -->
+          <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;">🔎 Sipariş Ara</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div style="flex:1;min-width:160px;">
+                <label class="fieldLabel">Sipariş No veya Müşteri İsmi</label>
+                <input id="packerSearchInput" class="input" placeholder="Sipariş no veya müşteri ismi yazın..." style="padding:10px;font-size:15px;" />
+              </div>
+              <button id="btnSearchPackerRecord" class="searchBtn" style="padding:10px 24px;font-size:15px;">🔍 Ara</button>
+            </div>
+            <div id="packerSearchResult" style="margin-top:12px;display:none;"></div>
+          </div>
+
+          <!-- Filtre -->
+          <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;">📋 Kayıt Filtrele</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div style="flex:1;min-width:140px;">
+                <label class="fieldLabel">Paketçi</label>
+                <select id="packerFilterSelect" class="input" style="padding:8px;">
+                  <option value="">Tümü</option>
+                  <option value="ŞA">ŞA - Şaban Aydemir</option>
+                  <option value="GG">GG - Gökmen Genç</option>
+                  <option value="BÖ">BÖ - Bahriye Özcimbit</option>
+                  <option value="VCG">VCG - Veli Can Güven</option>
+                </select>
+              </div>
+              <div style="flex:1;min-width:140px;">
+                <label class="fieldLabel">Başlangıç</label>
+                <input type="date" id="packerFilterStart" class="input" style="padding:8px;" />
+              </div>
+              <div style="flex:1;min-width:140px;">
+                <label class="fieldLabel">Bitiş</label>
+                <input type="date" id="packerFilterEnd" class="input" style="padding:8px;" />
+              </div>
+              <button id="btnFilterPackerRecords" class="searchBtn" style="padding:8px 20px;">Filtrele</button>
+            </div>
+          </div>
+
+          <!-- Özet Kartları -->
+          <div id="packerSummaryCards" style="display:none;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Toplam Paket</div>
+              <div style="font-size:28px;font-weight:700;" id="packerTotalCount">0</div>
+            </div>
+            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Toplam Puan</div>
+              <div style="font-size:28px;font-weight:700;" id="packerTotalScore">0</div>
+            </div>
+            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#22c55e,#15803d);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Ort. Zorluk</div>
+              <div style="font-size:28px;font-weight:700;" id="packerAvgScore">0</div>
+            </div>
+          </div>
+
+          <!-- Paketçi Bazlı Özet -->
+          <div id="packerBreakdownWrap" style="display:none;margin-bottom:20px;">
+            <div class="card">
+              <h3 style="margin-top:0;">📊 Paketçi Bazlı Dağılım</h3>
+              <div id="packerBreakdownBody" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+            </div>
+          </div>
+
+          <!-- Kayıt Listesi -->
+          <div class="card">
+            <h3 style="margin-top:0;">📋 Paketleme Kayıtları</h3>
+            <div style="overflow-x:auto;">
+              <table class="logtable" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Paketçi</th>
+                    <th>Sipariş No</th>
+                    <th>Müşteri</th>
+                    <th>Puan</th>
+                    <th>Kaydeden</th>
+                    <th>Sil</th>
+                  </tr>
+                </thead>
+                <tbody id="packerRecordsBody"></tbody>
+              </table>
+            </div>
+            <div id="packerRecordsEmpty" style="display:none;padding:20px;text-align:center;color:var(--muted);">Kayıt bulunamadı.</div>
+          </div>
+        </div>
+
         <!-- VIEW: KARGO ETİKETİ -->
         <div id="viewCargo" style="display:none;">
           
@@ -4144,6 +4474,7 @@
     const CARGO_LABEL_USERS = new Set(["41927", "45823", "61704"]); // Kargo etiketi hazırlayabilen kullanıcılar - Şeyma K., Gökmen, Veli
     const CARGO_REQUESTER_PINS = new Set(["54821", "63947", "1968"]); // Kargo etiketi talep eden firmalar - Ünalta, Osman A., Ali Ünal (Ünalta Sahibi)
     const UNALTA_OWNER_PIN = "1968"; // Ali Ünal - Ünalta sahibi (fiyat bilgilerini görebilir)
+    const PACKER_TRACKER_PINS = new Set(["20261"]); // Paketçi takip kullanıcısı - Ali
 
     // PIN setlerini global scope'a ekle
     window.ADMIN_PINS = ADMIN_PINS;
@@ -4160,6 +4491,7 @@
     window.CARGO_LABEL_USERS = CARGO_LABEL_USERS;
     window.CARGO_REQUESTER_PINS = CARGO_REQUESTER_PINS;
     window.UNALTA_OWNER_PIN = UNALTA_OWNER_PIN;
+    window.PACKER_TRACKER_PINS = PACKER_TRACKER_PINS;
 
     // ========== MESAİ PLANLARI VE KULLANICI GRUPLARI ==========
     
@@ -4258,7 +4590,8 @@
       "85248": "Melike Dağlı",
       "54821": "Ünalta",
       "63947": "Osman A.",
-      "1968": "Ali Ünal (Ünalta)"
+      "1968": "Ali Ünal (Ünalta)",
+      "20261": "Ali"
     };
 
     // Puantaj yöneticileri - hangi kullanıcı hangi rollerin puantajını yönetebilir
@@ -4330,6 +4663,7 @@
       if(DESIGNER_PINS.has(pin)) return "designer";
       if(COMMISSION_PINS.has(pin)) return "commission";
       if(CARGO_REQUESTER_PINS.has(pin)) return "cargo_requester";
+      if(PACKER_TRACKER_PINS.has(pin)) return "packer_tracker";
       return null;
     }
 
@@ -4344,6 +4678,7 @@
       if(role==="cargo_requester") return `<span class="badge" style="background:#0ea5e9;color:#fff;">KARGO</span>`;
       if(role==="designer") return `<span class="badge" style="background:#06b6d4;color:#fff;">TASARIMCI</span>`;
       if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">ETSY SATIŞLARI</span>`;
+      if(role==="packer_tracker") return `<span class="badge" style="background:#f97316;color:#fff;">PAKETÇİ TAKİP</span>`;
       return `<span class="badge">-</span>`;
     }
 
@@ -4434,6 +4769,7 @@
     const tabClear = document.getElementById("tabClear");
     const tabSearch= document.getElementById("tabSearch");
     const tabRack  = document.getElementById("tabRack");
+    const tabProductionRack = document.getElementById("tabProductionRack");
     const tabRequest= document.getElementById("tabRequest");
     const tabMaterialRequest= document.getElementById("tabMaterialRequest");
     const tabWelder= document.getElementById("tabWelder");
@@ -4453,12 +4789,14 @@
     const tabDesignerBonus= document.getElementById("tabDesignerBonus");
     const tabCargo= document.getElementById("tabCargo");
     const tabUnaltaWA= document.getElementById("tabUnaltaWA");
+    const tabPackerTracker= document.getElementById("tabPackerTracker");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
     const viewClear= document.getElementById("viewClear");
     const viewSearch= document.getElementById("viewSearch");
     const viewRack = document.getElementById("viewRack");
+    const viewProductionRack = document.getElementById("viewProductionRack");
     const viewRequest= document.getElementById("viewRequest");
     const viewMaterialRequest= document.getElementById("viewMaterialRequest");
     const viewWelder= document.getElementById("viewWelder");
@@ -4480,6 +4818,7 @@
     const viewUnaltaKargo= document.getElementById("viewUnaltaKargo");
     const viewUnaltaWallArt= document.getElementById("viewUnaltaWallArt");
     const viewUnaltaWA= document.getElementById("viewUnaltaWA");
+    const viewPackerTracker= document.getElementById("viewPackerTracker");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -4753,10 +5092,10 @@
       inQty.value = "1"; // Varsayılan değer 1
     }
 
-    // Raf numarası dropdown'ını doldur (1-300 arası)
+    // Raf numarası dropdown'ını doldur (1-100 arası)
     if(inShelfNum){
       inShelfNum.innerHTML = '<option value="">Seçiniz</option>';
-      for(let i = 1; i <= 300; i++){
+      for(let i = 1; i <= 100; i++){
         const opt = document.createElement('option');
         opt.value = padShelf(i); // R001, R002, vb.
         opt.textContent = i; // Sadece sayı göster: 1, 2, vb.
@@ -4765,10 +5104,13 @@
     }
 
     let shelvesCache = {};
+    let productionShelvesCache = {};
+    let _prodReservedCache = {};
     let role = null;
     let sessionPin = null;
 
     function padShelf(num){ return "R" + String(num).padStart(3,"0"); }
+    function padProductionShelf(num){ return "P" + String(num).padStart(3,"0"); }
 
     function formatLogDate(date){
       if(!date) return "-";
@@ -4838,14 +5180,18 @@
       return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
     }
     
-    function productsHTML(products, productTimestamps, productTypes, shelfName){
+    function productsHTML(products, productTimestamps, productTypes, shelfName, orderQuantities){
       if(!products || Object.keys(products).length===0) {
         return '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>';
       }
       const timestamps = productTimestamps || {};
-      const types = productTypes || {};
+      const oq = orderQuantities || {};
       return Object.entries(products)
         .map(([code, qty]) => {
+          const totalQty = Number(qty);
+          const orderQty = Math.min(Number(oq[code] || 0), totalQty);
+          const stockQty = totalQty - orderQty;
+          
           let waitText = '';
           const ts = timestamps[code];
           if(ts){
@@ -4864,21 +5210,41 @@
             }
           }
           
-          // Ürün tipi badge'i
-          const pType = types[code] || 'stock';
-          const typeBadge = pType === 'order' 
-            ? `<span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>`
-            : `<span style="font-size:9px;background:#22c55e;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">STOK</span>`;
+          const clickAction = `onclick="event.stopPropagation(); window.toggleProductType('${shelfName}','${code}')" title="Sipariş/Stok ayarla"`;
           
-          // Tıklanabilir ürün tag'i
-          const clickAction = pType === 'order' 
-            ? `onclick="event.stopPropagation(); window.toggleProductType('${shelfName}','${code}','stock')" title="Stoka dönüştür"`
-            : `onclick="event.stopPropagation(); window.toggleProductType('${shelfName}','${code}','order')" title="Siparişe dönüştür"`;
+          // Hem stok hem sipariş varsa ayrı satırlarda göster
+          if(orderQty > 0 && stockQty > 0){
+            return `
+              <div class="product-tag" style="cursor:pointer;background:#dcfce7;border-left:3px solid #22c55e;" ${clickAction}>
+                <span class="product-tag-code">${code}</span>
+                <span class="product-tag-qty">×${stockQty}</span>${waitText}
+                <span style="font-size:9px;background:#22c55e;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">STOK</span>
+              </div>
+              <div class="product-tag" style="cursor:pointer;background:#fee2e2;border-left:3px solid #ef4444;" ${clickAction}>
+                <span class="product-tag-code">${code}</span>
+                <span class="product-tag-qty">×${orderQty}</span>
+                <span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>
+              </div>
+            `;
+          }
           
+          // Sadece sipariş
+          if(orderQty > 0){
+            return `
+              <div class="product-tag" style="cursor:pointer;background:#fee2e2;border-left:3px solid #ef4444;" ${clickAction}>
+                <span class="product-tag-code">${code}</span>
+                <span class="product-tag-qty">×${orderQty}</span>${waitText}
+                <span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>
+              </div>
+            `;
+          }
+          
+          // Sadece stok (varsayılan)
           return `
             <div class="product-tag" style="cursor:pointer;" ${clickAction}>
               <span class="product-tag-code">${code}</span>
-              <span class="product-tag-qty">×${qty}</span>${waitText}${typeBadge}
+              <span class="product-tag-qty">×${stockQty}</span>${waitText}
+              <span style="font-size:9px;background:#22c55e;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">STOK</span>
             </div>
           `;
         }).join('');
@@ -4892,10 +5258,10 @@
     function populateShelfDropdown(){
       if(!outShelfNum) return;
       
-      // Dolu rafları bul ve sırala
+      // Dolu rafları bul ve sırala (sadece R001-R100 arası)
       const fullShelves = [];
       for(const [shelfName, shelfData] of Object.entries(shelvesCache)){
-        if(!isEmpty(shelfData)){
+        if(!isEmpty(shelfData) && isShelfVisible(shelfName)){
           fullShelves.push(shelfName);
         }
       }
@@ -5051,10 +5417,13 @@
       const results = [];
       for(const [raf, data] of Object.entries(shelvesCache)){
         const products = data.products || {};
-        const productTypes = data.productTypes || {};
+        const oq = data.orderQuantities || {};
         for(const [pCode, pQty] of Object.entries(products)) {
           if(pCode.toLowerCase().includes(codeLower) && Number(pQty) > 0) {
-            results.push({ raf, product: pCode, qty: Number(pQty), type: productTypes[pCode] || 'stock' });
+            const totalQty = Number(pQty);
+            const orderQty = Math.min(Number(oq[pCode] || 0), totalQty);
+            const stockQty = totalQty - orderQty;
+            results.push({ raf, product: pCode, qty: totalQty, orderQty, stockQty });
           }
         }
       }
@@ -5069,12 +5438,11 @@
         const tr = document.createElement("tr");
         const parts = r.product.split('_');
         const displayName = parts.length > 1 ? `${parts[0]} <span style="color:#7c3aed;font-size:12px;">• ${parts.slice(1).join('_')}</span>` : r.product;
-        const typeBadge = r.type === 'order' 
-          ? `<span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">SİPARİŞ</span>`
-          : `<span style="background:#22c55e;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">STOK</span>`;
-        const toggleBtn = r.type === 'stock'
-          ? `<button onclick="window.toggleProductType('${r.raf}','${r.product}','order')" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Siparişe Dönüştür</button>`
-          : `<button onclick="window.toggleProductType('${r.raf}','${r.product}','stock')" style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Stoka Dönüştür</button>`;
+        let typeBadge = '';
+        if(r.stockQty > 0) typeBadge += `<span style="background:#22c55e;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">STOK:${r.stockQty}</span> `;
+        if(r.orderQty > 0) typeBadge += `<span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">SİPARİŞ:${r.orderQty}</span>`;
+        if(!typeBadge) typeBadge = `<span style="background:#22c55e;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;">STOK</span>`;
+        const toggleBtn = `<button onclick="window.toggleProductType('${r.raf}','${r.product}')" style="background:#6366f1;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Düzenle</button>`;
         tr.innerHTML = `<td>${r.raf}</td><td>${displayName}</td><td>${r.qty}</td><td>${typeBadge}</td><td>${toggleBtn}</td>`;
         searchBody.appendChild(tr);
       }
@@ -5090,27 +5458,40 @@
     const productTypeModalIcon = document.getElementById('productTypeModalIcon');
     const productTypeModalTitle = document.getElementById('productTypeModalTitle');
     const productTypeModalDesc = document.getElementById('productTypeModalDesc');
+    const productTypeModalInfo = document.getElementById('productTypeModalInfo');
+    const productTypeQtyInput = document.getElementById('productTypeQtyInput');
     const btnProductTypeConfirm = document.getElementById('btnProductTypeConfirm');
     const btnProductTypeCancel = document.getElementById('btnProductTypeCancel');
+    const btnProductTypeRemove = document.getElementById('btnProductTypeRemove');
+    const btnProductTypeToStock = document.getElementById('btnProductTypeToStock');
 
-    function showProductTypeModal(shelfName, productCode, newType){
-      pendingTypeChange = { shelfName, productCode, newType };
+    function showProductTypeModal(shelfName, productCode){
+      const shelfData = shelvesCache[shelfName];
+      if(!shelfData) { alert('Raf bulunamadı!'); return; }
       
-      if(newType === 'order'){
-        productTypeModalIcon.textContent = '🛒';
-        productTypeModalTitle.textContent = `${productCode}`;
-        productTypeModalDesc.innerHTML = `Bu ürünü <strong style="color:#ef4444;">sipariş için ayrılmış</strong> olarak işaretlemek istiyor musunuz?`;
-        btnProductTypeConfirm.textContent = 'Siparişe Ayır';
-        btnProductTypeConfirm.style.background = '#ef4444';
-      } else {
-        productTypeModalIcon.textContent = '📦';
-        productTypeModalTitle.textContent = `${productCode}`;
-        productTypeModalDesc.innerHTML = `Bu ürünü <strong style="color:#22c55e;">stok</strong> olarak işaretlemek istiyor musunuz?`;
-        btnProductTypeConfirm.textContent = 'Stoka Al';
-        btnProductTypeConfirm.style.background = '#22c55e';
-      }
+      const totalQty = Number(shelfData.products?.[productCode] || 0);
+      const currentOrderQty = Math.min(Number(shelfData.orderQuantities?.[productCode] || 0), totalQty);
+      const currentStockQty = totalQty - currentOrderQty;
+      
+      pendingTypeChange = { shelfName, productCode, totalQty };
+      
+      productTypeModalIcon.textContent = '📦';
+      productTypeModalTitle.textContent = `${productCode}`;
+      productTypeModalDesc.innerHTML = `Toplam <strong>${totalQty}</strong> adet — sipariş adedini ayarlayın:<br><span style="font-size:12px;color:#94a3b8;">0 girerseniz tamamı stoğa döner</span>`;
+      
+      productTypeModalInfo.innerHTML = `
+        <span style="background:#22c55e;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;">STOK: ${currentStockQty}</span>
+        <span style="background:#ef4444;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;">SİPARİŞ: ${currentOrderQty}</span>
+      `;
+      
+      productTypeQtyInput.max = totalQty;
+      productTypeQtyInput.value = currentOrderQty;
+      
+      // Tümü Stok butonunu sadece sipariş varsa göster
+      if(btnProductTypeToStock) btnProductTypeToStock.style.display = currentOrderQty > 0 ? '' : 'none';
       
       productTypeModal.classList.add('active');
+      setTimeout(() => productTypeQtyInput.focus(), 100);
     }
 
     function hideProductTypeModal(){
@@ -5121,27 +5502,41 @@
     btnProductTypeCancel && (btnProductTypeCancel.onclick = hideProductTypeModal);
     productTypeModal && (productTypeModal.onclick = (e) => { if(e.target === productTypeModal) hideProductTypeModal(); });
 
+    // Tümü Stok butonu - sipariş adedini 0'a çekip onaylar
+    btnProductTypeToStock && (btnProductTypeToStock.onclick = () => {
+      productTypeQtyInput.value = '0';
+      btnProductTypeConfirm.click();
+    });
+
     btnProductTypeConfirm && (btnProductTypeConfirm.onclick = async () => {
       if(!pendingTypeChange) return;
       
-      const { shelfName, productCode, newType } = pendingTypeChange;
-      const typeText = newType === 'order' ? 'SİPARİŞ' : 'STOK';
+      const { shelfName, productCode, totalQty } = pendingTypeChange;
+      const newOrderQty = parseInt(productTypeQtyInput.value, 10);
+      
+      if(isNaN(newOrderQty) || newOrderQty < 0){ alert('Geçerli bir adet giriniz'); return; }
+      if(newOrderQty > totalQty){ alert(`Toplam ${totalQty} adet var, daha fazla sipariş ayıramazsınız`); return; }
       
       try{
         const shelfData = shelvesCache[shelfName];
         if(!shelfData) { alert('Raf bulunamadı!'); hideProductTypeModal(); return; }
         
-        const oldType = shelfData.productTypes?.[productCode] || 'stock';
-        const productTypes = { ...(shelfData.productTypes || {}) };
-        productTypes[productCode] = newType;
+        const oldOrderQty = Number(shelfData.orderQuantities?.[productCode] || 0);
+        const orderQuantities = { ...(shelfData.orderQuantities || {}) };
         
-        await updateDoc(doc(db, "shelves", shelfName), { productTypes, updated: serverTimestamp() });
+        if(newOrderQty > 0){
+          orderQuantities[productCode] = newOrderQty;
+        } else {
+          delete orderQuantities[productCode];
+        }
+        
+        await updateDoc(doc(db, "shelves", shelfName), { orderQuantities, updated: serverTimestamp() });
         await addDoc(collection(db, "logs"), { 
-          action: "TYPE_CHANGE", 
+          action: "ORDER_QTY_CHANGE", 
           shelf: shelfName, 
           product: productCode, 
-          qty: 0, 
-          detail: `Ürün tipi ${oldType === 'order' ? 'SİPARİŞ' : 'STOK'} → ${typeText} olarak değiştirildi`,
+          qty: newOrderQty, 
+          detail: `Sipariş adedi: ${oldOrderQty} → ${newOrderQty} (Toplam: ${totalQty})`,
           ts: serverTimestamp(),
           role: window.__SESSION?.role || "-",
           pin: window.__SESSION?.pin || "-"
@@ -5149,7 +5544,70 @@
         
         hideProductTypeModal();
         
-        // Arama sonuçlarını güncelle (eğer arama yapılmışsa)
+        if(searchWrap && searchWrap.style.display === 'block') {
+          runSearch();
+        }
+      } catch(e){
+        alert('Hata: ' + e.message);
+        hideProductTypeModal();
+      }
+    });
+
+    // Raftan boşalt butonu
+    btnProductTypeRemove && (btnProductTypeRemove.onclick = async () => {
+      if(!pendingTypeChange) return;
+      const { shelfName, productCode } = pendingTypeChange;
+
+      try{
+        const shelfData = shelvesCache[shelfName];
+        if(!shelfData) { alert('Raf bulunamadı!'); hideProductTypeModal(); return; }
+
+        const products = { ...(shelfData.products || {}) };
+        const productTimestamps = { ...(shelfData.productTimestamps || {}) };
+        const productTypes = { ...(shelfData.productTypes || {}) };
+        const orderQuantities = { ...(shelfData.orderQuantities || {}) };
+        const currentQty = Number(products[productCode] || 0);
+
+        if(currentQty <= 0){ alert('Ürün bulunamadı'); hideProductTypeModal(); return; }
+
+        let removeQty = currentQty;
+        if(currentQty > 1){
+          const input = prompt(`${productCode} → Rafta ${currentQty} adet var.\nKaç adet çıkarmak istiyorsunuz?`, String(currentQty));
+          if(!input){ return; }
+          removeQty = parseInt(input, 10);
+          if(!removeQty || removeQty < 1){ alert('Geçerli adet giriniz'); return; }
+          if(removeQty > currentQty){ alert(`Rafta sadece ${currentQty} adet var`); return; }
+        }
+
+        const newQty = currentQty - removeQty;
+
+        if(newQty <= 0){
+          delete products[productCode];
+          delete productTimestamps[productCode];
+          delete productTypes[productCode];
+          delete orderQuantities[productCode];
+        } else {
+          products[productCode] = newQty;
+          // Sipariş adedini yeni miktara göre ayarla
+          if(orderQuantities[productCode] && orderQuantities[productCode] > newQty){
+            orderQuantities[productCode] = newQty;
+          }
+        }
+
+        await updateDoc(doc(db, "shelves", shelfName), { products, productTimestamps, productTypes, orderQuantities, updated: serverTimestamp() });
+        await addDoc(collection(db, "logs"), {
+          action: newQty <= 0 ? "REMOVE_PRODUCT" : "DECREASE_QTY",
+          shelf: shelfName,
+          product: productCode,
+          qty: removeQty,
+          detail: newQty <= 0 ? `Ürün raftan tamamen çıkarıldı (Mevcut ${currentQty})` : `Adet azaltıldı: ${currentQty} → ${newQty}`,
+          ts: serverTimestamp(),
+          role: window.__SESSION?.role || "-",
+          pin: window.__SESSION?.pin || "-"
+        });
+
+        hideProductTypeModal();
+
         if(searchWrap && searchWrap.style.display === 'block') {
           runSearch();
         }
@@ -5160,12 +5618,45 @@
     });
 
     // Ürün tipini değiştir (raf görünümünden tıklanarak)
-    window.toggleProductType = function(shelfName, productCode, newType){
-      showProductTypeModal(shelfName, productCode, newType);
+    window.toggleProductType = function(shelfName, productCode){
+      showProductTypeModal(shelfName, productCode);
     };
 
+    // Raf numarasının görüntülenecek aralıkta olup olmadığını kontrol et (R001-R100)
+    function isShelfVisible(shelfName){
+      if(!shelfName) return false;
+      const match = shelfName.match(/^R(\d+)$/);
+      if(!match) return false;
+      const num = parseInt(match[1], 10);
+      return num >= 1 && num <= 100;
+    }
+
+    // Üretim rafı - R101-R200 arası raflar P prefix ile gösterilir
+    function isProductionShelfVisible(shelfName){
+      if(!shelfName) return false;
+      const match = shelfName.match(/^R(\d+)$/);
+      if(!match) return false;
+      const num = parseInt(match[1], 10);
+      return num >= 101 && num <= 200;
+    }
+
+    // R101 -> P1, R102 -> P2 dönüşümü
+    function shelfToProductionName(rName){
+      const match = rName.match(/^R(\d+)$/);
+      if(!match) return rName;
+      const num = parseInt(match[1], 10) - 100;
+      return 'P' + num;
+    }
+    // P1 -> R101 dönüşümü
+    function productionToShelfName(pName){
+      const match = pName.match(/^P(\d+)$/);
+      if(!match) return pName;
+      const num = parseInt(match[1], 10) + 100;
+      return 'R' + String(num).padStart(3, '0');
+    }
+
     function computeSummary(){
-      const names = Object.keys(shelvesCache);
+      const names = Object.keys(shelvesCache).filter(isShelfVisible);
       const total = names.length;
       let empty = 0;
       let full = 0;
@@ -5191,7 +5682,7 @@
 
     function setActiveTab(target){
       currentActiveTab = target; // Aktif sekmeyi kaydet
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabFreelanceWorks, tabCargo, tabUnaltaWA, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabProductionRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabFreelanceWorks, tabCargo, tabUnaltaWA, tabPackerTracker, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -5199,6 +5690,7 @@
         viewClear && (viewClear.style.display="none");
         viewSearch && (viewSearch.style.display="none");
         viewRack && (viewRack.style.display="none");
+        viewProductionRack && (viewProductionRack.style.display="none");
         viewRequest && (viewRequest.style.display="none");
         viewMaterialRequest && (viewMaterialRequest.style.display="none");
         viewWelder && (viewWelder.style.display="none");
@@ -5221,6 +5713,7 @@
         viewUnaltaKargo && (viewUnaltaKargo.style.display="none");
         viewUnaltaWallArt && (viewUnaltaWallArt.style.display="none");
         viewUnaltaWA && (viewUnaltaWA.style.display="none");
+        viewPackerTracker && (viewPackerTracker.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -5241,6 +5734,15 @@
           try{ 
             const scrollTarget = rackGrid || rackBody;
             scrollTarget && scrollTarget.scrollIntoView && scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+          }catch(e){} 
+        },50); 
+      }
+      if(target==="productionRack"){ 
+        tabProductionRack?.classList.add("active"); 
+        viewProductionRack.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            populateProductionShelfDropdown();
           }catch(e){} 
         },50); 
       }
@@ -5344,6 +5846,15 @@
           }catch(e){console.error(e);} 
         },50); 
       }
+      if(target==="packerTracker"){ 
+        tabPackerTracker?.classList.add("active"); 
+        viewPackerTracker.style.display="block";
+        setTimeout(()=>{ 
+          try{ 
+            if(typeof loadPackerRecords === "function") loadPackerRecords();
+          }catch(e){console.error(e);} 
+        },50); 
+      }
       if(target==="unaltaWA"){ 
         tabUnaltaWA?.classList.add("active"); 
         viewUnaltaWA.style.display="block";
@@ -5443,6 +5954,7 @@
         [tabClear, viewClear],
         [tabSearch, viewSearch],
         [tabRack, viewRack],
+        [tabProductionRack, viewProductionRack],
         [tabRequest, viewRequest],
         [tabMaterialRequest, viewMaterialRequest],
         [tabWelder, viewWelder],
@@ -5463,6 +5975,7 @@
         [tabFreelanceWorks, viewFreelanceWorks],
         [tabCargo, viewCargo],
         [tabUnaltaWA, viewUnaltaWA],
+        [tabPackerTracker, viewPackerTracker],
         [tabAdmin, viewAdmin]
       ];
 
@@ -5499,6 +6012,11 @@
           tabCargo.style.display="block";
         }
         
+        // Veli (61704) Wall Art siparişlerini görebilir (fiyatsız)
+        if(currentPin === "61704") {
+          tabUnaltaWA.style.display="block";
+        }
+        
         let colCount = 5; // Temel sekmeler
         if(currentPin === "61704") colCount++; // Rafa ürün koy
         if(currentPin === "2001" || currentPin === "45823" || currentPin === "61704"){
@@ -5508,6 +6026,7 @@
         }
         if(window.CUSTOM_ORDER_VIEWERS?.has(currentPin)) colCount++;
         if(window.CARGO_LABEL_USERS?.has(currentPin)) colCount++;
+        if(currentPin === "61704") colCount++; // Wall Art siparişleri
         
         tabbar.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
         
@@ -5530,10 +6049,12 @@
         tabMaterialRequest.style.display="block";
         tabInstructions.style.display="block";
         tabAttendance.style.display="block";
+        // tabProductionRack.style.display="block"; // Üretim rafları - geçici olarak gizlendi
+        tabProductionRack.style.display="block"; // Üretim rafları - R101-R200 P prefix ile
         
         // İlhami (28573) ve Emin (64829) raf durumunu görebilir
         const currentPin = window.__SESSION?.pin;
-        let colCount = 5;
+        let colCount = 6; // 6 temel sekme (üretim rafları dahil)
         if(currentPin === "28573" || currentPin === "64829") {
           tabRack.style.display="block";
           colCount++;
@@ -5643,6 +6164,14 @@
           tabbar.style.gridTemplateColumns = "1fr";
         }
         setActiveTab("cargo");
+      }else if(r==="packer_tracker"){
+        // Paketçi Takip - Ali
+        tabbar.style.display="flex";
+        tabbarGrouped.style.display="none";
+        
+        tabPackerTracker.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr";
+        setActiveTab("packerTracker");
       }else{
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
@@ -5782,6 +6311,7 @@
         tabClear && (tabClear.onclick = ()=>setActiveTab("clear"));
         tabSearch && (tabSearch.onclick = ()=>setActiveTab("search"));
         tabRack && (tabRack.onclick = ()=>setActiveTab("rack"));
+        tabProductionRack && (tabProductionRack.onclick = ()=>setActiveTab("productionRack"));
         tabRequest && (tabRequest.onclick = ()=>setActiveTab("request"));
         tabMaterialRequest && (tabMaterialRequest.onclick = ()=>setActiveTab("materialRequest"));
         tabWelder && (tabWelder.onclick = ()=>setActiveTab("welder"));
@@ -5802,6 +6332,7 @@
         tabFreelanceWorks && (tabFreelanceWorks.onclick = ()=>{setActiveTab("freelanceWorks"); loadFreelanceWorks();});
         tabCargo && (tabCargo.onclick = ()=>setActiveTab("cargo"));
         tabUnaltaWA && (tabUnaltaWA.onclick = ()=>setActiveTab("unaltaWA"));
+        tabPackerTracker && (tabPackerTracker.onclick = ()=>setActiveTab("packerTracker"));
         tabAdmin && (tabAdmin.onclick = ()=>setActiveTab("admin"));
 
         logoutBtn.onclick = ()=>{
@@ -5833,6 +6364,7 @@
             { id: 'commission', name: 'Etsy Satışları', badge: 'ETSY SATIŞLARI', color: '#9333ea' },
             { id: 'page_manager', name: 'Sayfa Yöneticisi', badge: 'SAYFA YÖN.', color: '#f97316' },
             { id: 'designer', name: 'Tasarımcı', badge: 'TASARIMCI', color: '#06b6d4' },
+            { id: 'packer_tracker', name: 'Paketçi Takip', badge: 'PAKET TAKİP', color: '#f97316' },
             { id: 'logout', name: 'Çıkış Yap', badge: 'ÇIKIŞ', color: '#ef4444' }
           ];
           
@@ -5933,6 +6465,8 @@
         }, 1000);
 
         const shelvesCol = collection(db, "shelves");
+        const productionShelvesCol = collection(db, "productionShelves");
+        const productionOrdersCol = collection(db, "productionOrders");
         const logsCol = collection(db, "logs");
         const reqCol = collection(db, "requests");
         const productionCol = collection(db, "production");
@@ -5951,6 +6485,7 @@
         window.credentialsCol = credentialsCol;
 
         const initRef = doc(db, "system", "shelves_init");
+        const prodInitRef = doc(db, "system", "productionShelves_init");
 
         // Context Menu için global değişken
         let currentContextRequestId = null;
@@ -6068,7 +6603,6 @@
           if(rackGridFull) rackGridFull.innerHTML = "";
           if(rackGridEmpty) rackGridEmpty.innerHTML = "";
 
-          const total = snapshot.size;
           let emptyCount = 0;
           let fullCount = 0;
           
@@ -6082,7 +6616,11 @@
             const products = d.products || {};
             const productTimestamps = d.productTimestamps || {};
             const productTypes = d.productTypes || {};
-            shelvesCache[name] = { ...d, name, products, productTimestamps, productTypes };
+            const orderQuantities = d.orderQuantities || {};
+            shelvesCache[name] = { ...d, name, products, productTimestamps, productTypes, orderQuantities };
+
+            // Sadece R001-R100 arası rafları göster
+            if(!isShelfVisible(name)) return;
 
             const empty = Object.keys(products).length===0;
             if(empty) emptyCount++; else fullCount++;
@@ -6106,7 +6644,7 @@
             
             const statusClass = empty ? 'empty' : 'full';
             const statusText = empty ? 'BOŞ' : 'DOLU';
-            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name);
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities);
             
             card.innerHTML = `
               <div class="rack-card-header">
@@ -6163,7 +6701,8 @@
           }
           
           // Dairesel grafik güncelle
-          updateRackPieChart(fullCount, emptyCount, total);
+          const visibleTotal = fullCount + emptyCount;
+          updateRackPieChart(fullCount, emptyCount, visibleTotal);
           
           // Boş mesajları kontrol et
           if(rackFullEmpty) {
@@ -6180,7 +6719,7 @@
 
           if(rackHint){
             if(role === "admin"){
-              rackHint.textContent = `Toplam: ${total} raf • Dolu: ${fullCount} • Boş: ${emptyCount}`;
+              rackHint.textContent = `Toplam: ${visibleTotal} raf • Dolu: ${fullCount} • Boş: ${emptyCount}`;
             }else{
               rackHint.textContent = `Dolu raf: ${fullCount}`;
             }
@@ -6189,6 +6728,623 @@
           populateShelfDropdown();
           refreshClearMode();
           if(role==="admin") computeSummary();
+        });
+
+        // ===== ÜRETİM RAFLARI =====
+        
+        // Üretim rafları element referansları
+        const prodRackHint = document.getElementById('prodRackHint');
+        const prodRackGridFull = document.getElementById('prodRackGridFull');
+        const prodRackGridEmpty = document.getElementById('prodRackGridEmpty');
+        const prodFullRackCount = document.getElementById('prodFullRackCount');
+        const prodEmptyRackCount = document.getElementById('prodEmptyRackCount');
+        const prodRackFullEmpty = document.getElementById('prodRackFullEmpty');
+        const prodRackEmptyEmpty = document.getElementById('prodRackEmptyEmpty');
+        const prodEmptyRacksSection = document.getElementById('prodEmptyRacksSection');
+        const prodInShelfNum = document.getElementById('prodInShelfNum');
+        const prodInProduct = document.getElementById('prodInProduct');
+        const prodInQty = document.getElementById('prodInQty');
+        const btnProdPut = document.getElementById('btnProdPut');
+        const statusProdPut = document.getElementById('statusProdPut');
+        const prodSetupBox = document.getElementById('prodSetupBox');
+        const prodSetupCount = document.getElementById('prodSetupCount');
+        const prodSetupPrefix = document.getElementById('prodSetupPrefix');
+        const btnProdSetup = document.getElementById('btnProdSetup');
+        const prodSetupStatus = document.getElementById('prodSetupStatus');
+        
+        // Üretim rafları adet dropdown doldur
+        if(prodInQty){
+          for(let i = 1; i <= 100; i++){
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            prodInQty.appendChild(opt);
+          }
+          prodInQty.value = "1";
+        }
+        
+        // Üretim rafları dropdown doldur
+        function populateProductionShelfDropdown(){
+          if(!prodInShelfNum) return;
+          prodInShelfNum.innerHTML = '<option value="">Seçiniz</option>';
+          for(let i = 1; i <= 100; i++){
+            const opt = document.createElement('option');
+            const pName = 'P' + i;
+            opt.value = pName;
+            opt.textContent = pName;
+            prodInShelfNum.appendChild(opt);
+          }
+        }
+        // İlk yüklemede de dropdown'ı doldur
+        populateProductionShelfDropdown();
+        
+        // Üretim rafları pie chart güncelle
+        function updateProductionRackPieChart(fullCount, emptyCount, total){
+          const canvas = document.getElementById('prodRackPieChart');
+          if(!canvas) return;
+          
+          const ctx = canvas.getContext('2d');
+          const centerX = 90;
+          const centerY = 90;
+          const radius = 80;
+          
+          ctx.clearRect(0, 0, 180, 180);
+          
+          if(total === 0){
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 20;
+            ctx.stroke();
+            return;
+          }
+          
+          const fullAngle = (fullCount / total) * 2 * Math.PI;
+          const emptyAngle = (emptyCount / total) * 2 * Math.PI;
+          
+          let startAngle = -Math.PI / 2;
+          
+          // Dolu raflar (yeşil)
+          if(fullCount > 0){
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle, startAngle + fullAngle);
+            ctx.strokeStyle = '#00c853';
+            ctx.lineWidth = 20;
+            ctx.stroke();
+            startAngle += fullAngle;
+          }
+          
+          // Boş raflar (gri)
+          if(emptyCount > 0){
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle, startAngle + emptyAngle);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 20;
+            ctx.stroke();
+          }
+          
+          // İstatistikleri güncelle
+          const prodRackTotalCount = document.getElementById('prodRackTotalCount');
+          const prodRackFullStat = document.getElementById('prodRackFullStat');
+          const prodRackEmptyStat = document.getElementById('prodRackEmptyStat');
+          const prodRackFullPercent = document.getElementById('prodRackFullPercent');
+          const prodRackEmptyPercent = document.getElementById('prodRackEmptyPercent');
+          
+          if(prodRackTotalCount) prodRackTotalCount.textContent = total;
+          if(prodRackFullStat) prodRackFullStat.textContent = fullCount;
+          if(prodRackEmptyStat) prodRackEmptyStat.textContent = emptyCount;
+          if(prodRackFullPercent) prodRackFullPercent.textContent = total > 0 ? `%${Math.round(fullCount/total*100)}` : '%0';
+          if(prodRackEmptyPercent) prodRackEmptyPercent.textContent = total > 0 ? `%${Math.round(emptyCount/total*100)}` : '%0';
+        }
+        
+        // Üretim rafları HTML oluştur
+        function productionProductsHTML(products, productTimestamps, shelfName){
+          if(!products || Object.keys(products).length===0) {
+            return '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>';
+          }
+          const timestamps = productTimestamps || {};
+          return Object.entries(products)
+            .map(([code, qty]) => {
+              const ts = timestamps[code];
+              let waitInfo = '';
+              if(ts){
+                const addedDate = ts.toDate ? ts.toDate() : new Date(ts);
+                const now = new Date();
+                const diffMs = now - addedDate;
+                const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                if(diffDays < 1){
+                  const diffHours = Math.round(diffDays * 24);
+                  waitInfo = `<span style="font-size:10px;color:var(--muted);">${diffHours}s</span>`;
+                } else {
+                  waitInfo = `<span style="font-size:10px;color:var(--muted);">${diffDays.toFixed(0)}g</span>`;
+                }
+              }
+              const reservedKey = `${shelfName}|${code}`;
+              const reservedQty = _prodReservedCache[reservedKey] || 0;
+              const reservedBadge = reservedQty > 0 
+                ? `<span style="background:#3b82f6;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;" title="Ayrılan sipariş">📋${reservedQty}</span>` 
+                : '';
+              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+                <span style="font-weight:600;font-size:14px;">${code}</span>
+                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                  <span style="background:#00c853;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;" title="Stok">Stok: ${qty}</span>
+                  ${reservedBadge}
+                  ${waitInfo}
+                  <button onclick="window.openProdOrderModal('${shelfName}','${code}',${qty})" style="background:#3b82f6;color:#fff;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;" title="Sipariş ayır">📋</button>
+                  <button onclick="window.removeProductionProduct('${shelfName}','${code}')" style="background:#ef4444;color:#fff;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;font-size:11px;">-</button>
+                </div>
+              </div>`;
+            }).join('');
+        }
+        
+        // ── Sipariş Ayırma (prompt tabanlı) ──
+        window.openProdOrderModal = async function(shelfName, productCode, availableQty){
+          const qtyStr = prompt(`${shelfName} → ${productCode}\nRafta mevcut: ${availableQty} adet\n\nSipariş olarak ayırmak istediğiniz adedi girin:`, '1');
+          if(!qtyStr) return;
+          const qty = parseInt(qtyStr, 10);
+          if(!qty || qty < 1){ alert('Geçerli adet giriniz'); return; }
+          if(qty > availableQty){ alert(`Rafta sadece ${availableQty} adet var`); return; }
+
+          const note = prompt('Sipariş notu (opsiyonel):', '') || '';
+
+          try{
+            const rName = productionToShelfName(shelfName);
+            const shelfRef = doc(db, 'shelves', rName);
+            const shelfSnap = await getDoc(shelfRef);
+            if(!shelfSnap.exists()) throw new Error('Raf bulunamadı');
+
+            const data = shelfSnap.data();
+            const products = { ...(data.products || {}) };
+            const productTimestamps = { ...(data.productTimestamps || {}) };
+
+            const currentQty = Number(products[productCode] || 0);
+            if(currentQty < qty) throw new Error(`Rafta yeterli ürün yok (${currentQty} adet kaldı)`);
+
+            const remaining = currentQty - qty;
+            if(remaining <= 0){
+              delete products[productCode];
+              delete productTimestamps[productCode];
+            } else {
+              products[productCode] = remaining;
+            }
+
+            await updateDoc(shelfRef, { products, productTimestamps, updated: serverTimestamp() });
+
+            await addDoc(productionOrdersCol, {
+              shelfName: shelfName,
+              productCode: productCode,
+              quantity: qty,
+              note: note,
+              status: 'RESERVED',
+              createdAt: serverTimestamp(),
+              createdBy: sessionPin || '-',
+              role: role || '-'
+            });
+
+            await addDoc(logsCol, {
+              action: 'PROD_ORDER_RESERVE',
+              shelf: shelfName,
+              product: productCode,
+              qty: qty,
+              detail: `Üretim rafından ${qty} adet ${productCode} sipariş olarak ayrıldı` + (note ? ` (Not: ${note})` : ''),
+              ts: serverTimestamp(),
+              role: role || '-',
+              pin: sessionPin || '-'
+            });
+
+            alert(`✅ ${qty}x ${productCode} sipariş olarak ayrıldı!`);
+          } catch(e){
+            alert('Hata: ' + e.message);
+          }
+        };
+
+        // Ürün çıkarma fonksiyonu
+        window.removeProductionProduct = async function(shelfName, productCode){
+          const shelfData = productionShelvesCache[shelfName];
+          if(!shelfData){ alert('Raf bulunamadı!'); return; }
+          const currentQty = Number((shelfData.products || {})[productCode] || 0);
+          const qtyStr = prompt(`${shelfName} → ${productCode}\nMevcut: ${currentQty} adet\n\nÇıkarmak istediğiniz adedi girin:`, '1');
+          if(!qtyStr) return;
+          const qty = parseInt(qtyStr, 10);
+          if(!qty || qty < 1){ alert('Geçerli adet giriniz'); return; }
+          if(qty > currentQty){ alert(`Rafta sadece ${currentQty} adet var`); return; }
+
+          try{
+            const products = { ...(shelfData.products || {}) };
+            const productTimestamps = { ...(shelfData.productTimestamps || {}) };
+            const remaining = currentQty - qty;
+            if(remaining <= 0){
+              delete products[productCode];
+              delete productTimestamps[productCode];
+            } else {
+              products[productCode] = remaining;
+            }
+            await updateDoc(doc(db, 'shelves', productionToShelfName(shelfName)), { products, productTimestamps, updated: serverTimestamp() });
+            await addDoc(logsCol, { action: 'PROD_SHELF_REMOVE', shelf: shelfName, product: productCode, qty, detail: `Üretim rafından (${shelfName}) ${qty} adet ${productCode} çıkarıldı`, ts: serverTimestamp(), role: role || '-', pin: sessionPin || '-' });
+          } catch(e){ alert('Hata: ' + e.message); }
+        };
+
+        // Sipariş tamamla
+        window.completeProdOrder = async function(orderId){
+          if(!confirm('Bu sipariş tamamlandı olarak işaretlensin mi?')) return;
+          try{
+            await updateDoc(doc(db, 'productionOrders', orderId), { status: 'COMPLETED', completedAt: serverTimestamp(), completedBy: sessionPin || '-' });
+            await addDoc(logsCol, { action: 'PROD_ORDER_COMPLETE', orderId, detail: 'Üretim siparişi tamamlandı', ts: serverTimestamp(), role: role || '-', pin: sessionPin || '-' });
+          } catch(e){ alert('Hata: ' + e.message); }
+        };
+
+        // Sipariş iptal - ürünü rafa geri koy
+        window.cancelProdOrder = async function(orderId, shelfName, productCode, qty){
+          if(!confirm(`${qty}x ${productCode} siparişi iptal edilip ${shelfName} rafına geri konulsun mu?`)) return;
+          try{
+            // Rafa geri ekle
+            const rName = productionToShelfName(shelfName);
+            const shelfRef = doc(db, 'shelves', rName);
+            const shelfSnap = await getDoc(shelfRef);
+            if(shelfSnap.exists()){
+              const data = shelfSnap.data();
+              const products = { ...(data.products || {}) };
+              const productTimestamps = { ...(data.productTimestamps || {}) };
+              products[productCode] = (Number(products[productCode]) || 0) + qty;
+              if(!productTimestamps[productCode]) productTimestamps[productCode] = serverTimestamp();
+              await updateDoc(shelfRef, { products, productTimestamps, updated: serverTimestamp() });
+            }
+            // Siparişi iptal et
+            await updateDoc(doc(db, 'productionOrders', orderId), { status: 'CANCELLED', cancelledAt: serverTimestamp(), cancelledBy: sessionPin || '-' });
+            await addDoc(logsCol, { action: 'PROD_ORDER_CANCEL', orderId, shelf: shelfName, product: productCode, qty, detail: `Üretim siparişi iptal edildi, ${qty}x ${productCode} → ${shelfName} geri konuldu`, ts: serverTimestamp(), role: role || '-', pin: sessionPin || '-' });
+          } catch(e){ alert('Hata: ' + e.message); }
+        };
+
+        // ── Sipariş listesi snapshot listener ──
+        function refreshProductionShelfCards(){
+          // Re-render shelf cards with updated reserved info
+          if(!prodRackGridFull) return;
+          const cards = prodRackGridFull.querySelectorAll('.rack-card');
+          cards.forEach(card => {
+            const nameEl = card.querySelector('.rack-card-name');
+            if(!nameEl) return;
+            const name = nameEl.textContent;
+            const data = productionShelvesCache[name];
+            if(!data) return;
+            const productsEl = card.querySelector('.rack-card-products');
+            if(productsEl && data.products && Object.keys(data.products).length > 0) {
+              productsEl.innerHTML = productsHTML(data.products, data.productTimestamps, data.productTypes || {}, data.realName, data.orderQuantities || {});
+            }
+          });
+        }
+
+        function renderProdOrders(snapshot){
+          const listEl = document.getElementById('prodOrdersList');
+          const emptyEl = document.getElementById('prodOrdersEmpty');
+          const countEl = document.getElementById('prodOrderCount');
+          if(!listEl) return;
+          listEl.innerHTML = '';
+
+          // Reserved cache güncelle
+          _prodReservedCache = {};
+          const docs = [];
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            if(d.status !== 'RESERVED') return;
+            docs.push({ id: docSnap.id, ...d });
+            const key = `${d.shelfName}|${d.productCode}`;
+            _prodReservedCache[key] = (_prodReservedCache[key] || 0) + (d.quantity || 0);
+          });
+
+          // Raf kartlarındaki stok/sipariş badge'lerini güncelle
+          refreshProductionShelfCards();
+
+          // Tarihe göre sırala (en yeni en üstte)
+          docs.sort((a,b) => {
+            const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+            const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+            return tb - ta;
+          });
+
+          let count = 0;
+          docs.forEach((d) => {
+            count++;
+            const createdAt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+            let timeAgo = '';
+            if(createdAt){
+              const diffMs = Date.now() - createdAt.getTime();
+              const diffH = diffMs / (1000*60*60);
+              if(diffH < 1) timeAgo = `${Math.round(diffH*60)}dk önce`;
+              else if(diffH < 24) timeAgo = `${Math.round(diffH)}s önce`;
+              else timeAgo = `${Math.round(diffH/24)}g önce`;
+            }
+
+            const card = document.createElement('div');
+            card.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;';
+            card.innerHTML = `
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-weight:700;font-size:15px;color:var(--accent);">${d.productCode}</span>
+                <span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:600;">x${d.quantity}</span>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Raf: <strong>${d.shelfName}</strong></div>
+              ${d.note ? `<div style="font-size:12px;color:var(--text);margin-bottom:4px;">📝 ${d.note}</div>` : ''}
+              <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${timeAgo}</div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="window.completeProdOrder('${d.id}')" style="flex:1;padding:8px;border:none;background:#00c853;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;font-size:12px;">✓ Tamamlandı</button>
+                <button onclick="window.cancelProdOrder('${d.id}','${d.shelfName}','${d.productCode}',${d.quantity})" style="flex:1;padding:8px;border:none;background:#ef4444;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;font-size:12px;">✕ İptal</button>
+              </div>
+            `;
+            listEl.appendChild(card);
+          });
+
+          if(countEl) countEl.textContent = `(${count})`;
+          if(emptyEl) emptyEl.style.display = count === 0 ? 'block' : 'none';
+        }
+        onSnapshot(productionOrdersCol, renderProdOrders);
+
+        // Üretim rafları kurulum fonksiyonu
+        async function ensureProductionShelvesOnce(){
+          if(role !== "admin") return;
+          
+          try{
+            // Üretim rafları var mı kontrol et
+            const testSnap = await getDoc(doc(db, "productionShelves", "P001"));
+            
+            if(!testSnap.exists()) {
+              // Raflar yok - otomatik oluştur
+              console.log("⚙️ Üretim rafları bulunamadı, otomatik oluşturuluyor...");
+              if(prodSetupBox) {
+                prodSetupBox.style.display = "block";
+                const statusEl = document.getElementById('prodSetupStatus');
+                if(statusEl) statusEl.textContent = "Otomatik oluşturuluyor...";
+              }
+              
+              // 100 raf oluştur - batch 500 sınırı var, 100 sorun değil
+              const batch = writeBatch(db);
+              for(let i = 1; i <= 100; i++){
+                const shelfName = "P" + String(i).padStart(3, "0");
+                const shelfRef = doc(db, "productionShelves", shelfName);
+                batch.set(shelfRef, { name: shelfName, products: {}, productTimestamps: {}, created: serverTimestamp() });
+              }
+              await batch.commit();
+              
+              console.log("✅ 100 üretim rafı oluşturuldu!");
+              if(prodSetupBox) prodSetupBox.style.display = "none";
+              
+              await addDoc(logsCol, { 
+                action: "PROD_SHELF_SETUP", 
+                detail: "100 üretim rafı otomatik oluşturuldu (P001-P100)",
+                ts: serverTimestamp(),
+                role: role || "-",
+                pin: sessionPin || "-"
+              });
+            } else {
+              // Raflar var - kutuyı gizle
+              if(prodSetupBox) prodSetupBox.style.display = "none";
+            }
+          }catch(e){
+            console.error("❌ Üretim rafları oluşturma hatası:", e);
+            // Hata olursa kurulum kutusunu göster
+            if(prodSetupBox) prodSetupBox.style.display = "block";
+            const statusEl = document.getElementById('prodSetupStatus');
+            if(statusEl) statusEl.textContent = "Hata: " + e.message;
+          }
+        }
+        
+        // ensureProductionShelvesOnce artık gerekli değil - R101-R200 shelves koleksiyonunda zaten mevcut
+        // await ensureProductionShelvesOnce();
+        
+        // Üretim rafları kurulum butonu
+        if(btnProdSetup){
+          btnProdSetup.onclick = async () => {
+            const count = parseInt(prodSetupCount?.value || "100", 10);
+            const prefix = (prodSetupPrefix?.value || "P").trim().toUpperCase();
+            
+            if(count < 1 || count > 500){
+              if(prodSetupStatus) prodSetupStatus.textContent = "Adet 1-500 arası olmalı";
+              return;
+            }
+            
+            if(prodSetupStatus) prodSetupStatus.textContent = "Oluşturuluyor...";
+            btnProdSetup.disabled = true;
+            
+            try{
+              const batch = writeBatch(db);
+              for(let i = 1; i <= count; i++){
+                const shelfName = prefix + String(i).padStart(3, "0");
+                const shelfRef = doc(db, "productionShelves", shelfName);
+                batch.set(shelfRef, { name: shelfName, products: {}, productTimestamps: {}, created: serverTimestamp() });
+              }
+              await batch.commit();
+              await setDoc(prodInitRef, { done: true, count, prefix, ts: serverTimestamp() });
+              
+              if(prodSetupStatus) prodSetupStatus.textContent = `${count} üretim rafı oluşturuldu!`;
+              if(prodSetupBox) prodSetupBox.style.display = "none";
+              
+              await addDoc(logsCol, { 
+                action: "PROD_SHELF_SETUP", 
+                detail: `${count} üretim rafı oluşturuldu (${prefix}001-${prefix}${String(count).padStart(3,"0")})`,
+                ts: serverTimestamp(),
+                role: role || "-",
+                pin: sessionPin || "-"
+              });
+            } catch(e){
+              if(prodSetupStatus) prodSetupStatus.textContent = "Hata: " + e.message;
+            } finally {
+              btnProdSetup.disabled = false;
+            }
+          };
+        }
+        
+        // Üretim raflarına ürün ekleme
+        if(btnProdPut){
+          btnProdPut.onclick = async () => {
+            const shelfName = (prodInShelfNum?.value || "").trim();
+            const productCode = (prodInProduct?.value || "").trim().toUpperCase();
+            const qty = parseInt(prodInQty?.value || "1", 10);
+            
+            if(!shelfName){
+              setStatusBox(statusProdPut, "Raf seçiniz", "error");
+              return;
+            }
+            if(!productCode){
+              setStatusBox(statusProdPut, "Ürün kodu giriniz", "error");
+              return;
+            }
+            if(qty < 1){
+              setStatusBox(statusProdPut, "Geçerli adet giriniz", "error");
+              return;
+            }
+            
+            setStatusBox(statusProdPut, "Ekleniyor...", "");
+            
+            try{
+              const rShelfName = productionToShelfName(shelfName);
+              const shelfRef = doc(db, "shelves", rShelfName);
+              const shelfSnap = await getDoc(shelfRef);
+              
+              let products = {};
+              let productTimestamps = {};
+              
+              if(shelfSnap.exists()){
+                const data = shelfSnap.data();
+                products = data.products || {};
+                productTimestamps = data.productTimestamps || {};
+              }
+              
+              const existingQty = Number(products[productCode] || 0);
+              products[productCode] = existingQty + qty;
+              
+              if(!productTimestamps[productCode]){
+                productTimestamps[productCode] = serverTimestamp();
+              }
+              
+              await setDoc(shelfRef, { 
+                name: rShelfName, 
+                products, 
+                productTimestamps,
+                updated: serverTimestamp() 
+              }, { merge: true });
+              
+              await addDoc(logsCol, { 
+                action: "PROD_SHELF_PUT", 
+                shelf: shelfName, 
+                product: productCode, 
+                qty: qty, 
+                detail: `Üretim rafına (${shelfName}) ${qty} adet ${productCode} eklendi`,
+                ts: serverTimestamp(),
+                role: role || "-",
+                pin: sessionPin || "-"
+              });
+              
+              setStatusBox(statusProdPut, `${qty}x ${productCode} → ${shelfName} eklendi!`, "ok");
+              if(prodInProduct) prodInProduct.value = "";
+              if(prodInQty) prodInQty.value = "1";
+            } catch(e){
+              setStatusBox(statusProdPut, "Hata: " + e.message, "error");
+            }
+          };
+        }
+        
+        // Üretim rafları snapshot listener - shelves koleksiyonundan R101-R200
+        onSnapshot(shelvesCol, (snapshot) => {
+          productionShelvesCache = {};
+          if(prodRackGridFull) prodRackGridFull.innerHTML = "";
+          if(prodRackGridEmpty) prodRackGridEmpty.innerHTML = "";
+
+          let emptyCount = 0;
+          let fullCount = 0;
+          let totalWaitDays = 0;
+          let productCountForAvg = 0;
+
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            const name = d.name || docSnap.id;
+            const products = d.products || {};
+            const productTimestamps = d.productTimestamps || {};
+            const productTypes = d.productTypes || {};
+            const orderQuantities = d.orderQuantities || {};
+
+            // Sadece R101-R200 arası rafları üretim olarak göster
+            if(!isProductionShelfVisible(name)) return;
+
+            const pName = shelfToProductionName(name);
+            productionShelvesCache[pName] = { ...d, name: pName, realName: name, products, productTimestamps, productTypes, orderQuantities };
+
+            const empty = Object.keys(products).length===0;
+            if(empty) emptyCount++; else fullCount++;
+            
+            // Bekleme süresi hesaplama
+            const now = new Date();
+            for(const code of Object.keys(products)){
+              const ts = productTimestamps[code];
+              if(ts){
+                const addedDate = ts.toDate ? ts.toDate() : new Date(ts);
+                const diffMs = now - addedDate;
+                const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                totalWaitDays += diffDays;
+                productCountForAvg++;
+              }
+            }
+
+            const card = document.createElement("div");
+            card.className = "rack-card";
+            if(empty) card.classList.add('empty');
+            
+            const statusClass = empty ? 'empty' : 'full';
+            const statusText = empty ? 'BOŞ' : 'DOLU';
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities);
+            
+            card.innerHTML = `
+              <div class="rack-card-header">
+                <div class="rack-card-name">${pName}</div>
+                <div class="rack-card-status ${statusClass}">${statusText}</div>
+              </div>
+              <div class="rack-card-products">${productsText}</div>
+            `;
+            
+            if(empty && prodRackGridEmpty) {
+              prodRackGridEmpty.appendChild(card);
+            } else if(!empty && prodRackGridFull) {
+              prodRackGridFull.appendChild(card);
+            }
+          });
+          
+          // Sayıları güncelle
+          if(prodFullRackCount) prodFullRackCount.textContent = `(${fullCount})`;
+          if(prodEmptyRackCount) prodEmptyRackCount.textContent = `(${emptyCount})`;
+          
+          // Ortalama bekleme süresini hesapla
+          const prodAvgWaitEl = document.getElementById('prodAvgWaitTime');
+          const prodTotalProductEl = document.getElementById('prodTotalProductCount');
+          
+          if(prodAvgWaitEl){
+            if(productCountForAvg > 0){
+              const avgDays = totalWaitDays / productCountForAvg;
+              if(avgDays < 1){
+                const avgHours = Math.round(avgDays * 24);
+                prodAvgWaitEl.textContent = `${avgHours} saat`;
+              } else {
+                prodAvgWaitEl.textContent = `${avgDays.toFixed(1)} gün`;
+              }
+            } else {
+              prodAvgWaitEl.textContent = '-';
+            }
+          }
+          if(prodTotalProductEl){
+            prodTotalProductEl.textContent = `${productCountForAvg} ürün`;
+          }
+          
+          // Dairesel grafik güncelle
+          const visibleTotal = fullCount + emptyCount;
+          updateProductionRackPieChart(fullCount, emptyCount, visibleTotal);
+          
+          // Boş mesajları kontrol et
+          if(prodRackFullEmpty) {
+            prodRackFullEmpty.style.display = fullCount === 0 ? 'block' : 'none';
+          }
+          if(prodRackEmptyEmpty) {
+            prodRackEmptyEmpty.style.display = emptyCount === 0 ? 'block' : 'none';
+          }
+
+          if(prodRackHint){
+            prodRackHint.textContent = `Toplam: ${visibleTotal} raf • Dolu: ${fullCount} • Boş: ${emptyCount}`;
+          }
         });
 
         // REQUEST LIST
@@ -6394,7 +7550,7 @@
           if(!confirmed) return;
           
           try{
-            await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, orderQuantities: {}, updated: serverTimestamp() });
             await writeLog({ action: "CLEAR_SHELF_CLICK", shelf: shelfName, product: "-", qty: 0, detail: `Raf tıklanarak boşaltıldı. İçerik: ${productList}` });
             alert(`✅ ${shelfName} rafı boşaltıldı.`);
           } catch(e){
@@ -6424,7 +7580,7 @@
 
               // qty=1 => rafı komple boşalt
               if(onlyQty <= 1){
-                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, orderQuantities: {}, updated: serverTimestamp() });
                 await writeLog({ action: "CLEAR_SHELF", shelf: shelfName, product: "-", qty: 0, detail: "Raf tamamen boşaltıldı" });
 
                 setStatusBox(statusClear, "Raf boşaltıldı.", "ok");
@@ -6442,7 +7598,7 @@
               const newQty = onlyQty - reduce;
 
               if(newQty <= 0){
-                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, updated: serverTimestamp() });
+                await updateDoc(doc(shelvesCol, shelfName), { products: {}, productTimestamps: {}, productTypes: {}, orderQuantities: {}, updated: serverTimestamp() });
                 await writeLog({ action: "REMOVE_PRODUCT_ALL", shelf: shelfName, product: onlyCode, qty: reduce, detail: `Ürün tamamen çıkarıldı (Mevcut ${onlyQty})` });
                 setStatusBox(statusClear, "Ürün tamamen çıkarıldı.", "ok");
               }else{
@@ -6477,18 +7633,24 @@
             // Timestamp ve Type güncellemesi için
             const productTimestamps = { ...(shelfData.productTimestamps || {}) };
             const productTypes = { ...(shelfData.productTypes || {}) };
+            const orderQuantities = { ...(shelfData.orderQuantities || {}) };
 
             if(newQty <= 0){
               delete productsNow[code];
               delete productTimestamps[code];
               delete productTypes[code];
+              delete orderQuantities[code];
               await writeLog({ action: "REMOVE_PRODUCT", shelf: shelfName, product: code, qty: reduce, detail: `Ürün çıkarıldı (Mevcut ${currentQty})` });
             }else{
               productsNow[code] = newQty;
+              // Sipariş adedini yeni miktara göre ayarla
+              if(orderQuantities[code] && orderQuantities[code] > newQty){
+                orderQuantities[code] = newQty;
+              }
               await writeLog({ action: "DECREASE_QTY", shelf: shelfName, product: code, qty: reduce, detail: `Adet azaltıldı: ${currentQty} → ${newQty}` });
             }
 
-            await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, productTimestamps, productTypes, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products: productsNow, productTimestamps, productTypes, orderQuantities, updated: serverTimestamp() });
 
             setStatusBox(
               statusClear,
@@ -7891,6 +9053,174 @@
               loadProduction('day');
             }
           })();
+        }
+
+        // ── Ürün Bazlı Üretim Raporu ──
+        const prodStatCode = document.getElementById('prodStatCode');
+        const prodStatStart = document.getElementById('prodStatStart');
+        const prodStatEnd = document.getElementById('prodStatEnd');
+        const btnProdStatSearch = document.getElementById('btnProdStatSearch');
+        const btnProdStatToday = document.getElementById('btnProdStatToday');
+        const btnProdStatWeek = document.getElementById('btnProdStatWeek');
+        const btnProdStatMonth = document.getElementById('btnProdStatMonth');
+        const btnProdStat3Month = document.getElementById('btnProdStat3Month');
+        const statusProdStat = document.getElementById('statusProdStat');
+        const prodStatSummary = document.getElementById('prodStatSummary');
+        const prodStatWrap = document.getElementById('prodStatWrap');
+        const prodStatBody = document.getElementById('prodStatBody');
+        const prodStatDetailWrap = document.getElementById('prodStatDetailWrap');
+        const prodStatDetailBody = document.getElementById('prodStatDetailBody');
+        const prodStatTotalQty = document.getElementById('prodStatTotalQty');
+        const prodStatUniqueProducts = document.getElementById('prodStatUniqueProducts');
+        const prodStatRecordCount = document.getElementById('prodStatRecordCount');
+
+        // Varsayılan tarih: bu ay
+        if(prodStatStart){
+          const now = new Date();
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+          prodStatStart.value = firstDay.toISOString().split('T')[0];
+          prodStatEnd.value = now.toISOString().split('T')[0];
+        }
+
+        function setProdStatDates(daysBack){
+          const now = new Date();
+          const start = new Date();
+          if(daysBack === 0){
+            start.setHours(0,0,0,0);
+          } else {
+            start.setDate(now.getDate() - daysBack);
+            start.setHours(0,0,0,0);
+          }
+          if(prodStatStart) prodStatStart.value = start.toISOString().split('T')[0];
+          if(prodStatEnd) prodStatEnd.value = now.toISOString().split('T')[0];
+          loadProdStats();
+        }
+
+        btnProdStatToday && (btnProdStatToday.onclick = () => setProdStatDates(0));
+        btnProdStatWeek && (btnProdStatWeek.onclick = () => setProdStatDates(7));
+        btnProdStatMonth && (btnProdStatMonth.onclick = () => setProdStatDates(30));
+        btnProdStat3Month && (btnProdStat3Month.onclick = () => setProdStatDates(90));
+        btnProdStatSearch && (btnProdStatSearch.onclick = () => loadProdStats());
+
+        async function loadProdStats(){
+          try{
+            if(!prodStatStart?.value || !prodStatEnd?.value){
+              setStatusBox(statusProdStat, 'Tarih aralığı seçin.', 'error');
+              return;
+            }
+
+            setStatusBox(statusProdStat, 'Sorgulanıyor...', '');
+            if(prodStatSummary) prodStatSummary.style.display = 'none';
+            if(prodStatWrap) prodStatWrap.style.display = 'none';
+            if(prodStatDetailWrap) prodStatDetailWrap.style.display = 'none';
+
+            const startDate = new Date(prodStatStart.value);
+            startDate.setHours(0,0,0,0);
+            const endDate = new Date(prodStatEnd.value);
+            endDate.setHours(23,59,59,999);
+
+            const filterCode = (prodStatCode?.value || '').trim().toLowerCase();
+
+            const q = query(
+              productionCol,
+              where('createdAt', '>=', startDate),
+              where('createdAt', '<=', endDate),
+              orderBy('createdAt', 'desc')
+            );
+
+            const snap = await getDocs(q);
+
+            // Sonuçları filtrele ve grupla
+            const productMap = {}; // { code: { total, count, statuses: { KESİLDİ: X, ... } } }
+            const records = [];
+
+            snap.forEach(docSnap => {
+              const d = docSnap.data();
+              const code = d.productCode || '-';
+              
+              if(filterCode && !code.toLowerCase().includes(filterCode)) return;
+
+              const qty = Number(d.quantity || 0);
+              const status = d.productionStatus || 'ÜRETİLDİ';
+
+              if(!productMap[code]){
+                productMap[code] = { total: 0, count: 0, statuses: {} };
+              }
+              productMap[code].total += qty;
+              productMap[code].count++;
+              productMap[code].statuses[status] = (productMap[code].statuses[status] || 0) + qty;
+
+              records.push({
+                date: d.createdAt?.toDate ? d.createdAt.toDate() : null,
+                code,
+                status,
+                qty,
+                welder: getNameByPin(d.welderPin)
+              });
+            });
+
+            const productCodes = Object.keys(productMap);
+            if(productCodes.length === 0){
+              setStatusBox(statusProdStat, 'Bu tarih aralığında kayıt bulunamadı.', 'warn');
+              return;
+            }
+
+            // Özet
+            let grandTotal = 0;
+            productCodes.forEach(c => grandTotal += productMap[c].total);
+
+            if(prodStatTotalQty) prodStatTotalQty.textContent = grandTotal;
+            if(prodStatUniqueProducts) prodStatUniqueProducts.textContent = productCodes.length;
+            if(prodStatRecordCount) prodStatRecordCount.textContent = records.length;
+            if(prodStatSummary) prodStatSummary.style.display = 'block';
+
+            // Ürün bazlı tablo
+            const statusColors = { 'KESİLDİ': '#f59e0b', 'PUNTALANDI': '#3b82f6', 'KAYNATILDI': '#8b5cf6', 'ÜRETİLDİ': '#10b981' };
+            
+            productCodes.sort((a,b) => productMap[b].total - productMap[a].total);
+            
+            if(prodStatBody) prodStatBody.innerHTML = '';
+            productCodes.forEach(code => {
+              const p = productMap[code];
+              const statusBadges = Object.entries(p.statuses)
+                .map(([s, q]) => `<span style="background:${statusColors[s]||'#6b7280'};color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;margin:2px;">${s}: ${q}</span>`)
+                .join(' ');
+              
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td style="font-weight:700;">${code}</td>
+                <td style="font-weight:700;font-size:16px;">${p.total}</td>
+                <td>${p.count}</td>
+                <td>${statusBadges}</td>
+              `;
+              prodStatBody.appendChild(tr);
+            });
+            if(prodStatWrap) prodStatWrap.style.display = 'block';
+
+            // Detay kayıtları
+            if(prodStatDetailBody) prodStatDetailBody.innerHTML = '';
+            records.forEach(r => {
+              const dateStr = r.date ? formatLogDate(r.date) : '-';
+              const sColor = statusColors[r.status] || '#6b7280';
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td style="font-weight:600;">${r.code}</td>
+                <td><span style="background:${sColor};color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">${r.status}</span></td>
+                <td>${r.qty}</td>
+                <td>${r.welder}</td>
+              `;
+              prodStatDetailBody.appendChild(tr);
+            });
+            if(prodStatDetailWrap) prodStatDetailWrap.style.display = 'block';
+
+            const startStr = prodStatStart.value;
+            const endStr = prodStatEnd.value;
+            setStatusBox(statusProdStat, `${startStr} → ${endStr}: ${records.length} kayıt, ${grandTotal} adet üretim${filterCode ? ` (Filtre: ${filterCode})` : ''}`, 'ok');
+
+          } catch(e){
+            setStatusBox(statusProdStat, 'Hata: ' + e.message, 'error');
+          }
         }
 
         // INSTRUCTIONS: Ürün talimatlarını yükle
@@ -12045,7 +13375,7 @@
     const WALL_ART_PRICES = {
       15: 25, 16: 27.5, 17: 30, 18: 32, 19: 36, 20: 36,
       23: 40, 24: 40, 24.5: 40, 27: 44, 28: 45,
-      31: 48, 32: 48, 32.2: 48, 35: 90, 35.2: 51,
+      31: 48, 32: 48, 32.2: 48, 33.2: 48, 35: 90, 35.2: 51, 36.4: 51,
       37: 60, 39: 70, 40: 70, 45: 80, 48: 80
     };
     
@@ -12385,7 +13715,13 @@
             totalPrice: d.totalPrice,
             note: d.note
           }];
-          const orderTotal = d.totalPrice || 0;
+          
+          // Fiyatları güncel fiyat tablosundan hesapla
+          let orderTotal = 0;
+          items.forEach(item => {
+            const currentUnitPrice = getWallArtPrice(item.size);
+            orderTotal += currentUnitPrice * (item.quantity || 1);
+          });
           
           html += `<div style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid var(--border);">`;
           // Başlık satırı
@@ -12399,8 +13735,10 @@
           html += `<span style="font-weight:700;color:#22c55e;font-size:13px;">$${orderTotal.toFixed(2)}</span>`;
           html += `</div></div>`;
           
-          // Ürünler
+          // Ürünler - fiyatı güncel fiyat tablosundan hesapla
           items.forEach(item => {
+            const currentUnitPrice = getWallArtPrice(item.size);
+            const currentTotalPrice = currentUnitPrice * (item.quantity || 1);
             html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--card-bg);border-radius:6px;margin-bottom:4px;font-size:12px;">`;
             html += `<div style="flex:1;min-width:0;">`;
             html += `<strong>${item.productCode}</strong> - ${item.productName || ''} `;
@@ -12408,7 +13746,7 @@
             html += `<span style="font-size:10px;">${item.color1}${item.color2 ? ' + ' + item.color2 : ''}</span>`;
             html += `</div>`;
             html += `<span style="font-weight:600;white-space:nowrap;">x${item.quantity}</span>`;
-            html += `<span style="font-weight:600;color:#22c55e;white-space:nowrap;">$${(item.totalPrice || 0).toFixed(2)}</span>`;
+            html += `<span style="font-weight:600;color:#22c55e;white-space:nowrap;">$${currentTotalPrice.toFixed(2)}</span>`;
             html += `</div>`;
           });
           
@@ -12475,8 +13813,15 @@
         let ourDebt = 0;
         ordersSnap.forEach(doc => {
           const d = doc.data();
-          // Tüm siparişleri say (teslim edilenler dahil - borç olarak)
-          ourDebt += d.totalPrice || 0;
+          // Fiyatları güncel fiyat tablosundan hesapla
+          const items = d.items || [{
+            size: d.size,
+            quantity: d.quantity
+          }];
+          items.forEach(item => {
+            const currentUnitPrice = getWallArtPrice(item.size);
+            ourDebt += currentUnitPrice * (item.quantity || 1);
+          });
         });
         
         // Ünalta'nın bize borcu (Kargo alacağımız)
@@ -12558,12 +13903,20 @@
       if(!section || !ourDebtEl || !theirDebtEl || !netEl) return;
       
       try {
-        // Bizim Ünalta'ya borcumuz (Wall Art siparişleri - tümü)
+        // Bizim Ünalta'ya borcumuz (Wall Art siparişleri - güncel fiyat tablosundan)
         const ordersSnap = await getDocs(collection(db, "wallArtOrders"));
         let ourDebt = 0;
         ordersSnap.forEach(doc => {
           const d = doc.data();
-          ourDebt += d.totalPrice || 0;
+          // Fiyatları güncel fiyat tablosundan hesapla
+          const items = d.items || [{
+            size: d.size,
+            quantity: d.quantity
+          }];
+          items.forEach(item => {
+            const currentUnitPrice = getWallArtPrice(item.size);
+            ourDebt += currentUnitPrice * (item.quantity || 1);
+          });
         });
         
         // Ünalta'nın bize borcu (Kargo alacağımız)
@@ -12670,12 +14023,20 @@
           }
         }
         
+        // Sipariş tarihi
+        let orderDateStr = '';
+        if(order.createdAt?.toDate) {
+          const od = order.createdAt.toDate();
+          orderDateStr = od.toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' ' + od.toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' });
+        }
+
         html += `<div style="background:var(--card-bg);border-radius:16px;padding:20px;border:3px solid ${order.status === 'READY' ? '#22c55e' : '#94a3b8'};box-shadow:0 4px 20px rgba(0,0,0,0.12);${order.status === 'READY' ? 'box-shadow:0 0 0 3px #22c55e44,0 4px 20px rgba(0,0,0,0.12);' : ''}">
           <!-- Üst satır: Sipariş başlığı + Durum badge -->
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
             <div style="font-weight:700;font-size:15px;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
               📦 Sipariş
               <span style="padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44;">${items.length} kalem</span>
+              ${orderDateStr ? `<span style="padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">📅 ${orderDateStr}</span>` : ''}
             </div>
             <span style="display:inline-block;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:800;letter-spacing:0.5px;background:${st.bg};color:${st.text};box-shadow:0 2px 8px ${st.bg}55;text-transform:uppercase;white-space:nowrap;">${st.label}</span>
           </div>`;
@@ -12718,6 +14079,12 @@
         if(order.status === 'PENDING') {
           html += `<div style="margin-top:14px;display:flex;justify-content:center;"><button onclick="markWallArtReady('${order.id}')" style="width:40%;padding:12px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
             ✅ Sipariş Hazır
+          </button></div>`;
+        }
+        // READY siparişler için Alındı butonu (Admin ve Veli)
+        if(order.status === 'READY' && (window.ADMIN_PINS?.has(window.__SESSION?.pin) || window.__SESSION?.pin === '61704')) {
+          html += `<div style="margin-top:14px;display:flex;justify-content:center;"><button onclick="markWallArtShipped('${order.id}')" style="width:40%;padding:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            📦 Alındı
           </button></div>`;
         }
         if(window.ADMIN_PINS?.has(window.__SESSION?.pin)) {
@@ -16438,6 +17805,292 @@
     setInterval(autoRefreshData, AUTO_REFRESH_INTERVAL);
     console.log("⏰ Otomatik yenileme aktif (2 dakika aralıklarla)");
 
+    // ============ PAKETÇİ TAKİP SİSTEMİ ============
+
+    // Puan butonları tıklama
+    document.querySelectorAll('.packer-score-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.packer-score-btn').forEach(b => {
+          b.style.background = 'var(--surface)';
+          b.style.color = 'var(--text)';
+          b.style.borderColor = 'var(--border)';
+        });
+        btn.style.background = '#667eea';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#667eea';
+        document.getElementById('packerScoreValue').value = btn.dataset.score;
+      });
+    });
+
+    async function savePackerRecord() {
+      const packerSelect = document.getElementById("packerSelect");
+      const orderNoInput = document.getElementById("packerOrderNo");
+      const customerNameInput = document.getElementById("packerCustomerName");
+      const scoreInput = document.getElementById("packerScoreValue");
+      const statusEl = document.getElementById("statusPackerTracker");
+
+      const packer = packerSelect?.value;
+      const orderNo = (orderNoInput?.value || "").trim().toUpperCase();
+      const customerName = (customerNameInput?.value || "").trim();
+      const score = parseInt(scoreInput?.value) || 0;
+
+      if(!packer) { statusEl.textContent = "Lütfen paketçi seçin."; statusEl.className = "note error"; return; }
+      if(!orderNo) { statusEl.textContent = "Lütfen sipariş numarası girin."; statusEl.className = "note error"; return; }
+      if(!score || score < 1 || score > 10) { statusEl.textContent = "Lütfen 1-10 arası zorluk puanı seçin."; statusEl.className = "note error"; return; }
+
+      try {
+        statusEl.textContent = "Kaydediliyor..."; statusEl.className = "note";
+        await addDoc(collection(db, "packerRecords"), {
+          packer: packer,
+          orderNo: orderNo,
+          customerName: customerName,
+          score: score,
+          createdAt: serverTimestamp(),
+          createdBy: sessionPin || "-",
+          createdByName: getNameByPin(sessionPin) || "-"
+        });
+        statusEl.textContent = "✅ Kayıt başarıyla eklendi!"; statusEl.className = "note ok";
+        orderNoInput.value = "";
+        customerNameInput.value = "";
+        scoreInput.value = "";
+        document.querySelectorAll('.packer-score-btn').forEach(b => {
+          b.style.background = 'var(--surface)';
+          b.style.color = 'var(--text)';
+          b.style.borderColor = 'var(--border)';
+        });
+        orderNoInput.focus();
+        loadPackerRecords();
+      } catch(err) {
+        console.error("Paketçi kayıt hatası:", err);
+        statusEl.textContent = "Hata: " + err.message; statusEl.className = "note error";
+      }
+    }
+
+    async function searchPackerRecord() {
+      const input = document.getElementById("packerSearchInput");
+      const resultEl = document.getElementById("packerSearchResult");
+      const keyword = (input?.value || "").trim().toUpperCase();
+
+      if(!keyword) { resultEl.style.display = "none"; return; }
+
+      try {
+        resultEl.style.display = "block";
+        resultEl.innerHTML = '<div style="color:var(--muted);">Aranıyor...</div>';
+
+        const q = query(collection(db, "packerRecords"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        const matches = [];
+
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const orderMatch = (d.orderNo || "").toUpperCase().includes(keyword);
+          const customerMatch = (d.customerName || "").toUpperCase().includes(keyword);
+          if(orderMatch || customerMatch) matches.push(d);
+        });
+
+        if(matches.length === 0) {
+          resultEl.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);background:var(--surface);border-radius:8px;">❌ Sonuç bulunamadı.</div>';
+          return;
+        }
+
+        const fullNames = { "ŞA": "Şaban Aydemir", "GG": "Gökmen Genç", "BÖ": "Bahriye Özcimbit", "VCG": "Veli Can Güven" };
+        const colors = { "ŞA": "#ef4444", "GG": "#3b82f6", "BÖ": "#22c55e", "VCG": "#f59e0b" };
+
+        let html = `<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">🔍 ${matches.length} sonuç bulundu</div>`;
+        matches.forEach(d => {
+          const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+          const dateStr = dt ? dt.toLocaleDateString("tr-TR") + " " + dt.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit"}) : "-";
+          const pc = colors[d.packer] || "#6366f1";
+          html += `<div style="background:var(--surface);border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid ${pc};display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;font-size:15px;">${d.orderNo}</div>
+              ${d.customerName ? `<div style="font-size:13px;color:var(--muted);margin-top:2px;">👤 ${d.customerName}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <div style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:${pc}15;color:${pc};border:1px solid ${pc}44;">${d.packer} - ${fullNames[d.packer] || d.packer}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;">📅 ${dateStr}</div>
+              ${d.score ? `<div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">⭐ ${d.score}/10</span></div>` : ''}
+            </div>
+          </div>`;
+        });
+        resultEl.innerHTML = html;
+      } catch(err) {
+        console.error("Paketçi arama hatası:", err);
+        resultEl.innerHTML = `<div style="color:#ef4444;">Hata: ${err.message}</div>`;
+      }
+    }
+    window.searchPackerRecord = searchPackerRecord;
+
+    async function deletePackerRecord(docId) {
+      if(!confirm("Bu kaydı silmek istediğinize emin misiniz?")) return;
+      try {
+        await deleteDoc(doc(db, "packerRecords", docId));
+        loadPackerRecords();
+      } catch(err) {
+        console.error("Paketçi kayıt silme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.deletePackerRecord = deletePackerRecord;
+
+    async function loadPackerRecords() {
+      const tbody = document.getElementById("packerRecordsBody");
+      const emptyEl = document.getElementById("packerRecordsEmpty");
+      const summaryCards = document.getElementById("packerSummaryCards");
+      const breakdownWrap = document.getElementById("packerBreakdownWrap");
+      const breakdownBody = document.getElementById("packerBreakdownBody");
+      const totalCountEl = document.getElementById("packerTotalCount");
+      if(!tbody) return;
+
+      tbody.innerHTML = "";
+      if(emptyEl) emptyEl.style.display = "none";
+
+      try {
+        // Filtre değerleri
+        const filterPacker = document.getElementById("packerFilterSelect")?.value || "";
+        const filterStart = document.getElementById("packerFilterStart")?.value || "";
+        const filterEnd = document.getElementById("packerFilterEnd")?.value || "";
+
+        const q = query(collection(db, "packerRecords"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+
+        if(snap.empty) {
+          if(emptyEl) emptyEl.style.display = "block";
+          if(summaryCards) summaryCards.style.display = "none";
+          if(breakdownWrap) breakdownWrap.style.display = "none";
+          return;
+        }
+
+        const packerCounts = {};
+        const packerScores = {};
+        let totalCount = 0;
+        let totalScore = 0;
+        const isAdmin = window.ADMIN_PINS?.has(window.__SESSION?.pin);
+
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+
+          // Tarih filtresi
+          if(dt && filterStart) {
+            const startDate = new Date(filterStart);
+            startDate.setHours(0,0,0,0);
+            if(dt < startDate) return;
+          }
+          if(dt && filterEnd) {
+            const endDate = new Date(filterEnd);
+            endDate.setHours(23,59,59,999);
+            if(dt > endDate) return;
+          }
+          // Paketçi filtresi
+          if(filterPacker && d.packer !== filterPacker) return;
+
+          const sc = d.score || 0;
+          totalCount++;
+          totalScore += sc;
+          packerCounts[d.packer] = (packerCounts[d.packer] || 0) + 1;
+          packerScores[d.packer] = (packerScores[d.packer] || 0) + sc;
+
+          const dateStr = dt ? dt.toLocaleDateString("tr-TR") + " " + dt.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit"}) : "-";
+          const scoreBg = sc >= 7 ? '#fef2f2' : sc >= 4 ? '#fefce8' : '#f0fdf4';
+          const scoreColor = sc >= 7 ? '#dc2626' : sc >= 4 ? '#ca8a04' : '#16a34a';
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="white-space:nowrap;">${dateStr}</td>
+            <td><span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${d.packer}</span></td>
+            <td style="font-weight:600;">${d.orderNo}</td>
+            <td>${d.customerName || "-"}</td>
+            <td>${sc ? `<span style="display:inline-block;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;background:${scoreBg};color:${scoreColor};border:1px solid ${scoreColor}33;">⭐ ${sc}</span>` : '-'}</td>
+            <td>${d.createdByName || d.createdBy || "-"}</td>
+            <td>${isAdmin ? `<button onclick="deletePackerRecord('${docSnap.id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        if(totalCount === 0) {
+          if(emptyEl) emptyEl.style.display = "block";
+          if(summaryCards) summaryCards.style.display = "none";
+          if(breakdownWrap) breakdownWrap.style.display = "none";
+          return;
+        }
+
+        // Özet
+        if(totalCountEl) totalCountEl.textContent = totalCount;
+        const totalScoreEl = document.getElementById("packerTotalScore");
+        const avgScoreEl = document.getElementById("packerAvgScore");
+        if(totalScoreEl) totalScoreEl.textContent = totalScore;
+        if(avgScoreEl) avgScoreEl.textContent = totalCount > 0 ? (totalScore / totalCount).toFixed(1) : '0';
+        if(summaryCards) summaryCards.style.display = "flex";
+
+        // Paketçi bazlı dağılım (adet + puan)
+        if(breakdownBody && breakdownWrap) {
+          breakdownWrap.style.display = "block";
+          const colors = { "ŞA": "#ef4444", "GG": "#3b82f6", "BÖ": "#22c55e", "VCG": "#f59e0b" };
+          const fullNames = { "ŞA": "Şaban Aydemir", "GG": "Gökmen Genç", "BÖ": "Bahriye Özcimbit", "VCG": "Veli Can Güven" };
+          const maxScore = Math.max(...Object.values(packerScores), 1);
+          breakdownBody.innerHTML = Object.keys({...packerCounts, ...packerScores}).filter((v,i,a) => a.indexOf(v) === i).sort((a,b) => (packerScores[b]||0) - (packerScores[a]||0)).map(key => {
+            const count = packerCounts[key] || 0;
+            const score = packerScores[key] || 0;
+            const color = colors[key] || "#6366f1";
+            const pctCount = totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0;
+            const pctScore = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
+            const avg = count > 0 ? (score / count).toFixed(1) : '0';
+            return `<div style="flex:1;min-width:160px;background:var(--surface);border-radius:12px;padding:16px;border:2px solid ${color}33;text-align:center;">
+              <div style="font-size:16px;font-weight:800;color:${color};">${key}</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${fullNames[key] || key}</div>
+              <div style="display:flex;justify-content:center;gap:16px;margin-bottom:10px;">
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--text);">${count}</div>
+                  <div style="font-size:10px;color:var(--muted);">Paket</div>
+                </div>
+                <div style="width:1px;background:var(--border);"></div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:${color};">${score}</div>
+                  <div style="font-size:10px;color:var(--muted);">Puan</div>
+                </div>
+                <div style="width:1px;background:var(--border);"></div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:#8b5cf6;">${avg}</div>
+                  <div style="font-size:10px;color:var(--muted);">Ort.</div>
+                </div>
+              </div>
+              <div style="font-size:10px;color:var(--muted);text-align:left;margin-bottom:2px;">Adet (%${pctCount})</div>
+              <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px;">
+                <div style="width:${pctCount}%;height:100%;background:${color};border-radius:4px;transition:width .3s;"></div>
+              </div>
+              <div style="font-size:10px;color:var(--muted);text-align:left;margin-bottom:2px;">Puan</div>
+              <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;">
+                <div style="width:${pctScore}%;height:100%;background:linear-gradient(90deg,${color},${color}aa);border-radius:4px;transition:width .3s;"></div>
+              </div>
+            </div>`;
+          }).join("");
+        }
+
+      } catch(err) {
+        console.error("Paketçi kayıtları yükleme hatası:", err);
+      }
+    }
+    window.loadPackerRecords = loadPackerRecords;
+
+    // Kaydet butonu
+    document.getElementById("btnSavePackerRecord")?.addEventListener("click", savePackerRecord);
+    // Filtre butonu
+    document.getElementById("btnFilterPackerRecords")?.addEventListener("click", loadPackerRecords);
+    // Arama butonu
+    document.getElementById("btnSearchPackerRecord")?.addEventListener("click", searchPackerRecord);
+    // Enter ile arama
+    document.getElementById("packerSearchInput")?.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") searchPackerRecord();
+    });
+    // Enter ile kaydet (sipariş no alanında)
+    document.getElementById("packerOrderNo")?.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") savePackerRecord();
+    });
+    // Enter ile kaydet (müşteri ismi alanında)
+    document.getElementById("packerCustomerName")?.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") savePackerRecord();
+    });
 
     
   </script>
