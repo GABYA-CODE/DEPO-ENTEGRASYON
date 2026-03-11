@@ -3339,8 +3339,8 @@
         <div id="viewPackerTracker" style="display:none;">
           <div class="sectionTitle">📦 Paketçi Takip Sistemi</div>
           
-          <!-- Kayıt Ekleme Formu -->
-          <div class="card" style="margin-bottom:20px;">
+          <!-- Kayıt Ekleme Formu (Sadece Ali için) -->
+          <div id="packerAddRecordCard" class="card" style="margin-bottom:20px;">
             <h3 style="margin-top:0;">➕ Paketleme Kaydı Ekle</h3>
             
             <label class="fieldLabel">Paketçi</label>
@@ -3355,23 +3355,34 @@
             <label class="fieldLabel" style="margin-top:12px;">Sipariş Numarası</label>
             <input id="packerOrderNo" class="input" placeholder="Örn: VİTA3456" style="text-transform:uppercase;" />
 
-            <label class="fieldLabel" style="margin-top:12px;">Müşteri İsmi</label>
-            <input id="packerCustomerName" class="input" placeholder="Müşteri adı" />
-
-            <label class="fieldLabel" style="margin-top:12px;">Zorluk Puanı (1-10)</label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="packerScoreButtons">
-              <button type="button" class="packer-score-btn" data-score="1" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">1</button>
-              <button type="button" class="packer-score-btn" data-score="2" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">2</button>
-              <button type="button" class="packer-score-btn" data-score="3" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">3</button>
-              <button type="button" class="packer-score-btn" data-score="4" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">4</button>
-              <button type="button" class="packer-score-btn" data-score="5" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">5</button>
-              <button type="button" class="packer-score-btn" data-score="6" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">6</button>
-              <button type="button" class="packer-score-btn" data-score="7" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">7</button>
-              <button type="button" class="packer-score-btn" data-score="8" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">8</button>
-              <button type="button" class="packer-score-btn" data-score="9" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">9</button>
-              <button type="button" class="packer-score-btn" data-score="10" style="width:40px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;">10</button>
+            <!-- Ürünler Listesi -->
+            <div style="margin-top:16px;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <label class="fieldLabel" style="margin:0;">📦 Siparişdeki Ürünler</label>
+                <button type="button" id="btnAddProduct" onclick="addPackerProductRow()" style="padding:6px 14px;border-radius:8px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;">
+                  ➕ Ürün Ekle
+                </button>
+              </div>
+              <div id="packerProductsList">
+                <!-- Ürün satırları buraya eklenecek -->
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin:8px 0 0;text-align:center;">💡 Birden fazla ürünlü siparişlerde toplam puan = ürün puanları toplamının %75'i</p>
             </div>
-            <input type="hidden" id="packerScoreValue" value="" />
+            
+            <!-- Toplam Puan Özeti -->
+            <div id="packerScoreSummary" style="display:none;margin-top:12px;padding:12px 16px;border-radius:10px;background:linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.1));border:1px solid rgba(34,197,94,0.3);">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                <div>
+                  <span style="font-size:12px;color:var(--muted);">Ürün Puanları Toplamı:</span>
+                  <span id="packerRawTotal" style="font-size:16px;font-weight:700;color:var(--text);margin-left:6px;">0</span>
+                </div>
+                <div style="font-size:20px;">→</div>
+                <div style="padding:8px 16px;border-radius:10px;background:rgba(34,197,94,0.15);">
+                  <span style="font-size:12px;color:#16a34a;">Kayıt Puanı (%75):</span>
+                  <span id="packerFinalTotal" style="font-size:20px;font-weight:800;color:#16a34a;margin-left:6px;">0</span>
+                </div>
+              </div>
+            </div>
 
             <button id="btnSavePackerRecord" class="searchBtn" style="margin-top:14px;width:100%;padding:12px;font-size:15px;font-weight:600;">
               💾 Kaydet
@@ -3379,56 +3390,82 @@
             <div id="statusPackerTracker" class="note" style="margin-top:8px;"></div>
           </div>
 
-          <!-- Sipariş Arama -->
-          <div class="card" style="margin-bottom:20px;">
-            <h3 style="margin-top:0;">🔎 Sipariş Ara</h3>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-              <div style="flex:1;min-width:160px;">
-                <label class="fieldLabel">Sipariş No veya Müşteri İsmi</label>
-                <input id="packerSearchInput" class="input" placeholder="Sipariş no veya müşteri ismi yazın..." style="padding:10px;font-size:15px;" />
-              </div>
-              <button id="btnSearchPackerRecord" class="searchBtn" style="padding:10px 24px;font-size:15px;">🔍 Ara</button>
-            </div>
-            <div id="packerSearchResult" style="margin-top:12px;display:none;"></div>
-          </div>
+          <!-- Sipariş Arama - Kaldırıldı, tabloya taşındı -->
 
-          <!-- Filtre -->
-          <div class="card" style="margin-bottom:20px;">
-            <h3 style="margin-top:0;">📋 Kayıt Filtrele</h3>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-              <div style="flex:1;min-width:140px;">
-                <label class="fieldLabel">Paketçi</label>
-                <select id="packerFilterSelect" class="input" style="padding:8px;">
-                  <option value="">Tümü</option>
-                  <option value="ŞA">ŞA - Şaban Aydemir</option>
-                  <option value="GG">GG - Gökmen Genç</option>
-                  <option value="BÖ">BÖ - Bahriye Özcimbit</option>
-                  <option value="VCG">VCG - Veli Can Güven</option>
-                </select>
+          <!-- Eksi Puan (Hata Kaydı) Ekleme -->
+          <div class="card" style="margin-bottom:20px;border-left:4px solid #ef4444;">
+            <h3 style="margin-top:0;color:#dc2626;">⚠️ Hata/Ceza Puanı Ekle</h3>
+            <p style="font-size:13px;color:var(--muted);margin:-8px 0 12px;">Sipariş numarasını girin, sistem paketçi ve ürün bilgisini otomatik bulacak. (-1: hafif hata, -10: ciddi hata)</p>
+            
+            <label class="fieldLabel">Sipariş Numarası</label>
+            <input id="penaltyOrderNo" class="input" placeholder="Örn: VİTA3456" style="text-transform:uppercase;" />
+            
+            <!-- Otomatik Bulunan Bilgiler -->
+            <div id="penaltyAutoInfo" style="display:none;margin-top:12px;padding:14px;border-radius:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);">
+              <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Paketçi</div>
+                  <div id="penaltyFoundPacker" style="font-size:16px;font-weight:700;color:#16a34a;">-</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Ürün Kodu</div>
+                  <div id="penaltyFoundProduct" style="font-size:16px;font-weight:700;color:#16a34a;">-</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Paketlenme Tarihi</div>
+                  <div id="penaltyFoundDate" style="font-size:16px;font-weight:700;color:#16a34a;">-</div>
+                </div>
               </div>
-              <div style="flex:1;min-width:140px;">
-                <label class="fieldLabel">Başlangıç</label>
-                <input type="date" id="packerFilterStart" class="input" style="padding:8px;" />
-              </div>
-              <div style="flex:1;min-width:140px;">
-                <label class="fieldLabel">Bitiş</label>
-                <input type="date" id="packerFilterEnd" class="input" style="padding:8px;" />
-              </div>
-              <button id="btnFilterPackerRecords" class="searchBtn" style="padding:8px 20px;">Filtrele</button>
             </div>
+            <div id="penaltyNotFound" style="display:none;margin-top:12px;padding:12px;border-radius:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#dc2626;font-size:13px;font-weight:600;">
+              ❌ Bu sipariş numarasına ait paketleme kaydı bulunamadı.
+            </div>
+            <input type="hidden" id="penaltyPackerValue" value="" />
+            <input type="hidden" id="penaltyProductValue" value="" />
+
+            <label class="fieldLabel" style="margin-top:12px;">Hata Türü</label>
+            <select id="penaltyType" class="input" style="padding:10px;font-size:15px;">
+              <option value="">-- Hata Türü Seçin --</option>
+              <option value="-1">-1 Puan: Vida eksik</option>
+              <option value="-2">-2 Puan: Paket kağıdı eksik/yanlış</option>
+              <option value="-3">-3 Puan: Etiket yanlış yapıştırılmış</option>
+              <option value="-4">-4 Puan: Montaj hatası (küçük)</option>
+              <option value="-5">-5 Puan: Yanlış ürün paketlenmiş</option>
+              <option value="-6">-6 Puan: Parça eksik (1-2 parça)</option>
+              <option value="-7">-7 Puan: Hasar/çizik oluşmuş</option>
+              <option value="-8">-8 Puan: Ciddi montaj hatası</option>
+              <option value="-9">-9 Puan: Birden fazla parça eksik</option>
+              <option value="-10">-10 Puan: Ürünü tamamen yanlış/eksik göndermiş</option>
+            </select>
+
+            <label class="fieldLabel" style="margin-top:12px;">Açıklama (Opsiyonel)</label>
+            <input id="penaltyNote" class="input" placeholder="Hata hakkında detay..." />
+
+            <button id="btnSavePenalty" class="actionBtn red" style="margin-top:14px;font-size:16px;">
+              ⚠️ Ceza Puanı Kaydet
+            </button>
+            <div id="statusPenalty" class="note" style="margin-top:8px;display:none;"></div>
           </div>
 
           <!-- Özet Kartları -->
           <div id="packerSummaryCards" style="display:none;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:16px;color:white;text-align:center;">
+            <div style="flex:1;min-width:130px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:16px;color:white;text-align:center;">
               <div style="font-size:12px;opacity:0.85;">Toplam Paket</div>
               <div style="font-size:28px;font-weight:700;" id="packerTotalCount">0</div>
             </div>
-            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:12px;padding:16px;color:white;text-align:center;">
+            <div style="flex:1;min-width:130px;background:linear-gradient(135deg,#f59e0b,#ea580c);border-radius:12px;padding:16px;color:white;text-align:center;">
               <div style="font-size:12px;opacity:0.85;">Toplam Puan</div>
               <div style="font-size:28px;font-weight:700;" id="packerTotalScore">0</div>
             </div>
-            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#22c55e,#15803d);border-radius:12px;padding:16px;color:white;text-align:center;">
+            <div style="flex:1;min-width:130px;background:linear-gradient(135deg,#ef4444,#b91c1c);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Ceza Puanı</div>
+              <div style="font-size:28px;font-weight:700;" id="packerTotalPenalty">0</div>
+            </div>
+            <div style="flex:1;min-width:130px;background:linear-gradient(135deg,#22c55e,#15803d);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Net Puan</div>
+              <div style="font-size:28px;font-weight:700;" id="packerNetScore">0</div>
+            </div>
+            <div style="flex:1;min-width:130px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:12px;padding:16px;color:white;text-align:center;">
               <div style="font-size:12px;opacity:0.85;">Ort. Zorluk</div>
               <div style="font-size:28px;font-weight:700;" id="packerAvgScore">0</div>
             </div>
@@ -3437,14 +3474,57 @@
           <!-- Paketçi Bazlı Özet -->
           <div id="packerBreakdownWrap" style="display:none;margin-bottom:20px;">
             <div class="card">
-              <h3 style="margin-top:0;">📊 Paketçi Bazlı Dağılım</h3>
-              <div id="packerBreakdownBody" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+              <h3 style="margin-top:0;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:24px;">🏆</span> Paketçi Performans Sıralaması
+              </h3>
+              <p style="margin:-8px 0 16px;font-size:13px;color:var(--muted);">Net puana göre sıralanmış performans tablosu</p>
+              
+              <!-- Performans Kartları -->
+              <div id="packerBreakdownBody" style="display:flex;flex-direction:column;gap:12px;"></div>
             </div>
           </div>
 
           <!-- Kayıt Listesi -->
           <div class="card">
             <h3 style="margin-top:0;">📋 Paketleme Kayıtları</h3>
+            
+            <!-- Hızlı Tarih Filtreleri + Arama -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="quick-filter-btn" data-filter="today" style="padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:var(--surface);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s;">📅 Bugün</button>
+                <button type="button" class="quick-filter-btn" data-filter="week" style="padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:var(--surface);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s;">📆 Bu Hafta</button>
+                <button type="button" class="quick-filter-btn" data-filter="month" style="padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:var(--surface);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s;">🗓️ Bu Ay</button>
+                <button type="button" class="quick-filter-btn" data-filter="all" style="padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:var(--surface);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s;">📊 Tümü</button>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input id="packerTableSearch" type="text" placeholder="🔍 Ara..." style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:13px;width:180px;" oninput="filterPackerTable(this.value)" />
+                <button type="button" onclick="document.getElementById('packerTableSearch').value='';filterPackerTable('');" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;">✕</button>
+              </div>
+            </div>
+
+            <!-- Detaylı Filtreler -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+              <div style="flex:1;min-width:120px;">
+                <label class="fieldLabel" style="font-size:11px;">Paketçi</label>
+                <select id="packerFilterSelect" class="input" style="padding:6px;font-size:13px;">
+                  <option value="">Tümü</option>
+                  <option value="ŞA">ŞA - Şaban Aydemir</option>
+                  <option value="GG">GG - Gökmen Genç</option>
+                  <option value="BÖ">BÖ - Bahriye Özcimbit</option>
+                  <option value="VCG">VCG - Veli Can Güven</option>
+                </select>
+              </div>
+              <div style="flex:1;min-width:120px;">
+                <label class="fieldLabel" style="font-size:11px;">Başlangıç</label>
+                <input type="date" id="packerFilterStart" class="input" style="padding:6px;font-size:13px;" />
+              </div>
+              <div style="flex:1;min-width:120px;">
+                <label class="fieldLabel" style="font-size:11px;">Bitiş</label>
+                <input type="date" id="packerFilterEnd" class="input" style="padding:6px;font-size:13px;" />
+              </div>
+              <button id="btnFilterPackerRecords" class="searchBtn" style="padding:6px 16px;font-size:13px;">Filtrele</button>
+            </div>
+
             <div style="overflow-x:auto;">
               <table class="logtable" style="width:100%;">
                 <thead>
@@ -3452,7 +3532,7 @@
                     <th>Tarih</th>
                     <th>Paketçi</th>
                     <th>Sipariş No</th>
-                    <th>Müşteri</th>
+                    <th>Ürün Kodu</th>
                     <th>Puan</th>
                     <th>Kaydeden</th>
                     <th>Sil</th>
@@ -3462,6 +3542,7 @@
               </table>
             </div>
             <div id="packerRecordsEmpty" style="display:none;padding:20px;text-align:center;color:var(--muted);">Kayıt bulunamadı.</div>
+            <div id="packerFilterInfo" style="display:none;padding:10px;text-align:center;color:var(--muted);font-size:13px;"></div>
           </div>
         </div>
 
@@ -4004,6 +4085,45 @@
                     <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">63947</td>
                     <td style="padding:12px;border-bottom:1px solid var(--border);">Osman A.</td>
                   </tr>
+                  
+                  <tr style="background:rgba(239,68,68,0.05);">
+                    <td colspan="3" style="padding:8px 12px;font-weight:900;font-size:12px;color:#ef4444;border-bottom:1px solid var(--border);">PAKETÇİ TAKİP / HATA SORUMLUSU</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Paketçi Takip</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">20261</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Ali</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">38192</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Amazon Sorumlusu</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">28461</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Vita Sorumlusu</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">38471</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Mirza - Elf Metal (Sayfa Yöneticisi)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">62914</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Zehra - Grandmix (Sayfa Yöneticisi)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">47293</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Faruk - Milonsa (Sayfa Yöneticisi)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Hata Sorumlusu</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;font-family:monospace;font-weight:700;">85246</td>
+                    <td style="padding:12px;border-bottom:1px solid var(--border);">Melike Çapraz (Tasarımcı)</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -4475,6 +4595,7 @@
     const CARGO_REQUESTER_PINS = new Set(["54821", "63947", "1968"]); // Kargo etiketi talep eden firmalar - Ünalta, Osman A., Ali Ünal (Ünalta Sahibi)
     const UNALTA_OWNER_PIN = "1968"; // Ali Ünal - Ünalta sahibi (fiyat bilgilerini görebilir)
     const PACKER_TRACKER_PINS = new Set(["20261"]); // Paketçi takip kullanıcısı - Ali
+    const PENALTY_ENTRY_PINS = new Set(["38192", "28461", "38471", "62914", "47293", "85246"]); // Ceza girişi yapabilen sorumlular - Amazon/Vita Sorumlusu, Sayfa Yöneticileri, Tasarımcı
 
     // PIN setlerini global scope'a ekle
     window.ADMIN_PINS = ADMIN_PINS;
@@ -4492,6 +4613,7 @@
     window.CARGO_REQUESTER_PINS = CARGO_REQUESTER_PINS;
     window.UNALTA_OWNER_PIN = UNALTA_OWNER_PIN;
     window.PACKER_TRACKER_PINS = PACKER_TRACKER_PINS;
+    window.PENALTY_ENTRY_PINS = PENALTY_ENTRY_PINS;
 
     // ========== MESAİ PLANLARI VE KULLANICI GRUPLARI ==========
     
@@ -4591,7 +4713,12 @@
       "54821": "Ünalta",
       "63947": "Osman A.",
       "1968": "Ali Ünal (Ünalta)",
-      "20261": "Ali"
+      "20261": "Ali",
+      "38192": "Amazon Sorumlusu",
+      "28461": "Vita Sorumlusu",
+      "38471": "Mirza (Elf Metal)",
+      "62914": "Zehra (Grandmix)",
+      "47293": "Faruk (Milonsa)"
     };
 
     // Puantaj yöneticileri - hangi kullanıcı hangi rollerin puantajını yönetebilir
@@ -4664,6 +4791,7 @@
       if(COMMISSION_PINS.has(pin)) return "commission";
       if(CARGO_REQUESTER_PINS.has(pin)) return "cargo_requester";
       if(PACKER_TRACKER_PINS.has(pin)) return "packer_tracker";
+      if(PENALTY_ENTRY_PINS.has(pin)) return "penalty_entry";
       return null;
     }
 
@@ -4678,6 +4806,7 @@
       if(role==="cargo_requester") return `<span class="badge" style="background:#0ea5e9;color:#fff;">KARGO</span>`;
       if(role==="designer") return `<span class="badge" style="background:#06b6d4;color:#fff;">TASARIMCI</span>`;
       if(role==="commission") return `<span class="badge" style="background:#9333ea;color:#fff;">ETSY SATIŞLARI</span>`;
+      if(role==="penalty_entry") return `<span class="badge" style="background:#ef4444;color:#fff;">HATA SORUMLUSU</span>`;
       if(role==="packer_tracker") return `<span class="badge" style="background:#f97316;color:#fff;">PAKETÇİ TAKİP</span>`;
       return `<span class="badge">-</span>`;
     }
@@ -5849,6 +5978,22 @@
       if(target==="packerTracker"){ 
         tabPackerTracker?.classList.add("active"); 
         viewPackerTracker.style.display="block";
+        
+        // Penalty entry (Amazon/Vita Sorumlusu) ve Commission (ETSY Satıcıları) için sadece ceza formu göster
+        const currentRole = window.__SESSION?.role;
+        const addRecordCard = document.getElementById("packerAddRecordCard");
+        const searchCard = document.getElementById("packerSearchCard");
+        
+        if(currentRole === "penalty_entry" || currentRole === "commission") {
+          // Paketleme ekleme ve arama kartlarını gizle
+          if(addRecordCard) addRecordCard.style.display = "none";
+          if(searchCard) searchCard.style.display = "none";
+        } else {
+          // Admin ve packer_tracker için göster
+          if(addRecordCard) addRecordCard.style.display = "block";
+          if(searchCard) searchCard.style.display = "block";
+        }
+        
         setTimeout(()=>{ 
           try{ 
             if(typeof loadPackerRecords === "function") loadPackerRecords();
@@ -6104,9 +6249,11 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
       }else if(r==="commission"){
-        tabbar.style.display="none";
+        tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
         tabCommission.style.display="block";
+        tabPackerTracker.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr 1fr";
         setActiveTab("commission");
       }else if(r==="page_manager"){
         // Sayfa yöneticisi: Komisyon + Kişiye Özel Siparişler
@@ -6166,6 +6313,14 @@
         setActiveTab("cargo");
       }else if(r==="packer_tracker"){
         // Paketçi Takip - Ali
+        tabbar.style.display="flex";
+        tabbarGrouped.style.display="none";
+        
+        tabPackerTracker.style.display="block";
+        tabbar.style.gridTemplateColumns = "1fr";
+        setActiveTab("packerTracker");
+      }else if(r==="penalty_entry"){
+        // Hata Sorumluları - Amazon/Vita Sorumlusu
         tabbar.style.display="flex";
         tabbarGrouped.style.display="none";
         
@@ -9465,6 +9620,28 @@
                 const id = this.getAttribute('data-id');
                 window.deleteCredential(id);
               });
+            });
+
+            // Sabit giriş şifreleri (sistem kullanıcıları)
+            const systemCredentials = [
+              { service: "Paketçi Takip (Ali)", email: "Ali", password: "20261" },
+              { service: "Amazon Sorumlusu", email: "Amazon Sorumlusu", password: "38192" },
+              { service: "Vita Sorumlusu", email: "Vita Sorumlusu", password: "28461" },
+              { service: "Mirza - Elf Metal (Sayfa Yön.)", email: "Mirza", password: "38471" },
+              { service: "Zehra - Grandmix (Sayfa Yön.)", email: "Zehra", password: "62914" },
+              { service: "Faruk - Milonsa (Sayfa Yön.)", email: "Faruk", password: "47293" },
+              { service: "Melike Çapraz (Tasarımcı)", email: "Melike Çapraz", password: "85246" }
+            ];
+            systemCredentials.forEach(sc => {
+              const tr = document.createElement("tr");
+              tr.style.background = "var(--panel1)";
+              tr.innerHTML = `
+                <td style="padding:12px;border-bottom:1px solid var(--border);font-weight:700;">${sc.service} <span style="font-size:10px;background:#f59e0b22;color:#f59e0b;padding:2px 6px;border-radius:4px;">SİSTEM</span></td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);">${sc.email}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);font-family:monospace;">${sc.password}</td>
+                <td style="padding:12px;border-bottom:1px solid var(--border);text-align:center;color:var(--muted);font-size:11px;">—</td>
+              `;
+              credentialsBody.appendChild(tr);
             });
             
             console.log("✅ Kimlik bilgileri başarıyla yüklendi");
@@ -15023,7 +15200,7 @@
       const currentRole = window.__SESSION?.role;
       const currentPin = window.__SESSION?.pin;
       
-      if(currentRole === 'admin') {
+      if(currentRole === 'admin' || currentPin === '41927') {
         document.getElementById('attendanceUserFilterDiv').style.display = 'block';
         populateUserFilter();
       }
@@ -15759,16 +15936,17 @@
         const attendanceCol = window.collection(window.db, 'attendance');
         let q;
         
-        if (currentRole === 'admin' && userFilter) {
-          // Admin - belirli kullanıcı
+        const hasFullAccess = (currentRole === 'admin' || currentPin === '41927');
+        if (hasFullAccess && userFilter) {
+          // Admin / Şeyma - belirli kullanıcı
           q = window.query(
             attendanceCol,
             window.where('pin', '==', userFilter),
             window.where('date', '>=', startDate),
             window.where('date', '<=', endDate)
           );
-        } else if (currentRole === 'admin') {
-          // Admin - tüm kullanıcılar
+        } else if (hasFullAccess) {
+          // Admin / Şeyma - tüm kullanıcılar
           q = window.query(
             attendanceCol,
             window.where('date', '>=', startDate),
@@ -15823,7 +16001,7 @@
         const breakMinutes = calculateTotalBreak(timestamps, rec.pin, rec.date);
         const workHours = calculateWorkHours(timestamps, breakMinutes, rec.pin, rec.date);
         const canDelete = currentRole === 'admin' || rec.pin === currentPin;
-        const isAdmin = currentRole === 'admin';
+        const isAdmin = currentRole === 'admin' || currentPin === '41927';
         
         return `
           <tr>
@@ -17807,57 +17985,244 @@
 
     // ============ PAKETÇİ TAKİP SİSTEMİ ============
 
-    // Puan butonları tıklama
-    document.querySelectorAll('.packer-score-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.packer-score-btn').forEach(b => {
-          b.style.background = 'var(--surface)';
-          b.style.color = 'var(--text)';
-          b.style.borderColor = 'var(--border)';
+    // Ürün kodu → zorluk puanı cache
+    let productScoreCache = {};
+
+    async function loadProductScoreCache() {
+      const db = window.db;
+      if(!db) {
+        console.error("Firebase db henüz hazır değil, 1 saniye sonra tekrar deneniyor...");
+        setTimeout(loadProductScoreCache, 1000);
+        return;
+      }
+      try {
+        productScoreCache = {};
+        
+        // 1. productScores koleksiyonundan çek
+        const snap = await getDocs(collection(db, "productScores"));
+        snap.forEach(d => { 
+          const code = (d.id || '').toString().trim().toUpperCase();
+          if(code) productScoreCache[code] = d.data().score; 
         });
-        btn.style.background = '#667eea';
-        btn.style.color = '#fff';
-        btn.style.borderColor = '#667eea';
-        document.getElementById('packerScoreValue').value = btn.dataset.score;
-      });
-    });
+        
+        // 2. packerRecords'dan da ürün puanlarını çek
+        const recordsSnap = await getDocs(collection(db, "packerRecords"));
+        recordsSnap.forEach(d => {
+          const data = d.data();
+          
+          // Çoklu ürünlü kayıtlar (productDetails array var)
+          if(data.productDetails && Array.isArray(data.productDetails)) {
+            data.productDetails.forEach(pd => {
+              const code = (pd.code || '').toString().trim().toUpperCase();
+              if(code && code !== '-' && pd.score && !productScoreCache[code]) {
+                productScoreCache[code] = pd.score;
+              }
+            });
+          }
+          
+          // Tek ürünlü kayıtlar (productCode virgül içermiyor)
+          const productCode = (data.productCode || '').toString().trim().toUpperCase();
+          if(productCode && !productCode.includes(',') && productCode !== '-') {
+            // rawScore yerine score'u kullan (eski kayıtlarda rawScore yok)
+            const score = typeof data.rawScore === 'number' ? data.rawScore : data.score;
+            if(score && !productScoreCache[productCode]) {
+              productScoreCache[productCode] = score;
+            }
+          }
+        });
+        
+        console.log("✅ Ürün puanları yüklendi:", Object.keys(productScoreCache).length, "ürün");
+        console.table(productScoreCache);
+        // Cache yüklendikten sonra ürün satırlarını başlat
+        initPackerProductRows();
+      } catch(e) { console.error("productScores yükleme hatası:", e); }
+    }
+    
+    // Debug: Ürün puanı kontrol fonksiyonu (konsoldan test için)
+    window.checkProductScore = function(code) {
+      const key = (code || '').toString().trim().toUpperCase();
+      console.log(`Aranan: "${key}", Cache'de: ${productScoreCache[key] || 'YOK'}`);
+      return productScoreCache[key];
+    };
+
+    // Çoklu ürün yönetimi için global değişken
+    let packerProductRows = [];
+
+    window.addPackerProductRow = function(productCode = '', score = 0) {
+      const rowId = Date.now();
+      packerProductRows.push({ id: rowId, productCode: productCode, score: score });
+      renderPackerProductRows();
+    }
+
+    window.removePackerProductRow = function(rowId) {
+      packerProductRows = packerProductRows.filter(r => r.id !== rowId);
+      renderPackerProductRows();
+      updatePackerScoreSummary();
+    }
+
+    window.updatePackerProductRow = function(rowId, field, value) {
+      const row = packerProductRows.find(r => r.id === rowId);
+      if(row) {
+        row[field] = field === 'score' ? parseInt(value) || 0 : value.toUpperCase();
+        
+        if(field === 'score') {
+          // Puan seçildiğinde sadece butonları güncelle
+          renderPackerProductRows();
+        } else if(field === 'productCode') {
+          // 4 hane tamamlandığında kontrol et
+          if(row.productCode && row.productCode.length >= 4) {
+            const cachedScore = productScoreCache[row.productCode];
+            if(cachedScore) {
+              row.score = cachedScore;
+            }
+            // 4 hane olunca render et (cache bilgisi göstermek için)
+            renderPackerProductRows();
+            // Input'a focus'u geri ver ve cursor'u sona koy
+            setTimeout(() => {
+              const inputs = document.querySelectorAll('#packerProductsList input[type="text"]');
+              const rowIndex = packerProductRows.findIndex(r => r.id === rowId);
+              if(inputs[rowIndex]) {
+                inputs[rowIndex].focus();
+                inputs[rowIndex].setSelectionRange(inputs[rowIndex].value.length, inputs[rowIndex].value.length);
+              }
+            }, 10);
+          }
+        }
+      }
+      updatePackerScoreSummary();
+    }
+
+    function updatePackerScoreSummary() {
+      const rawTotal = packerProductRows.reduce((sum, r) => sum + (r.score || 0), 0);
+      const productCount = packerProductRows.filter(r => r.score > 0).length;
+      const finalTotal = productCount > 1 ? Math.round(rawTotal * 0.75) : rawTotal;
+      
+      const summaryEl = document.getElementById('packerScoreSummary');
+      const rawEl = document.getElementById('packerRawTotal');
+      const finalEl = document.getElementById('packerFinalTotal');
+      
+      if(summaryEl && rawEl && finalEl) {
+        if(rawTotal > 0) {
+          summaryEl.style.display = 'block';
+          rawEl.textContent = rawTotal;
+          finalEl.textContent = finalTotal;
+          // Tek ürünse %75 uygulanmadığını göster
+          if(productCount <= 1) {
+            document.querySelector('#packerScoreSummary div:last-child span:first-child').textContent = 'Kayıt Puanı (tek ürün):';
+          } else {
+            document.querySelector('#packerScoreSummary div:last-child span:first-child').textContent = 'Kayıt Puanı (%75):';
+          }
+        } else {
+          summaryEl.style.display = 'none';
+        }
+      }
+    }
+
+    function renderPackerProductRows() {
+      const container = document.getElementById('packerProductsList');
+      if(!container) return;
+      
+      if(packerProductRows.length === 0) {
+        window.addPackerProductRow(); // En az 1 satır olsun
+        return;
+      }
+      
+      container.innerHTML = packerProductRows.map((row, index) => {
+        const code = row.productCode || '';
+        const cachedScore = code.length >= 4 ? productScoreCache[code] : null;
+        const hasCache = cachedScore !== null && cachedScore !== undefined;
+        
+        const scoreButtons = [1,2,3,4,5,6,7,8,9,10].map(s => {
+          const isSelected = row.score === s;
+          return `<button type="button" onclick="updatePackerProductRow(${row.id}, 'score', ${s})" style="width:32px;height:32px;border-radius:6px;border:2px solid ${isSelected ? '#22c55e' : 'var(--border)'};background:${isSelected ? '#22c55e' : 'var(--panel)'};color:${isSelected ? 'white' : 'var(--text)'};font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;">${s}</button>`;
+        }).join('');
+        
+        // Sadece 4+ hane girildiğinde mesaj göster
+        let cacheInfo = '';
+        if(code.length >= 4 && hasCache) {
+          cacheInfo = `<div style="font-size:11px;color:#16a34a;margin-top:4px;">✅ Kayıtlı puan: ${cachedScore} (otomatik seçildi)</div>`;
+        } else if(code.length >= 4 && !hasCache) {
+          cacheInfo = `<div style="font-size:11px;color:#a16207;margin-top:4px;">⚠️ Yeni ürün - puan seçin</div>`;
+        }
+        
+        return `<div style="padding:12px;margin-bottom:8px;border-radius:10px;background:var(--panel);border:1px solid ${hasCache ? 'rgba(34,197,94,0.3)' : 'var(--border)'};position:relative;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:700;color:var(--primary);min-width:55px;">Ürün ${index + 1}</span>
+            <div style="flex:1;">
+              <input type="text" value="${code}" oninput="updatePackerProductRow(${row.id}, 'productCode', this.value)" placeholder="Ürün kodu (4 hane)..." style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid ${hasCache ? '#22c55e' : 'var(--border)'};background:var(--surface);font-size:14px;text-transform:uppercase;box-sizing:border-box;" />
+              ${cacheInfo}
+            </div>
+            ${packerProductRows.length > 1 ? `<button type="button" onclick="removePackerProductRow(${row.id})" style="width:32px;height:32px;border-radius:6px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;font-size:16px;cursor:pointer;">×</button>` : ''}
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            ${scoreButtons}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Sayfa yüklendiğinde ilk satırı ekle
+    function initPackerProductRows() {
+      packerProductRows = [];
+      window.addPackerProductRow();
+    }
 
     async function savePackerRecord() {
       const packerSelect = document.getElementById("packerSelect");
       const orderNoInput = document.getElementById("packerOrderNo");
-      const customerNameInput = document.getElementById("packerCustomerName");
-      const scoreInput = document.getElementById("packerScoreValue");
       const statusEl = document.getElementById("statusPackerTracker");
 
       const packer = packerSelect?.value;
       const orderNo = (orderNoInput?.value || "").trim().toUpperCase();
-      const customerName = (customerNameInput?.value || "").trim();
-      const score = parseInt(scoreInput?.value) || 0;
-
+      
+      // Ürün listesini kontrol et
+      const validProducts = packerProductRows.filter(r => r.score > 0);
+      
       if(!packer) { statusEl.textContent = "Lütfen paketçi seçin."; statusEl.className = "note error"; return; }
       if(!orderNo) { statusEl.textContent = "Lütfen sipariş numarası girin."; statusEl.className = "note error"; return; }
-      if(!score || score < 1 || score > 10) { statusEl.textContent = "Lütfen 1-10 arası zorluk puanı seçin."; statusEl.className = "note error"; return; }
+      if(validProducts.length === 0) { statusEl.textContent = "Lütfen en az 1 ürün için puan seçin."; statusEl.className = "note error"; return; }
 
       try {
         statusEl.textContent = "Kaydediliyor..."; statusEl.className = "note";
+
+        // Toplam puanı hesapla: tek ürünse direkt, çoklu ürünse %75
+        const rawTotal = validProducts.reduce((sum, r) => sum + r.score, 0);
+        const finalScore = validProducts.length > 1 ? Math.round(rawTotal * 0.75) : rawTotal;
+        
+        // Her ürün için productScores'a kaydet
+        for(const prod of validProducts) {
+          if(prod.productCode && !productScoreCache[prod.productCode]) {
+            await setDoc(doc(db, "productScores", prod.productCode), { score: prod.score, updatedAt: serverTimestamp() });
+            productScoreCache[prod.productCode] = prod.score;
+          }
+        }
+
+        // Ürün kodlarını birleştir
+        const productCodes = validProducts.map(p => p.productCode || '-').join(', ');
+        const productDetails = validProducts.map(p => ({ code: p.productCode || '-', score: p.score }));
+
         await addDoc(collection(db, "packerRecords"), {
           packer: packer,
           orderNo: orderNo,
-          customerName: customerName,
-          score: score,
+          productCode: productCodes,
+          productDetails: productDetails,
+          productCount: validProducts.length,
+          rawScore: rawTotal,
+          score: finalScore,
           createdAt: serverTimestamp(),
           createdBy: sessionPin || "-",
           createdByName: getNameByPin(sessionPin) || "-"
         });
-        statusEl.textContent = "✅ Kayıt başarıyla eklendi!"; statusEl.className = "note ok";
+        
+        const multiNote = validProducts.length > 1 ? ` (${validProducts.length} ürün, %75 = ${finalScore} puan)` : '';
+        statusEl.textContent = `✅ Kayıt başarıyla eklendi!${multiNote}`; 
+        statusEl.className = "note ok";
+        
+        // Formu sıfırla
         orderNoInput.value = "";
-        customerNameInput.value = "";
-        scoreInput.value = "";
-        document.querySelectorAll('.packer-score-btn').forEach(b => {
-          b.style.background = 'var(--surface)';
-          b.style.color = 'var(--text)';
-          b.style.borderColor = 'var(--border)';
-        });
+        packerProductRows = [];
+        window.addPackerProductRow();
+        document.getElementById('packerScoreSummary').style.display = 'none';
         orderNoInput.focus();
         loadPackerRecords();
       } catch(err) {
@@ -17865,6 +18230,46 @@
         statusEl.textContent = "Hata: " + err.message; statusEl.className = "note error";
       }
     }
+
+    // Tablo filtreleme fonksiyonu
+    window.filterPackerTable = function(keyword) {
+      const tbody = document.getElementById('packerRecordsBody');
+      const filterInfo = document.getElementById('packerFilterInfo');
+      const searchTerm = (keyword || '').trim().toUpperCase();
+      
+      if(!tbody) return;
+      
+      const rows = tbody.querySelectorAll('tr');
+      let visibleCount = 0;
+      let totalCount = rows.length;
+      
+      rows.forEach(row => {
+        if(!searchTerm) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          const orderNo = (row.cells[2]?.textContent || '').toUpperCase();
+          const productCode = (row.cells[3]?.textContent || '').toUpperCase();
+          const packer = (row.cells[1]?.textContent || '').toUpperCase();
+          
+          if(orderNo.includes(searchTerm) || productCode.includes(searchTerm) || packer.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+      
+      if(filterInfo) {
+        if(searchTerm && visibleCount < totalCount) {
+          filterInfo.style.display = 'block';
+          filterInfo.textContent = `🔍 "${keyword}" için ${visibleCount} / ${totalCount} kayıt gösteriliyor`;
+        } else {
+          filterInfo.style.display = 'none';
+        }
+      }
+    };
 
     async function searchPackerRecord() {
       const input = document.getElementById("packerSearchInput");
@@ -17884,8 +18289,8 @@
         snap.forEach(docSnap => {
           const d = docSnap.data();
           const orderMatch = (d.orderNo || "").toUpperCase().includes(keyword);
-          const customerMatch = (d.customerName || "").toUpperCase().includes(keyword);
-          if(orderMatch || customerMatch) matches.push(d);
+          const productMatch = (d.productCode || "").toUpperCase().includes(keyword);
+          if(orderMatch || productMatch) matches.push(d);
         });
 
         if(matches.length === 0) {
@@ -17904,7 +18309,7 @@
           html += `<div style="background:var(--surface);border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid ${pc};display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
             <div>
               <div style="font-weight:700;font-size:15px;">${d.orderNo}</div>
-              ${d.customerName ? `<div style="font-size:13px;color:var(--muted);margin-top:2px;">👤 ${d.customerName}</div>` : ''}
+              ${d.productCode ? `<div style="font-size:13px;color:var(--muted);margin-top:2px;">📦 ${d.productCode}</div>` : ''}
             </div>
             <div style="text-align:right;">
               <div style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:${pc}15;color:${pc};border:1px solid ${pc}44;">${d.packer} - ${fullNames[d.packer] || d.packer}</div>
@@ -17951,24 +18356,50 @@
         const filterStart = document.getElementById("packerFilterStart")?.value || "";
         const filterEnd = document.getElementById("packerFilterEnd")?.value || "";
 
+        // Paketleme kayıtlarını çek
         const q = query(collection(db, "packerRecords"), orderBy("createdAt", "desc"));
         const snap = await getDocs(q);
 
-        if(snap.empty) {
-          if(emptyEl) emptyEl.style.display = "block";
-          if(summaryCards) summaryCards.style.display = "none";
-          if(breakdownWrap) breakdownWrap.style.display = "none";
-          return;
-        }
+        // Ceza kayıtlarını çek
+        const penaltyQ = query(collection(db, "packerPenalties"), orderBy("createdAt", "desc"));
+        const penaltySnap = await getDocs(penaltyQ);
 
         const packerCounts = {};
         const packerScores = {};
+        const packerPenalties = {};
         let totalCount = 0;
         let totalScore = 0;
+        let totalPenalty = 0;
         const isAdmin = window.ADMIN_PINS?.has(window.__SESSION?.pin);
+        const canDeletePacker = isAdmin || window.PACKER_TRACKER_PINS?.has(window.__SESSION?.pin);
+
+        // Tüm kayıtları birleştir (tarih sıralı)
+        const allRecords = [];
 
         snap.forEach(docSnap => {
           const d = docSnap.data();
+          d._id = docSnap.id;
+          d._type = 'positive';
+          allRecords.push(d);
+        });
+
+        penaltySnap.forEach(docSnap => {
+          const d = docSnap.data();
+          d._id = docSnap.id;
+          d._type = 'penalty';
+          allRecords.push(d);
+        });
+
+        // Tarihe göre sırala (en yeni önce)
+        allRecords.sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.() || new Date(0);
+          const bTime = b.createdAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        let recordsShown = 0;
+
+        allRecords.forEach(d => {
           const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
 
           // Tarih filtresi
@@ -17985,30 +18416,52 @@
           // Paketçi filtresi
           if(filterPacker && d.packer !== filterPacker) return;
 
+          recordsShown++;
           const sc = d.score || 0;
-          totalCount++;
-          totalScore += sc;
-          packerCounts[d.packer] = (packerCounts[d.packer] || 0) + 1;
-          packerScores[d.packer] = (packerScores[d.packer] || 0) + sc;
-
           const dateStr = dt ? dt.toLocaleDateString("tr-TR") + " " + dt.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit"}) : "-";
-          const scoreBg = sc >= 7 ? '#fef2f2' : sc >= 4 ? '#fefce8' : '#f0fdf4';
-          const scoreColor = sc >= 7 ? '#dc2626' : sc >= 4 ? '#ca8a04' : '#16a34a';
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td style="white-space:nowrap;">${dateStr}</td>
-            <td><span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${d.packer}</span></td>
-            <td style="font-weight:600;">${d.orderNo}</td>
-            <td>${d.customerName || "-"}</td>
-            <td>${sc ? `<span style="display:inline-block;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;background:${scoreBg};color:${scoreColor};border:1px solid ${scoreColor}33;">⭐ ${sc}</span>` : '-'}</td>
-            <td>${d.createdByName || d.createdBy || "-"}</td>
-            <td>${isAdmin ? `<button onclick="deletePackerRecord('${docSnap.id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
-          `;
-          tbody.appendChild(tr);
+          if(d._type === 'positive') {
+            // Pozitif puan kaydı
+            totalCount++;
+            totalScore += sc;
+            packerCounts[d.packer] = (packerCounts[d.packer] || 0) + 1;
+            packerScores[d.packer] = (packerScores[d.packer] || 0) + sc;
+
+            const scoreBg = sc >= 7 ? '#fef2f2' : sc >= 4 ? '#fefce8' : '#f0fdf4';
+            const scoreColor = sc >= 7 ? '#dc2626' : sc >= 4 ? '#ca8a04' : '#16a34a';
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td style="white-space:nowrap;">${dateStr}</td>
+              <td><span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${d.packer}</span></td>
+              <td style="font-weight:600;">${d.orderNo}</td>
+              <td>${d.productCode || d.customerName || "-"}</td>
+              <td>${sc ? `<span style="display:inline-block;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;background:${scoreBg};color:${scoreColor};border:1px solid ${scoreColor}33;">⭐ +${sc}</span>` : '-'}</td>
+              <td>${d.createdByName || d.createdBy || "-"}</td>
+              <td>${canDeletePacker ? `<button onclick="deletePackerRecord('${d._id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
+            `;
+            tbody.appendChild(tr);
+          } else {
+            // Ceza puanı kaydı (negatif)
+            totalPenalty += Math.abs(sc);
+            packerPenalties[d.packer] = (packerPenalties[d.packer] || 0) + Math.abs(sc);
+
+            const tr = document.createElement("tr");
+            tr.style.background = 'rgba(239,68,68,0.05)';
+            tr.innerHTML = `
+              <td style="white-space:nowrap;">${dateStr}</td>
+              <td><span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${d.packer}</span></td>
+              <td style="font-weight:600;">${d.orderNo}</td>
+              <td title="${d.note || ''}" style="font-size:12px;color:#ef4444;">${d.penaltyType || 'Ceza'}</td>
+              <td><span style="display:inline-block;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">⚠️ ${sc}</span></td>
+              <td>${d.createdByName || d.createdBy || "-"}</td>
+              <td>${canDeletePacker ? `<button onclick="deletePenaltyRecord('${d._id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
+            `;
+            tbody.appendChild(tr);
+          }
         });
 
-        if(totalCount === 0) {
+        if(recordsShown === 0) {
           if(emptyEl) emptyEl.style.display = "block";
           if(summaryCards) summaryCards.style.display = "none";
           if(breakdownWrap) breakdownWrap.style.display = "none";
@@ -18016,52 +18469,79 @@
         }
 
         // Özet
+        const netScore = totalScore - totalPenalty;
         if(totalCountEl) totalCountEl.textContent = totalCount;
         const totalScoreEl = document.getElementById("packerTotalScore");
+        const totalPenaltyEl = document.getElementById("packerTotalPenalty");
+        const netScoreEl = document.getElementById("packerNetScore");
         const avgScoreEl = document.getElementById("packerAvgScore");
         if(totalScoreEl) totalScoreEl.textContent = totalScore;
+        if(totalPenaltyEl) totalPenaltyEl.textContent = '-' + totalPenalty;
+        if(netScoreEl) netScoreEl.textContent = netScore;
         if(avgScoreEl) avgScoreEl.textContent = totalCount > 0 ? (totalScore / totalCount).toFixed(1) : '0';
         if(summaryCards) summaryCards.style.display = "flex";
 
-        // Paketçi bazlı dağılım (adet + puan)
+        // Paketçi bazlı dağılım - modern performans kartları
         if(breakdownBody && breakdownWrap) {
           breakdownWrap.style.display = "block";
           const colors = { "ŞA": "#ef4444", "GG": "#3b82f6", "BÖ": "#22c55e", "VCG": "#f59e0b" };
           const fullNames = { "ŞA": "Şaban Aydemir", "GG": "Gökmen Genç", "BÖ": "Bahriye Özcimbit", "VCG": "Veli Can Güven" };
-          const maxScore = Math.max(...Object.values(packerScores), 1);
-          breakdownBody.innerHTML = Object.keys({...packerCounts, ...packerScores}).filter((v,i,a) => a.indexOf(v) === i).sort((a,b) => (packerScores[b]||0) - (packerScores[a]||0)).map(key => {
+          const allKeys = Object.keys({...packerCounts, ...packerScores, ...packerPenalties}).filter((v,i,a) => a.indexOf(v) === i).sort((a,b) => ((packerScores[b]||0) - (packerPenalties[b]||0)) - ((packerScores[a]||0) - (packerPenalties[a]||0)));
+
+          // En yüksek net puanı bul (progress bar için)
+          const maxNet = Math.max(...allKeys.map(k => (packerScores[k] || 0) - (packerPenalties[k] || 0)), 1);
+
+          // Detay kartları - modern sıralama görünümü
+          breakdownBody.innerHTML = allKeys.map((key, index) => {
             const count = packerCounts[key] || 0;
             const score = packerScores[key] || 0;
+            const penalty = packerPenalties[key] || 0;
+            const net = score - penalty;
             const color = colors[key] || "#6366f1";
             const pctCount = totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0;
-            const pctScore = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
             const avg = count > 0 ? (score / count).toFixed(1) : '0';
-            return `<div style="flex:1;min-width:160px;background:var(--surface);border-radius:12px;padding:16px;border:2px solid ${color}33;text-align:center;">
-              <div style="font-size:16px;font-weight:800;color:${color};">${key}</div>
-              <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${fullNames[key] || key}</div>
-              <div style="display:flex;justify-content:center;gap:16px;margin-bottom:10px;">
-                <div>
-                  <div style="font-size:22px;font-weight:800;color:var(--text);">${count}</div>
-                  <div style="font-size:10px;color:var(--muted);">Paket</div>
+            const netPct = maxNet > 0 ? Math.max(0, (net / maxNet) * 100) : 0;
+            
+            // Sıralama rozeti
+            const rankBadge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+            const rankStyle = index < 3 ? 'font-size:24px;' : 'font-size:14px;font-weight:700;color:var(--muted);background:var(--panel2);padding:4px 8px;border-radius:6px;';
+            
+            return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <!-- Sıralama -->
+                <div style="${rankStyle}">${rankBadge}</div>
+                
+                <!-- Paketçi Bilgisi -->
+                <div style="flex:1;min-width:120px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px;">${key}</div>
+                    <div>
+                      <div style="font-weight:700;font-size:15px;color:var(--text);">${fullNames[key] || key}</div>
+                      <div style="font-size:12px;color:var(--muted);">${count} paket · Ort: ${avg}</div>
+                    </div>
+                  </div>
                 </div>
-                <div style="width:1px;background:var(--border);"></div>
-                <div>
-                  <div style="font-size:22px;font-weight:800;color:${color};">${score}</div>
-                  <div style="font-size:10px;color:var(--muted);">Puan</div>
-                </div>
-                <div style="width:1px;background:var(--border);"></div>
-                <div>
-                  <div style="font-size:22px;font-weight:800;color:#8b5cf6;">${avg}</div>
-                  <div style="font-size:10px;color:var(--muted);">Ort.</div>
+                
+                <!-- İstatistikler -->
+                <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                  <div style="text-align:center;min-width:60px;">
+                    <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">Kazanılan</div>
+                    <div style="font-size:18px;font-weight:800;color:#22c55e;">+${score}</div>
+                  </div>
+                  <div style="text-align:center;min-width:60px;">
+                    <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">Ceza</div>
+                    <div style="font-size:18px;font-weight:800;color:${penalty > 0 ? '#ef4444' : 'var(--muted)'};">${penalty > 0 ? '-' + penalty : '0'}</div>
+                  </div>
+                  <div style="text-align:center;min-width:80px;padding:8px 16px;border-radius:10px;background:${net >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'};">
+                    <div style="font-size:11px;color:${net >= 0 ? '#16a34a' : '#dc2626'};margin-bottom:2px;">NET PUAN</div>
+                    <div style="font-size:22px;font-weight:900;color:${net >= 0 ? '#16a34a' : '#dc2626'};">${net}</div>
+                  </div>
                 </div>
               </div>
-              <div style="font-size:10px;color:var(--muted);text-align:left;margin-bottom:2px;">Adet (%${pctCount})</div>
-              <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px;">
-                <div style="width:${pctCount}%;height:100%;background:${color};border-radius:4px;transition:width .3s;"></div>
-              </div>
-              <div style="font-size:10px;color:var(--muted);text-align:left;margin-bottom:2px;">Puan</div>
-              <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;">
-                <div style="width:${pctScore}%;height:100%;background:linear-gradient(90deg,${color},${color}aa);border-radius:4px;transition:width .3s;"></div>
+              
+              <!-- Progress Bar -->
+              <div style="margin-top:12px;height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:${netPct}%;background:linear-gradient(90deg, ${color}, ${color}88);border-radius:4px;transition:width .5s ease;"></div>
               </div>
             </div>`;
           }).join("");
@@ -18072,6 +18552,194 @@
       }
     }
     window.loadPackerRecords = loadPackerRecords;
+
+    // =============== CEZA PUANI (EKSİ PUAN) SİSTEMİ ===============
+    
+    // Sipariş numarasından paketçi bilgisi bul
+    async function findPackerByOrderNo(orderNo) {
+      if(!orderNo) return null;
+      
+      try {
+        const q = query(collection(db, "packerRecords"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        
+        let found = null;
+        snap.forEach(docSnap => {
+          if(found) return;
+          const d = docSnap.data();
+          if((d.orderNo || "").toUpperCase() === orderNo.toUpperCase()) {
+            found = d;
+          }
+        });
+        
+        return found;
+      } catch(err) {
+        console.error("Paketçi arama hatası:", err);
+        return null;
+      }
+    }
+    
+    // Sipariş numarası input değiştiğinde otomatik ara
+    let penaltySearchTimeout = null;
+    function onPenaltyOrderNoInput() {
+      const orderNoInput = document.getElementById("penaltyOrderNo");
+      const autoInfoEl = document.getElementById("penaltyAutoInfo");
+      const notFoundEl = document.getElementById("penaltyNotFound");
+      const packerValueEl = document.getElementById("penaltyPackerValue");
+      const productValueEl = document.getElementById("penaltyProductValue");
+      
+      const orderNo = (orderNoInput?.value || "").trim().toUpperCase();
+      
+      // Temizle
+      if(autoInfoEl) autoInfoEl.style.display = "none";
+      if(notFoundEl) notFoundEl.style.display = "none";
+      if(packerValueEl) packerValueEl.value = "";
+      if(productValueEl) productValueEl.value = "";
+      
+      if(orderNo.length < 3) return;
+      
+      // Debounce
+      clearTimeout(penaltySearchTimeout);
+      penaltySearchTimeout = setTimeout(async () => {
+        const result = await findPackerByOrderNo(orderNo);
+        
+        if(result) {
+          const fullNames = { "ŞA": "Şaban Aydemir", "GG": "Gökmen Genç", "BÖ": "Bahriye Özcimbit", "VCG": "Veli Can Güven" };
+          const dt = result.createdAt?.toDate?.();
+          const dateStr = dt ? dt.toLocaleDateString("tr-TR") + " " + dt.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit"}) : "-";
+          
+          document.getElementById("penaltyFoundPacker").textContent = `${result.packer} - ${fullNames[result.packer] || result.packer}`;
+          document.getElementById("penaltyFoundProduct").textContent = result.productCode || "-";
+          document.getElementById("penaltyFoundDate").textContent = dateStr;
+          
+          if(packerValueEl) packerValueEl.value = result.packer;
+          if(productValueEl) productValueEl.value = result.productCode || "";
+          
+          if(autoInfoEl) autoInfoEl.style.display = "block";
+          if(notFoundEl) notFoundEl.style.display = "none";
+        } else {
+          if(autoInfoEl) autoInfoEl.style.display = "none";
+          if(notFoundEl) notFoundEl.style.display = "block";
+        }
+      }, 400);
+    }
+    
+    async function savePenaltyRecord() {
+      const orderNoInput = document.getElementById("penaltyOrderNo");
+      const packerValueEl = document.getElementById("penaltyPackerValue");
+      const productValueEl = document.getElementById("penaltyProductValue");
+      const penaltyType = document.getElementById("penaltyType");
+      const penaltyNote = document.getElementById("penaltyNote");
+      const statusEl = document.getElementById("statusPenalty");
+
+      const packer = packerValueEl?.value;
+      const productCode = productValueEl?.value || "";
+      const orderNo = (orderNoInput?.value || "").trim().toUpperCase();
+      const penaltyScore = parseInt(penaltyType?.value) || 0;
+      const note = (penaltyNote?.value || "").trim();
+
+      statusEl.style.display = "block";
+
+      if(!orderNo) { statusEl.textContent = "Lütfen sipariş numarası girin."; statusEl.className = "note error"; return; }
+      if(!packer) { statusEl.textContent = "Bu sipariş numarasına ait paketçi bulunamadı."; statusEl.className = "note error"; return; }
+      if(!penaltyScore) { statusEl.textContent = "Lütfen hata türü seçin."; statusEl.className = "note error"; return; }
+
+      try {
+        statusEl.textContent = "Kaydediliyor..."; statusEl.className = "note";
+
+        await addDoc(collection(db, "packerPenalties"), {
+          packer: packer,
+          orderNo: orderNo,
+          productCode: productCode,
+          score: penaltyScore, // negatif değer
+          note: note,
+          penaltyType: penaltyType.options[penaltyType.selectedIndex].text,
+          createdAt: serverTimestamp(),
+          createdBy: sessionPin || "-",
+          createdByName: getNameByPin(sessionPin) || "-"
+        });
+
+        statusEl.textContent = "✅ Ceza puanı başarıyla kaydedildi!"; statusEl.className = "note ok";
+        orderNoInput.value = "";
+        penaltyType.selectedIndex = 0;
+        penaltyNote.value = "";
+        document.getElementById("penaltyAutoInfo").style.display = "none";
+        document.getElementById("penaltyPackerValue").value = "";
+        document.getElementById("penaltyProductValue").value = "";
+        loadPackerRecords();
+      } catch(err) {
+        console.error("Ceza kaydı hatası:", err);
+        statusEl.textContent = "Hata: " + err.message; statusEl.className = "note error";
+      }
+    }
+    window.savePenaltyRecord = savePenaltyRecord;
+
+    async function deletePenaltyRecord(docId) {
+      if(!confirm("Bu ceza kaydını silmek istediğinize emin misiniz?")) return;
+      try {
+        await deleteDoc(doc(db, "packerPenalties", docId));
+        loadPackerRecords();
+      } catch(err) {
+        console.error("Ceza silme hatası:", err);
+        alert("Hata: " + err.message);
+      }
+    }
+    window.deletePenaltyRecord = deletePenaltyRecord;
+
+    // Hızlı Filtre Fonksiyonu
+    function applyQuickFilter(filterType) {
+      const startInput = document.getElementById("packerFilterStart");
+      const endInput = document.getElementById("packerFilterEnd");
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      // Aktif butonu işaretle
+      document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.style.background = btn.dataset.filter === filterType ? 'var(--green)' : 'var(--surface)';
+        btn.style.color = btn.dataset.filter === filterType ? 'white' : 'var(--text)';
+        btn.style.borderColor = btn.dataset.filter === filterType ? 'var(--green)' : 'var(--border)';
+      });
+
+      switch(filterType) {
+        case 'today':
+          startInput.value = todayStr;
+          endInput.value = todayStr;
+          break;
+        case 'week':
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay() + 1); // Pazartesi
+          startInput.value = weekStart.toISOString().split('T')[0];
+          endInput.value = todayStr;
+          break;
+        case 'month':
+          const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+          startInput.value = monthStart.toISOString().split('T')[0];
+          endInput.value = todayStr;
+          break;
+        case 'all':
+          startInput.value = "";
+          endInput.value = "";
+          break;
+      }
+      
+      loadPackerRecords();
+    }
+    window.applyQuickFilter = applyQuickFilter;
+
+    // Hızlı filtre butonları için event listener
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyQuickFilter(btn.dataset.filter));
+    });
+
+    // Ceza kaydet butonu
+    document.getElementById("btnSavePenalty")?.addEventListener("click", savePenaltyRecord);
+    
+    // Ceza sipariş numarası değiştiğinde otomatik paketçi ara
+    document.getElementById("penaltyOrderNo")?.addEventListener("input", onPenaltyOrderNoInput);
+    document.getElementById("penaltyOrderNo")?.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") savePenaltyRecord();
+    });
 
     // Kaydet butonu
     document.getElementById("btnSavePackerRecord")?.addEventListener("click", savePackerRecord);
@@ -18087,10 +18755,9 @@
     document.getElementById("packerOrderNo")?.addEventListener("keydown", (e) => {
       if(e.key === "Enter") savePackerRecord();
     });
-    // Enter ile kaydet (müşteri ismi alanında)
-    document.getElementById("packerCustomerName")?.addEventListener("keydown", (e) => {
-      if(e.key === "Enter") savePackerRecord();
-    });
+    
+    // İlk yüklemede productScores cache'i doldur ve ürün satırlarını başlat
+    loadProductScoreCache();
 
     
   </script>
