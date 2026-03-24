@@ -1321,6 +1321,7 @@
       </div>
       <div class="tab-group-content" id="group-kayit">
         <div class="tab-sub" data-target="admin">Yönetici</div>
+        <div class="tab-sub" data-target="makeOrders">Make Siparişleri</div>
         <div class="tab-sub" data-target="production">Üretim Kayıtları</div>
         <div class="tab-sub" data-target="attendance">Mesai Kayıtları</div>
         <div class="tab-sub" data-target="customOrders">Kişiye Özel Siparişler</div>
@@ -3682,6 +3683,42 @@
           </div>
         </div>
 
+        <!-- VIEW: MAKE ORDERS -->
+        <div id="viewMakeOrders" style="display:none;">
+          <div class="sectionTitle">Make Siparişleri (Etsy)</div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+              <h3 style="margin:0;">📦 Gelen Siparişler</h3>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input id="makeOrderSearch" type="text" placeholder="🔍 Sipariş No veya Müşteri Ara..." style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;width:220px;" oninput="filterMakeOrders(this.value)" />
+                <button onclick="refreshMakeOrders()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;">🔄 Yenile</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                  <tr style="background:var(--surface);">
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Sipariş No</th>
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Müşteri</th>
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">E-posta</th>
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Ürün</th>
+                    <th style="padding:12px 10px;text-align:center;border-bottom:2px solid var(--border);font-weight:700;">Adet</th>
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Platform</th>
+                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Tarih</th>
+                  </tr>
+                </thead>
+                <tbody id="makeOrdersBody">
+                  <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="makeOrdersEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+              <div style="font-size:48px;margin-bottom:12px;">📭</div>
+              <div>Henüz sipariş yok</div>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ADMIN -->
         <div id="viewAdmin" style="display:none;">
           <div class="sectionTitle">Yönetici Paneli</div>
@@ -4919,6 +4956,7 @@
     const tabCargo= document.getElementById("tabCargo");
     const tabUnaltaWA= document.getElementById("tabUnaltaWA");
     const tabPackerTracker= document.getElementById("tabPackerTracker");
+    const tabMakeOrders= document.getElementById("tabMakeOrders");
     const tabAdmin = document.getElementById("tabAdmin");
 
     const viewPut  = document.getElementById("viewPut");
@@ -4948,6 +4986,7 @@
     const viewUnaltaWallArt= document.getElementById("viewUnaltaWallArt");
     const viewUnaltaWA= document.getElementById("viewUnaltaWA");
     const viewPackerTracker= document.getElementById("viewPackerTracker");
+    const viewMakeOrders= document.getElementById("viewMakeOrders");
     const viewAdmin= document.getElementById("viewAdmin");
 
     const inProduct  = document.getElementById("inProduct");
@@ -5811,7 +5850,7 @@
 
     function setActiveTab(target){
       currentActiveTab = target; // Aktif sekmeyi kaydet
-      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabProductionRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabFreelanceWorks, tabCargo, tabUnaltaWA, tabPackerTracker, tabAdmin].filter(Boolean);
+      const allTabs = [tabPut, tabClear, tabSearch, tabRack, tabProductionRack, tabRequest, tabMaterialRequest, tabWelder, tabWelderRequests, tabProduction, tabPurchase, tabSuppliers, tabInstructions, tabPackaging, tabPayments, tabAccounts, tabCommissionSummary, tabCommission, tabPlatformPayments, tabAttendance, tabCustomOrders, tabDesignerBonus, tabFreelanceWorks, tabCargo, tabUnaltaWA, tabPackerTracker, tabMakeOrders, tabAdmin].filter(Boolean);
       allTabs.forEach(t=>t.classList.remove("active"));
 
       const hideAll = ()=>{
@@ -5843,6 +5882,7 @@
         viewUnaltaWallArt && (viewUnaltaWallArt.style.display="none");
         viewUnaltaWA && (viewUnaltaWA.style.display="none");
         viewPackerTracker && (viewPackerTracker.style.display="none");
+        viewMakeOrders && (viewMakeOrders.style.display="none");
         viewAdmin && (viewAdmin.style.display="none");
       };
 
@@ -6008,6 +6048,15 @@
             if(typeof loadUnaltaWallArtOrders === "function") {
               loadUnaltaWallArtOrders();
             }
+          }catch(e){console.error(e);} 
+        },50); 
+      }
+      if(target==="makeOrders"){ 
+        tabMakeOrders?.classList.add("active"); 
+        viewMakeOrders.style.display="block"; 
+        setTimeout(()=>{ 
+          try{ 
+            loadMakeOrders();
           }catch(e){console.error(e);} 
         },50); 
       }
@@ -6635,6 +6684,7 @@
         const collectionCol = collection(db, "commissionCollections");
         const platformPaymentsCol = collection(db, "platformPayments");
         const credentialsCol = collection(db, "credentials");
+        const makeOrdersCol = collection(db, "orders");
         
         // Global erişim için
         window.credentialsCol = credentialsCol;
@@ -7638,6 +7688,7 @@
           const products = { ...(shelfData.products || {}) };
           const productTimestamps = { ...(shelfData.productTimestamps || {}) };
           const productTypes = { ...(shelfData.productTypes || {}) };
+          const orderQuantities = { ...(shelfData.orderQuantities || {}) };
           
           // Eğer bu ürün rafta yoksa timestamp ekle (varsa mevcut timestamp'ı koru)
           if(!products[code]){
@@ -7645,9 +7696,14 @@
           }
           products[code] = (products[code] || 0) + qty;
           productTypes[code] = productType;
+          
+          // Sipariş için ayrılmış ise orderQuantities'i güncelle
+          if(productType === "order"){
+            orderQuantities[code] = (orderQuantities[code] || 0) + qty;
+          }
 
           try{
-            await updateDoc(doc(shelvesCol, shelfName), { products, productTimestamps, productTypes, updated: serverTimestamp() });
+            await updateDoc(doc(shelvesCol, shelfName), { products, productTimestamps, productTypes, orderQuantities, updated: serverTimestamp() });
 
             const typeLabel = productType === "order" ? "Sipariş için ayrıldı" : "Stok olarak eklendi";
             await writeLog({ action: "PUT", shelf: shelfName, product: code, qty, detail: `Rafa ürün eklendi (${typeLabel})` });
@@ -14768,6 +14824,93 @@
       }
     }
     window.createCargoRequest = createCargoRequest;
+
+    // ===== MAKE ORDERS (Etsy Siparişleri) =====
+    let makeOrdersCache = [];
+    
+    async function loadMakeOrders() {
+      const tbody = document.getElementById("makeOrdersBody");
+      const emptyDiv = document.getElementById("makeOrdersEmpty");
+      if(!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>';
+      
+      try {
+        const ordersCollection = collection(db, "orders");
+        const q = query(ordersCollection, orderBy("created_at", "desc"), limit(500));
+        const snap = await getDocs(q);
+        
+        makeOrdersCache = [];
+        snap.forEach(doc => {
+          makeOrdersCache.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderMakeOrders(makeOrdersCache);
+      } catch(err) {
+        console.error("Make orders yükleme hatası:", err);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#ef4444;">Hata: ' + err.message + '</td></tr>';
+      }
+    }
+    
+    function renderMakeOrders(orders) {
+      const tbody = document.getElementById("makeOrdersBody");
+      const emptyDiv = document.getElementById("makeOrdersEmpty");
+      if(!tbody) return;
+      
+      if(!orders || orders.length === 0) {
+        tbody.innerHTML = '';
+        if(emptyDiv) emptyDiv.style.display = "block";
+        return;
+      }
+      
+      if(emptyDiv) emptyDiv.style.display = "none";
+      
+      tbody.innerHTML = orders.map(order => {
+        const date = order.created_at?.toDate ? order.created_at.toDate() : (order.created_at ? new Date(order.created_at) : null);
+        const dateStr = date ? date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+        
+        const platformBadge = order.platform === 'etsy' 
+          ? '<span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">ETSY</span>'
+          : '<span style="background:#64748b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">' + (order.platform || '-').toUpperCase() + '</span>';
+        
+        return `
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:12px 10px;font-weight:700;color:#3b82f6;">${order.order_id || '-'}</td>
+            <td style="padding:12px 10px;font-weight:600;">${order.customer_name || '-'}</td>
+            <td style="padding:12px 10px;color:var(--muted);font-size:12px;">${order.customer_email || '-'}</td>
+            <td style="padding:12px 10px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${order.product_title || ''}">${order.product_title || '-'}</td>
+            <td style="padding:12px 10px;text-align:center;font-weight:700;">${order.quantity || 1}</td>
+            <td style="padding:12px 10px;">${platformBadge}</td>
+            <td style="padding:12px 10px;font-size:12px;color:var(--muted);">${dateStr}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function filterMakeOrders(searchText) {
+      const text = (searchText || '').toLowerCase().trim();
+      if(!text) {
+        renderMakeOrders(makeOrdersCache);
+        return;
+      }
+      
+      const filtered = makeOrdersCache.filter(order => {
+        return (order.order_id || '').toLowerCase().includes(text) ||
+               (order.customer_name || '').toLowerCase().includes(text) ||
+               (order.customer_email || '').toLowerCase().includes(text) ||
+               (order.product_title || '').toLowerCase().includes(text);
+      });
+      
+      renderMakeOrders(filtered);
+    }
+    
+    function refreshMakeOrders() {
+      loadMakeOrders();
+    }
+    
+    window.loadMakeOrders = loadMakeOrders;
+    window.filterMakeOrders = filterMakeOrders;
+    window.refreshMakeOrders = refreshMakeOrders;
 
     async function loadCargoRequests() {
       const listContainer = document.getElementById("cargoRequestsList");
