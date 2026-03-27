@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Larmo">
   <link rel="manifest" href="/manifest.json">
   <title>Larmo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     *{box-sizing:border-box}
@@ -857,6 +858,31 @@
       font-weight: 600;
       box-shadow: 0 2px 8px rgba(102,126,234,0.3);
     }
+    
+    /* Sipariş Yönetimi Filter Butonları */
+    .order-filter-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel2);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .order-filter-btn:hover {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: rgba(59,130,246,0.08);
+    }
+    .order-filter-btn.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+      font-weight: 600;
+    }
+    
     .custom-order-card {
       background: var(--panel2);
       border: 1px solid var(--border);
@@ -1321,7 +1347,7 @@
       </div>
       <div class="tab-group-content" id="group-kayit">
         <div class="tab-sub" data-target="admin">Yönetici</div>
-        <div class="tab-sub" data-target="makeOrders">Make Siparişleri</div>
+        <div class="tab-sub" data-target="makeOrders">Sipariş Yönetimi</div>
         <div class="tab-sub" data-target="production">Üretim Kayıtları</div>
         <div class="tab-sub" data-target="attendance">Mesai Kayıtları</div>
         <div class="tab-sub" data-target="customOrders">Kişiye Özel Siparişler</div>
@@ -3683,38 +3709,132 @@
           </div>
         </div>
 
-        <!-- VIEW: MAKE ORDERS -->
+        <!-- VIEW: MAKE ORDERS / SİPARİŞ YÖNETİMİ -->
         <div id="viewMakeOrders" style="display:none;">
-          <div class="sectionTitle">Make Siparişleri (Etsy)</div>
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
-              <h3 style="margin:0;">📦 Gelen Siparişler</h3>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input id="makeOrderSearch" type="text" placeholder="🔍 Sipariş No veya Müşteri Ara..." style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;width:220px;" oninput="filterMakeOrders(this.value)" />
-                <button onclick="refreshMakeOrders()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;">🔄 Yenile</button>
+          <div class="sectionTitle">Sipariş Yönetimi</div>
+          
+          <!-- Excel Yükleme Kartı -->
+          <div class="card" style="margin-bottom:20px;border-left:4px solid #3b82f6;">
+            <h3 style="margin-top:0;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:24px;">📂</span> Excel Dosyası Yükle
+            </h3>
+            <p style="font-size:13px;color:var(--muted);margin:-8px 0 16px;">Entegrasyon programından aldığınız Excel dosyasını buraya yükleyin.</p>
+            
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <label style="flex:1;min-width:250px;">
+                <input type="file" id="orderExcelFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleOrderExcelUpload(this)" />
+                <div style="padding:20px;border:2px dashed var(--border);border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#3b82f6';this.style.background='rgba(59,130,246,0.05)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='transparent'" onclick="document.getElementById('orderExcelFile').click()">
+                  <div style="font-size:32px;margin-bottom:8px;">📄</div>
+                  <div style="font-weight:600;color:var(--text);">Excel dosyası seçin veya sürükleyin</div>
+                  <div style="font-size:12px;color:var(--muted);margin-top:4px;">.xlsx, .xls, .csv</div>
+                </div>
+              </label>
+            </div>
+            
+            <!-- Yükleme Önizleme -->
+            <div id="orderUploadPreview" style="display:none;margin-top:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div style="font-weight:600;color:#3b82f6;">📊 Önizleme: <span id="orderPreviewCount">0</span> sipariş bulundu</div>
+                <div style="display:flex;gap:8px;">
+                  <button onclick="cancelOrderUpload()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;">❌ İptal</button>
+                  <button onclick="saveOrdersFromExcel()" style="padding:8px 20px;border-radius:8px;border:none;background:#22c55e;color:white;cursor:pointer;font-size:13px;font-weight:600;">✅ Kaydet</button>
+                </div>
+              </div>
+              <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead id="orderPreviewHead"></thead>
+                  <tbody id="orderPreviewBody"></tbody>
+                </table>
               </div>
             </div>
+            <div id="orderUploadStatus" class="note" style="display:none;margin-top:12px;"></div>
+          </div>
+          
+          <!-- Özet Kartları -->
+          <div id="orderSummaryCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
+            <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Toplam Sipariş</div>
+              <div style="font-size:28px;font-weight:700;" id="orderTotalCount">0</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Beklemede</div>
+              <div style="font-size:28px;font-weight:700;" id="orderPendingCount">0</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Hazırlanıyor</div>
+              <div style="font-size:28px;font-weight:700;" id="orderPreparingCount">0</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#22c55e,#15803d);border-radius:12px;padding:16px;color:white;text-align:center;">
+              <div style="font-size:12px;opacity:0.85;">Kargoya Verildi</div>
+              <div style="font-size:28px;font-weight:700;" id="orderShippedCount">0</div>
+            </div>
+          </div>
+          
+          <!-- Sipariş Listesi -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+              <h3 style="margin:0;">📦 Siparişler</h3>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <select id="orderStatusFilter" onchange="filterOrdersByStatus(this.value)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-size:13px;">
+                  <option value="all">Tüm Durumlar</option>
+                  <option value="pending">Beklemede</option>
+                  <option value="preparing">Hazırlanıyor</option>
+                  <option value="shipped">Kargoya Verildi</option>
+                  <option value="delivered">Teslim Edildi</option>
+                </select>
+                <select id="orderPlatformFilter" onchange="filterOrdersByPlatform(this.value)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-size:13px;">
+                  <option value="all">Tüm Platformlar</option>
+                </select>
+                <input id="orderSearchInput" type="text" placeholder="🔍 Sipariş No, Müşteri, Ürün..." style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;width:220px;" oninput="searchOrders(this.value)" />
+                <button onclick="refreshOrders()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;">🔄</button>
+              </div>
+            </div>
+            
+            <!-- Durum Filtreleri -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+              <button type="button" class="order-filter-btn active" data-filter="all" onclick="setOrderFilter('all', this)">Tümü</button>
+              <button type="button" class="order-filter-btn" data-filter="pending" onclick="setOrderFilter('pending', this)">🟡 Beklemede</button>
+              <button type="button" class="order-filter-btn" data-filter="preparing" onclick="setOrderFilter('preparing', this)">🟣 Hazırlanıyor</button>
+              <button type="button" class="order-filter-btn" data-filter="shipped" onclick="setOrderFilter('shipped', this)">🟢 Kargoda</button>
+              <button type="button" class="order-filter-btn" data-filter="delivered" onclick="setOrderFilter('delivered', this)">✅ Teslim</button>
+            </div>
+            
             <div style="overflow-x:auto;">
-              <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead>
                   <tr style="background:var(--surface);">
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Sipariş No</th>
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Müşteri</th>
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">E-posta</th>
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Ürün</th>
-                    <th style="padding:12px 10px;text-align:center;border-bottom:2px solid var(--border);font-weight:700;">Adet</th>
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Platform</th>
-                    <th style="padding:12px 10px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Tarih</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;white-space:nowrap;">Sipariş No</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Platform</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Alıcı</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Ürün</th>
+                    <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--border);font-weight:700;">Adet</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Kalan Gün</th>
+                    <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--border);font-weight:700;">Durum</th>
+                    <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--border);font-weight:700;">Detay</th>
                   </tr>
                 </thead>
-                <tbody id="makeOrdersBody">
-                  <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>
+                <tbody id="ordersTableBody">
+                  <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>
                 </tbody>
               </table>
             </div>
-            <div id="makeOrdersEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+            <div id="ordersEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);">
               <div style="font-size:48px;margin-bottom:12px;">📭</div>
-              <div>Henüz sipariş yok</div>
+              <div>Henüz sipariş yok. Excel dosyası yükleyerek başlayın.</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sipariş Detay Modal -->
+        <div id="orderDetailModal" class="role-modal-overlay" style="display:none;">
+          <div class="role-modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+            <h3 style="margin:0 0 16px 0;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:24px;">📦</span> Sipariş Detayı
+              <span id="orderDetailNo" style="color:#3b82f6;"></span>
+            </h3>
+            <div id="orderDetailContent"></div>
+            <div class="role-modal-buttons" style="margin-top:20px;">
+              <button class="btn-cancel" onclick="closeOrderDetailModal()">✕ Kapat</button>
             </div>
           </div>
         </div>
@@ -4924,7 +5044,7 @@
     import {
       getFirestore, collection, doc, setDoc, updateDoc, addDoc, deleteDoc,
       onSnapshot, serverTimestamp, writeBatch, Timestamp,
-      getDoc, getDocs, query, limit, orderBy, where
+      getDoc, getDocs, query, limit, orderBy, where, deleteField
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
@@ -5348,17 +5468,24 @@
       return Object.entries(products).map(([c,q])=>`${c} x${q}`).join(", ");
     }
     
-    function productsHTML(products, productTimestamps, productTypes, shelfName, orderQuantities){
+    function productsHTML(products, productTimestamps, productTypes, shelfName, orderQuantities, assignedOrders){
       if(!products || Object.keys(products).length===0) {
         return '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>';
       }
       const timestamps = productTimestamps || {};
       const oq = orderQuantities || {};
+      const ao = assignedOrders || {};
+      
       return Object.entries(products)
         .map(([code, qty]) => {
           const totalQty = Number(qty);
           const orderQty = Math.min(Number(oq[code] || 0), totalQty);
           const stockQty = totalQty - orderQty;
+          
+          // Atanmış sipariş numaralarını al
+          const assigned = ao[code] || [];
+          const orderNos = assigned.map(a => a.siparisNo).filter(Boolean).slice(0, 3); // Max 3 tane göster
+          const orderNoText = orderNos.length > 0 ? `<div style="font-size:9px;color:#dc2626;margin-top:2px;">📋 ${orderNos.join(', ')}${assigned.length > 3 ? '...' : ''}</div>` : '';
           
           let waitText = '';
           const ts = timestamps[code];
@@ -5392,6 +5519,7 @@
                 <span class="product-tag-code">${code}</span>
                 <span class="product-tag-qty">×${orderQty}</span>
                 <span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>
+                ${orderNoText}
               </div>
             `;
           }
@@ -5403,6 +5531,7 @@
                 <span class="product-tag-code">${code}</span>
                 <span class="product-tag-qty">×${orderQty}</span>${waitText}
                 <span style="font-size:9px;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;">SİPARİŞ</span>
+                ${orderNoText}
               </div>
             `;
           }
@@ -5691,6 +5820,36 @@
         
         const oldOrderQty = Number(shelfData.orderQuantities?.[productCode] || 0);
         const orderQuantities = { ...(shelfData.orderQuantities || {}) };
+        const assignedOrders = { ...(shelfData.assignedOrders || {}) };
+        
+        // Sipariş azaltıldıysa veya sıfırlandıysa, assignedOrders ve excelOrders'ı güncelle
+        if(newOrderQty < oldOrderQty) {
+          const removedAssignments = assignedOrders[productCode] || [];
+          
+          // excelOrders'daki assignedShelf bilgilerini kaldır
+          for(const assignment of removedAssignments) {
+            if(assignment.orderId) {
+              try {
+                await updateDoc(doc(db, "excelOrders", assignment.orderId), {
+                  assignedShelf: deleteField(),
+                  assignedProductCode: deleteField(),
+                  status: 'pending',
+                  updated: serverTimestamp()
+                });
+              } catch(e) { console.log('Order update error:', e); }
+            }
+          }
+          
+          // assignedOrders'dan kaldır
+          if(newOrderQty <= 0) {
+            delete assignedOrders[productCode];
+          } else {
+            // Kısmi azaltma - son atananları kaldır
+            const keepCount = newOrderQty;
+            assignedOrders[productCode] = (assignedOrders[productCode] || []).slice(0, keepCount);
+            if(assignedOrders[productCode].length === 0) delete assignedOrders[productCode];
+          }
+        }
         
         if(newOrderQty > 0){
           orderQuantities[productCode] = newOrderQty;
@@ -5698,7 +5857,7 @@
           delete orderQuantities[productCode];
         }
         
-        await updateDoc(doc(db, "shelves", shelfName), { orderQuantities, updated: serverTimestamp() });
+        await updateDoc(doc(db, "shelves", shelfName), { orderQuantities, assignedOrders, updated: serverTimestamp() });
         await addDoc(collection(db, "logs"), { 
           action: "ORDER_QTY_CHANGE", 
           shelf: shelfName, 
@@ -5711,6 +5870,9 @@
         });
         
         hideProductTypeModal();
+        
+        // Siparişleri yenile
+        if(typeof renderOrders === 'function') renderOrders();
         
         if(searchWrap && searchWrap.style.display === 'block') {
           runSearch();
@@ -5734,6 +5896,7 @@
         const productTimestamps = { ...(shelfData.productTimestamps || {}) };
         const productTypes = { ...(shelfData.productTypes || {}) };
         const orderQuantities = { ...(shelfData.orderQuantities || {}) };
+        const assignedOrders = { ...(shelfData.assignedOrders || {}) };
         const currentQty = Number(products[productCode] || 0);
 
         if(currentQty <= 0){ alert('Ürün bulunamadı'); hideProductTypeModal(); return; }
@@ -5749,11 +5912,29 @@
 
         const newQty = currentQty - removeQty;
 
+        // Siparişe atanmış ürünler kaldırılıyorsa, sipariş bilgilerini de temizle
+        const removedAssignments = assignedOrders[productCode] || [];
+        
         if(newQty <= 0){
           delete products[productCode];
           delete productTimestamps[productCode];
           delete productTypes[productCode];
           delete orderQuantities[productCode];
+          delete assignedOrders[productCode];
+          
+          // excelOrders'daki assignedShelf bilgilerini kaldır
+          for(const assignment of removedAssignments) {
+            if(assignment.orderId) {
+              try {
+                await updateDoc(doc(db, "excelOrders", assignment.orderId), {
+                  assignedShelf: deleteField(),
+                  assignedProductCode: deleteField(),
+                  status: 'pending',
+                  updated: serverTimestamp()
+                });
+              } catch(e) { console.log('Order update error:', e); }
+            }
+          }
         } else {
           products[productCode] = newQty;
           // Sipariş adedini yeni miktara göre ayarla
@@ -5762,7 +5943,7 @@
           }
         }
 
-        await updateDoc(doc(db, "shelves", shelfName), { products, productTimestamps, productTypes, orderQuantities, updated: serverTimestamp() });
+        await updateDoc(doc(db, "shelves", shelfName), { products, productTimestamps, productTypes, orderQuantities, assignedOrders, updated: serverTimestamp() });
         await addDoc(collection(db, "logs"), {
           action: newQty <= 0 ? "REMOVE_PRODUCT" : "DECREASE_QTY",
           shelf: shelfName,
@@ -5775,6 +5956,9 @@
         });
 
         hideProductTypeModal();
+        
+        // Siparişleri yenile
+        if(typeof renderOrders === 'function') renderOrders();
 
         if(searchWrap && searchWrap.style.display === 'block') {
           runSearch();
@@ -6804,6 +6988,7 @@
         // Raflar snapshot
         onSnapshot(shelvesCol, (snapshot) => {
           shelvesCache = {};
+          window.shelvesCache = shelvesCache; // Global erişim için
           if(rackBody) rackBody.innerHTML = "";
           if(rackGridFull) rackGridFull.innerHTML = "";
           if(rackGridEmpty) rackGridEmpty.innerHTML = "";
@@ -6822,7 +7007,8 @@
             const productTimestamps = d.productTimestamps || {};
             const productTypes = d.productTypes || {};
             const orderQuantities = d.orderQuantities || {};
-            shelvesCache[name] = { ...d, name, products, productTimestamps, productTypes, orderQuantities };
+            const assignedOrders = d.assignedOrders || {};
+            shelvesCache[name] = { ...d, name, products, productTimestamps, productTypes, orderQuantities, assignedOrders };
 
             // Sadece R001-R100 arası rafları göster
             if(!isShelfVisible(name)) return;
@@ -6849,7 +7035,7 @@
             
             const statusClass = empty ? 'empty' : 'full';
             const statusText = empty ? 'BOŞ' : 'DOLU';
-            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities);
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities, assignedOrders);
             
             card.innerHTML = `
               <div class="rack-card-header">
@@ -6933,6 +7119,11 @@
           populateShelfDropdown();
           refreshClearMode();
           if(role==="admin") computeSummary();
+          
+          // Raflar güncellendiğinde siparişleri de güncelle (stok bilgisi için)
+          if(typeof renderOrders === 'function') {
+            renderOrders();
+          }
         });
 
         // ===== ÜRETİM RAFLARI =====
@@ -7213,7 +7404,7 @@
             if(!data) return;
             const productsEl = card.querySelector('.rack-card-products');
             if(productsEl && data.products && Object.keys(data.products).length > 0) {
-              productsEl.innerHTML = productsHTML(data.products, data.productTimestamps, data.productTypes || {}, data.realName, data.orderQuantities || {});
+              productsEl.innerHTML = productsHTML(data.products, data.productTimestamps, data.productTypes || {}, data.realName, data.orderQuantities || {}, data.assignedOrders || {});
             }
           });
         }
@@ -7464,12 +7655,13 @@
             const productTimestamps = d.productTimestamps || {};
             const productTypes = d.productTypes || {};
             const orderQuantities = d.orderQuantities || {};
+            const assignedOrders = d.assignedOrders || {};
 
             // Sadece R101-R200 arası rafları üretim olarak göster
             if(!isProductionShelfVisible(name)) return;
 
             const pName = shelfToProductionName(name);
-            productionShelvesCache[pName] = { ...d, name: pName, realName: name, products, productTimestamps, productTypes, orderQuantities };
+            productionShelvesCache[pName] = { ...d, name: pName, realName: name, products, productTimestamps, productTypes, orderQuantities, assignedOrders };
 
             const empty = Object.keys(products).length===0;
             if(empty) emptyCount++; else fullCount++;
@@ -7493,7 +7685,7 @@
             
             const statusClass = empty ? 'empty' : 'full';
             const statusText = empty ? 'BOŞ' : 'DOLU';
-            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities);
+            const productsText = empty ? '<span style="color:var(--muted);font-style:italic;">Ürün yok</span>' : productsHTML(products, productTimestamps, productTypes, name, orderQuantities, assignedOrders);
             
             card.innerHTML = `
               <div class="rack-card-header">
@@ -14825,92 +15017,703 @@
     }
     window.createCargoRequest = createCargoRequest;
 
-    // ===== MAKE ORDERS (Etsy Siparişleri) =====
-    let makeOrdersCache = [];
+    // ===== SİPARİŞ YÖNETİMİ (Excel Import) =====
+    let ordersCache = [];
+    let pendingExcelOrders = [];
+    let currentOrderFilter = 'all';
+    let currentPlatformFilter = 'all';
+    let currentSearchText = '';
     
-    async function loadMakeOrders() {
-      const tbody = document.getElementById("makeOrdersBody");
-      const emptyDiv = document.getElementById("makeOrdersEmpty");
-      if(!tbody) return;
+    // Excel sütun eşleştirme
+    const EXCEL_COLUMN_MAP = {
+      'SIPARIS NO': 'siparisNo',
+      'ETIKET NO': 'etiketNo',
+      'URUN BAŞLIĞI': 'urunBasligi',
+      'URUN ADI': 'urunAdi',
+      'PLATFORM': 'platform',
+      'SIPARIS TARIHI': 'siparisTarihi',
+      'GONDERIM TARIHI': 'gonderimTarihi',
+      'KALAN GUN': 'kalanGun',
+      'ALICI ADI': 'aliciAdi',
+      'E-MAIL': 'email',
+      'ADRES': 'adres',
+      'ÜLKE': 'ulke',
+      'URUN ID': 'urunId',
+      'URUN KODU': 'urunKodu',
+      'SKU': 'sku',
+      'VARYANT': 'varyant',
+      'ADET': 'adet',
+      'MUSTERI NOTU': 'musteriNotu',
+      'URUN ACIKLAMALARI': 'urunAciklamalari',
+      'HEDİYE NOTU': 'hediyeNotu',
+      'KULLANICI NOTU': 'kullaniciNotu',
+      'KİŞİSELLEŞTİRME NOTU': 'kisisellestirmeNotu'
+    };
+    
+    // Excel dosyası yükleme
+    function handleOrderExcelUpload(input) {
+      const file = input.files[0];
+      if(!file) return;
       
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>';
+      const statusDiv = document.getElementById('orderUploadStatus');
+      statusDiv.style.display = 'block';
+      statusDiv.className = 'note';
+      statusDiv.textContent = 'Dosya okunuyor...';
       
-      try {
-        const ordersCollection = collection(db, "orders");
-        const q = query(ordersCollection, orderBy("created_at", "desc"), limit(500));
-        const snap = await getDocs(q);
-        
-        makeOrdersCache = [];
-        snap.forEach(doc => {
-          makeOrdersCache.push({ id: doc.id, ...doc.data() });
-        });
-        
-        renderMakeOrders(makeOrdersCache);
-      } catch(err) {
-        console.error("Make orders yükleme hatası:", err);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#ef4444;">Hata: ' + err.message + '</td></tr>';
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+          
+          if(jsonData.length === 0) {
+            statusDiv.className = 'note error';
+            statusDiv.textContent = 'Excel dosyası boş veya okunamadı.';
+            return;
+          }
+          
+          // Sütunları eşleştir
+          pendingExcelOrders = jsonData.map(row => {
+            const mapped = {};
+            for(const [excelCol, fieldName] of Object.entries(EXCEL_COLUMN_MAP)) {
+              // Sütun adı tam eşleşme veya benzer olabilir
+              const key = Object.keys(row).find(k => 
+                k.toUpperCase().trim() === excelCol || 
+                k.toUpperCase().trim().includes(excelCol.split(' ')[0])
+              );
+              mapped[fieldName] = key ? row[key] : '';
+            }
+            mapped.status = 'pending'; // Varsayılan durum
+            mapped.createdAt = new Date();
+            return mapped;
+          });
+          
+          // Önizleme göster
+          showOrderPreview(pendingExcelOrders);
+          statusDiv.className = 'note ok';
+          statusDiv.textContent = `${pendingExcelOrders.length} sipariş başarıyla okundu. Kaydetmek için "Kaydet" butonuna tıklayın.`;
+          
+        } catch(err) {
+          console.error('Excel okuma hatası:', err);
+          statusDiv.className = 'note error';
+          statusDiv.textContent = 'Excel okuma hatası: ' + err.message;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    
+    function showOrderPreview(orders) {
+      const previewDiv = document.getElementById('orderUploadPreview');
+      const countSpan = document.getElementById('orderPreviewCount');
+      const thead = document.getElementById('orderPreviewHead');
+      const tbody = document.getElementById('orderPreviewBody');
+      
+      previewDiv.style.display = 'block';
+      countSpan.textContent = orders.length;
+      
+      // Header
+      thead.innerHTML = `
+        <tr style="background:var(--surface);">
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;">Sipariş No</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;">Platform</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;">Alıcı</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;">Ürün Kodu</th>
+          <th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);font-weight:600;">Adet</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;">Kalan Gün</th>
+        </tr>
+      `;
+      
+      // İlk 10 satırı göster
+      const preview = orders.slice(0, 10);
+      tbody.innerHTML = preview.map(order => `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid var(--border);font-weight:600;color:#3b82f6;">${order.siparisNo || '-'}</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">${order.platform || '-'}</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">${order.aliciAdi || '-'}</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">${order.urunKodu || order.sku || order.urunAdi || order.urunBasligi || '-'}</td>
+          <td style="padding:8px;text-align:center;border-bottom:1px solid var(--border);font-weight:600;">${order.adet || 1}</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">${order.kalanGun || '-'}</td>
+        </tr>
+      `).join('');
+      
+      if(orders.length > 10) {
+        tbody.innerHTML += `<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--muted);font-style:italic;">... ve ${orders.length - 10} sipariş daha</td></tr>`;
       }
     }
     
-    function renderMakeOrders(orders) {
-      const tbody = document.getElementById("makeOrdersBody");
-      const emptyDiv = document.getElementById("makeOrdersEmpty");
-      if(!tbody) return;
-      
-      if(!orders || orders.length === 0) {
-        tbody.innerHTML = '';
-        if(emptyDiv) emptyDiv.style.display = "block";
+    function cancelOrderUpload() {
+      pendingExcelOrders = [];
+      document.getElementById('orderUploadPreview').style.display = 'none';
+      document.getElementById('orderUploadStatus').style.display = 'none';
+      document.getElementById('orderExcelFile').value = '';
+    }
+    
+    async function saveOrdersFromExcel() {
+      if(pendingExcelOrders.length === 0) {
+        alert('Kaydedilecek sipariş yok.');
         return;
       }
       
-      if(emptyDiv) emptyDiv.style.display = "none";
+      const statusDiv = document.getElementById('orderUploadStatus');
+      statusDiv.className = 'note';
+      statusDiv.textContent = 'Siparişler kaydediliyor...';
       
-      tbody.innerHTML = orders.map(order => {
-        const date = order.created_at?.toDate ? order.created_at.toDate() : (order.created_at ? new Date(order.created_at) : null);
-        const dateStr = date ? date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+      try {
+        const ordersCollection = collection(db, "excelOrders");
+        let savedCount = 0;
+        let skippedCount = 0;
         
-        const platformBadge = order.platform === 'etsy' 
-          ? '<span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">ETSY</span>'
-          : '<span style="background:#64748b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">' + (order.platform || '-').toUpperCase() + '</span>';
+        for(const order of pendingExcelOrders) {
+          // Aynı sipariş no ile kayıt var mı kontrol et
+          const existingQuery = query(ordersCollection, where("siparisNo", "==", order.siparisNo), limit(1));
+          const existingSnap = await getDocs(existingQuery);
+          
+          if(existingSnap.empty) {
+            await addDoc(ordersCollection, {
+              ...order,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              createdBy: sessionPin || '-'
+            });
+            savedCount++;
+          } else {
+            skippedCount++;
+          }
+        }
+        
+        statusDiv.className = 'note ok';
+        statusDiv.textContent = `✅ ${savedCount} sipariş kaydedildi.${skippedCount > 0 ? ` (${skippedCount} adet zaten kayıtlı)` : ''}`;
+        
+        // Temizle ve listeyi yenile
+        pendingExcelOrders = [];
+        document.getElementById('orderUploadPreview').style.display = 'none';
+        document.getElementById('orderExcelFile').value = '';
+        
+        loadOrders();
+        
+      } catch(err) {
+        console.error('Sipariş kaydetme hatası:', err);
+        statusDiv.className = 'note error';
+        statusDiv.textContent = 'Hata: ' + err.message;
+      }
+    }
+    
+    // Siparişleri yükle
+    async function loadOrders() {
+      const tbody = document.getElementById("ordersTableBody");
+      const emptyDiv = document.getElementById("ordersEmpty");
+      if(!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Yükleniyor...</td></tr>';
+      
+      try {
+        const ordersCollection = collection(db, "excelOrders");
+        const q = query(ordersCollection, orderBy("createdAt", "desc"), limit(1000));
+        const snap = await getDocs(q);
+        
+        ordersCache = [];
+        const platforms = new Set();
+        
+        snap.forEach(doc => {
+          const data = { id: doc.id, ...doc.data() };
+          ordersCache.push(data);
+          if(data.platform) platforms.add(data.platform);
+        });
+        
+        // Platform filtresini doldur
+        const platformSelect = document.getElementById('orderPlatformFilter');
+        if(platformSelect) {
+          const currentVal = platformSelect.value;
+          platformSelect.innerHTML = '<option value="all">Tüm Platformlar</option>';
+          Array.from(platforms).sort().forEach(p => {
+            platformSelect.innerHTML += `<option value="${p}">${p.toUpperCase()}</option>`;
+          });
+          platformSelect.value = currentVal;
+        }
+        
+        updateOrderSummary();
+        renderOrders();
+        
+      } catch(err) {
+        console.error("Sipariş yükleme hatası:", err);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#ef4444;">Hata: ' + err.message + '</td></tr>';
+      }
+    }
+    
+    function updateOrderSummary() {
+      const total = ordersCache.length;
+      const pending = ordersCache.filter(o => o.status === 'pending').length;
+      const preparing = ordersCache.filter(o => o.status === 'preparing').length;
+      const shipped = ordersCache.filter(o => o.status === 'shipped').length;
+      
+      document.getElementById('orderTotalCount').textContent = total;
+      document.getElementById('orderPendingCount').textContent = pending;
+      document.getElementById('orderPreparingCount').textContent = preparing;
+      document.getElementById('orderShippedCount').textContent = shipped;
+    }
+    
+    // Ürün kodunu karşılaştırma için normalize et
+    function normalizeProductCode(code) {
+      if(!code) return '';
+      return code
+        .trim()
+        .toUpperCase()
+        .replace(/[-_\s\.]+/g, '') // Tire, alt çizgi, boşluk, nokta kaldır
+        .replace(/İ/g, 'I')
+        .replace(/Ş/g, 'S')
+        .replace(/Ğ/g, 'G')
+        .replace(/Ü/g, 'U')
+        .replace(/Ö/g, 'O')
+        .replace(/Ç/g, 'C')
+        .replace(/ı/g, 'I')
+        .replace(/ş/g, 'S')
+        .replace(/ğ/g, 'G')
+        .replace(/ü/g, 'U')
+        .replace(/ö/g, 'O')
+        .replace(/ç/g, 'C');
+    }
+    
+    // Ürün kodunun hangi rafta olduğunu bul
+    function findProductInShelves(productCode) {
+      if(!productCode || !window.shelvesCache) return null;
+      
+      // Boş veya çok kısa kodları işleme alma
+      const trimmedCode = productCode.trim();
+      if(!trimmedCode || trimmedCode === '-' || trimmedCode.length < 3) return null;
+      
+      // Ürün kodunu normalize et
+      const searchCode = normalizeProductCode(productCode);
+      if(!searchCode || searchCode.length < 3) return null;
+      
+      for(const [shelfName, shelfData] of Object.entries(window.shelvesCache || {})) {
+        const products = shelfData.products || {};
+        for(const [code, qty] of Object.entries(products)) {
+          const normalizedCode = normalizeProductCode(code);
+          if(!normalizedCode || normalizedCode.length < 3) continue;
+          
+          // Tam eşleşme veya içerme kontrolü (en az 4 karakter eşleşmeli)
+          const isMatch = normalizedCode === searchCode || 
+            (searchCode.length >= 4 && normalizedCode.includes(searchCode)) || 
+            (normalizedCode.length >= 4 && searchCode.includes(normalizedCode));
+          
+          if(isMatch) {
+            const orderQty = (shelfData.orderQuantities || {})[code] || 0;
+            const stockQty = qty - orderQty;
+            if(stockQty > 0) {
+              return { shelfName, code, stockQty, orderQty, totalQty: qty };
+            }
+          }
+        }
+      }
+      return null;
+    }
+    
+    function renderOrders() {
+      const tbody = document.getElementById("ordersTableBody");
+      const emptyDiv = document.getElementById("ordersEmpty");
+      if(!tbody) return;
+      
+      // Filtreleri uygula
+      let filtered = ordersCache;
+      
+      if(currentOrderFilter !== 'all') {
+        filtered = filtered.filter(o => o.status === currentOrderFilter);
+      }
+      
+      if(currentPlatformFilter !== 'all') {
+        filtered = filtered.filter(o => (o.platform || '').toLowerCase() === currentPlatformFilter.toLowerCase());
+      }
+      
+      if(currentSearchText) {
+        const text = currentSearchText.toLowerCase();
+        filtered = filtered.filter(o => 
+          (o.siparisNo || '').toLowerCase().includes(text) ||
+          (o.aliciAdi || '').toLowerCase().includes(text) ||
+          (o.urunKodu || '').toLowerCase().includes(text) ||
+          (o.urunAdi || '').toLowerCase().includes(text) ||
+          (o.sku || '').toLowerCase().includes(text)
+        );
+      }
+      
+      if(filtered.length === 0) {
+        tbody.innerHTML = '';
+        if(emptyDiv) emptyDiv.style.display = 'block';
+        return;
+      }
+      
+      if(emptyDiv) emptyDiv.style.display = 'none';
+      
+      tbody.innerHTML = filtered.map(order => {
+        const statusBadge = getStatusBadge(order.status);
+        const platformBadge = getPlatformBadge(order.platform);
+        const kalanGun = order.kalanGun || '-';
+        const kalanGunStyle = parseInt(kalanGun) <= 2 ? 'color:#ef4444;font-weight:700;' : (parseInt(kalanGun) <= 5 ? 'color:#f59e0b;font-weight:600;' : '');
+        
+        // Ürün kodu/sku belirleme
+        const urunKod = order.urunKodu || order.sku || '';
+        const urunDisplay = urunKod || order.urunAdi || order.urunBasligi || '-';
+        // 1000-1999 arası kodlar lazer kesim (ör: 1005, 1013, 1234 vb.)
+        const kodNumara = parseInt(urunKod.split('-')[0]) || 0;
+        const isLazerKesim = kodNumara >= 1000 && kodNumara <= 1999;
+        const lazerBadge = isLazerKesim ? ' <span style="background:#8b5cf6;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;">Lazer Kesim</span>' : '';
+        
+        // Rafta stok kontrolü
+        const shelfInfo = findProductInShelves(urunKod);
+        let shelfBadge = '';
+        let assignBtn = '';
+        if(shelfInfo && order.status === 'pending') {
+          shelfBadge = `<span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;" title="Stokta ${shelfInfo.stockQty} adet var">📦 ${shelfInfo.shelfName}</span>`;
+          assignBtn = `<button onclick="assignOrderToStock('${order.id}', '${shelfInfo.shelfName}', '${shelfInfo.code}', '${order.siparisNo}')" style="padding:3px 8px;border:none;border-radius:4px;background:#22c55e;color:#fff;cursor:pointer;font-size:10px;font-weight:600;margin-left:4px;" title="Bu siparişi stoktan ayır">Ayır</button>`;
+        } else if(order.assignedShelf) {
+          shelfBadge = `<span style="background:#3b82f6;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;">✓ ${order.assignedShelf}</span>`;
+          assignBtn = `<button onclick="removeOrderAssignment('${order.id}', '${order.assignedShelf}', '${order.assignedProductCode || ''}')" style="padding:2px 6px;border:none;border-radius:4px;background:#ef4444;color:#fff;cursor:pointer;font-size:9px;margin-left:2px;" title="Atamayı kaldır">✕</button>`;
+        }
         
         return `
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:12px 10px;font-weight:700;color:#3b82f6;">${order.order_id || '-'}</td>
-            <td style="padding:12px 10px;font-weight:600;">${order.customer_name || '-'}</td>
-            <td style="padding:12px 10px;color:var(--muted);font-size:12px;">${order.customer_email || '-'}</td>
-            <td style="padding:12px 10px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${order.product_title || ''}">${order.product_title || '-'}</td>
-            <td style="padding:12px 10px;text-align:center;font-weight:700;">${order.quantity || 1}</td>
-            <td style="padding:12px 10px;">${platformBadge}</td>
-            <td style="padding:12px 10px;font-size:12px;color:var(--muted);">${dateStr}</td>
+          <tr style="border-bottom:1px solid var(--border);${shelfInfo && order.status === 'pending' ? 'background:rgba(34,197,94,0.05);' : ''}">
+            <td style="padding:10px 8px;font-weight:700;color:#3b82f6;white-space:nowrap;">${order.siparisNo || '-'}</td>
+            <td style="padding:10px 8px;">${platformBadge}</td>
+            <td style="padding:10px 8px;font-weight:500;">${order.aliciAdi || '-'}</td>
+            <td style="padding:10px 8px;max-width:300px;" title="${order.urunAdi || order.urunBasligi || ''}">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${urunDisplay}</span>
+                ${lazerBadge}${shelfBadge}${assignBtn}
+              </div>
+            </td>
+            <td style="padding:10px 8px;text-align:center;font-weight:700;">${order.adet || 1}</td>
+            <td style="padding:10px 8px;${kalanGunStyle}">${kalanGun}</td>
+            <td style="padding:10px 8px;">${statusBadge}</td>
+            <td style="padding:10px 8px;text-align:center;">
+              <button onclick="showOrderDetail('${order.id}')" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:11px;">👁️</button>
+              <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;">
+                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Beklemede</option>
+                <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Hazırlanıyor</option>
+                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Kargoda</option>
+                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Teslim</option>
+              </select>
+            </td>
           </tr>
         `;
       }).join('');
     }
     
-    function filterMakeOrders(searchText) {
-      const text = (searchText || '').toLowerCase().trim();
-      if(!text) {
-        renderMakeOrders(makeOrdersCache);
+    function getStatusBadge(status) {
+      const badges = {
+        'pending': '<span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">🟡 Beklemede</span>',
+        'preparing': '<span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">🟣 Hazırlanıyor</span>',
+        'shipped': '<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">🟢 Kargoda</span>',
+        'delivered': '<span style="background:#d1fae5;color:#065f46;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">✅ Teslim</span>'
+      };
+      return badges[status] || badges['pending'];
+    }
+    
+    function getPlatformBadge(platform) {
+      const p = (platform || '').toLowerCase();
+      const colors = {
+        'etsy': { bg: '#f97316', text: '#fff' },
+        'amazon': { bg: '#ff9900', text: '#000' },
+        'shopify': { bg: '#96bf48', text: '#fff' },
+        'trendyol': { bg: '#f27a1a', text: '#fff' },
+        'hepsiburada': { bg: '#ff6000', text: '#fff' },
+        'n11': { bg: '#7b2cbf', text: '#fff' }
+      };
+      const color = colors[p] || { bg: '#64748b', text: '#fff' };
+      return `<span style="background:${color.bg};color:${color.text};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;">${(platform || '-').toUpperCase()}</span>`;
+    }
+    
+    async function updateOrderStatus(orderId, newStatus) {
+      try {
+        const orderRef = doc(db, "excelOrders", orderId);
+        await updateDoc(orderRef, {
+          status: newStatus,
+          updatedAt: serverTimestamp(),
+          updatedBy: sessionPin || '-'
+        });
+        
+        // Cache'i güncelle
+        const orderIndex = ordersCache.findIndex(o => o.id === orderId);
+        if(orderIndex !== -1) {
+          ordersCache[orderIndex].status = newStatus;
+          updateOrderSummary();
+          renderOrders();
+        }
+      } catch(err) {
+        console.error('Durum güncelleme hatası:', err);
+        alert('Hata: ' + err.message);
+      }
+    }
+    
+    function showOrderDetail(orderId) {
+      const order = ordersCache.find(o => o.id === orderId);
+      if(!order) return;
+      
+      document.getElementById('orderDetailNo').textContent = order.siparisNo || '';
+      
+      const content = document.getElementById('orderDetailContent');
+      content.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Platform</div>
+            <div style="font-weight:600;">${order.platform || '-'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Etiket No</div>
+            <div style="font-weight:600;">${order.etiketNo || '-'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Alıcı</div>
+            <div style="font-weight:600;">${order.aliciAdi || '-'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">E-posta</div>
+            <div style="font-weight:500;font-size:13px;">${order.email || '-'}</div>
+          </div>
+          <div style="grid-column:span 2;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Adres</div>
+            <div style="font-weight:500;">${order.adres || '-'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Ülke</div>
+            <div style="font-weight:600;">${order.ulke || '-'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Adet</div>
+            <div style="font-weight:700;font-size:18px;color:#3b82f6;">${order.adet || 1}</div>
+          </div>
+        </div>
+        
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Ürün Bilgileri</div>
+          <div style="background:var(--surface);padding:12px;border-radius:8px;">
+            <div style="font-weight:700;color:#3b82f6;margin-bottom:4px;">${order.urunKodu || order.sku || order.urunAdi || order.urunBasligi || '-'}</div>
+            <div style="font-size:13px;color:var(--text);">${order.urunAdi || order.urunBasligi || '-'}</div>
+            ${order.varyant ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;">Varyant: ${order.varyant}</div>` : ''}
+          </div>
+        </div>
+        
+        ${order.musteriNotu || order.hediyeNotu || order.kisisellestirmeNotu ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Notlar</div>
+          ${order.musteriNotu ? `<div style="background:#fef3c7;padding:10px;border-radius:6px;margin-bottom:8px;font-size:13px;"><strong>Müşteri Notu:</strong> ${order.musteriNotu}</div>` : ''}
+          ${order.hediyeNotu ? `<div style="background:#fce7f3;padding:10px;border-radius:6px;margin-bottom:8px;font-size:13px;"><strong>Hediye Notu:</strong> ${order.hediyeNotu}</div>` : ''}
+          ${order.kisisellestirmeNotu ? `<div style="background:#dbeafe;padding:10px;border-radius:6px;font-size:13px;"><strong>Kişiselleştirme:</strong> ${order.kisisellestirmeNotu}</div>` : ''}
+        </div>
+        ` : ''}
+        
+        <div style="margin-top:16px;display:flex;gap:12px;">
+          <div style="flex:1;background:var(--surface);padding:10px;border-radius:8px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);">Sipariş Tarihi</div>
+            <div style="font-weight:600;">${order.siparisTarihi || '-'}</div>
+          </div>
+          <div style="flex:1;background:var(--surface);padding:10px;border-radius:8px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);">Gönderim Tarihi</div>
+            <div style="font-weight:600;">${order.gonderimTarihi || '-'}</div>
+          </div>
+          <div style="flex:1;background:${parseInt(order.kalanGun) <= 2 ? '#fee2e2' : '#f0fdf4'};padding:10px;border-radius:8px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);">Kalan Gün</div>
+            <div style="font-weight:700;font-size:18px;color:${parseInt(order.kalanGun) <= 2 ? '#dc2626' : '#16a34a'};">${order.kalanGun || '-'}</div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('orderDetailModal').style.display = 'flex';
+    }
+    
+    function closeOrderDetailModal() {
+      document.getElementById('orderDetailModal').style.display = 'none';
+    }
+    
+    function setOrderFilter(filter, btn) {
+      currentOrderFilter = filter;
+      document.querySelectorAll('#viewMakeOrders .order-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderOrders();
+    }
+    
+    function filterOrdersByStatus(status) {
+      currentOrderFilter = status;
+      renderOrders();
+    }
+    
+    function filterOrdersByPlatform(platform) {
+      currentPlatformFilter = platform;
+      renderOrders();
+    }
+    
+    function searchOrders(text) {
+      currentSearchText = text;
+      renderOrders();
+    }
+    
+    function refreshOrders() {
+      loadOrders();
+    }
+    
+    // Eski fonksiyon adıyla uyumluluk
+    function loadMakeOrders() {
+      loadOrders();
+    }
+    
+    window.handleOrderExcelUpload = handleOrderExcelUpload;
+    window.cancelOrderUpload = cancelOrderUpload;
+    window.saveOrdersFromExcel = saveOrdersFromExcel;
+    window.loadOrders = loadOrders;
+    window.loadMakeOrders = loadMakeOrders;
+    window.renderOrders = renderOrders;
+    window.updateOrderStatus = updateOrderStatus;
+    window.showOrderDetail = showOrderDetail;
+    window.closeOrderDetailModal = closeOrderDetailModal;
+    window.setOrderFilter = setOrderFilter;
+    window.filterOrdersByStatus = filterOrdersByStatus;
+    window.filterOrdersByPlatform = filterOrdersByPlatform;
+    window.searchOrders = searchOrders;
+    window.refreshOrders = refreshOrders;
+    
+    // Siparişi stoktan ayır
+    async function assignOrderToStock(orderId, shelfName, productCode, siparisNo) {
+      if(!confirm(`"${siparisNo}" siparişi için "${productCode}" ürününü ${shelfName} rafından ayırmak istiyor musunuz?`)) {
         return;
       }
       
-      const filtered = makeOrdersCache.filter(order => {
-        return (order.order_id || '').toLowerCase().includes(text) ||
-               (order.customer_name || '').toLowerCase().includes(text) ||
-               (order.customer_email || '').toLowerCase().includes(text) ||
-               (order.product_title || '').toLowerCase().includes(text);
-      });
+      try {
+        const shelfData = window.shelvesCache[shelfName];
+        if(!shelfData) {
+          alert('Raf bulunamadı: ' + shelfName);
+          return;
+        }
+        
+        const orderQuantities = { ...(shelfData.orderQuantities || {}) };
+        const assignedOrders = { ...(shelfData.assignedOrders || {}) };
+        
+        // Adet (şimdilik 1 adet ayır)
+        const qtyToAssign = 1;
+        orderQuantities[productCode] = (orderQuantities[productCode] || 0) + qtyToAssign;
+        
+        // Hangi siparişe ayrıldığını kaydet
+        if(!assignedOrders[productCode]) assignedOrders[productCode] = [];
+        assignedOrders[productCode].push({
+          siparisNo: siparisNo,
+          orderId: orderId,
+          qty: qtyToAssign,
+          assignedAt: new Date().toISOString(),
+          assignedBy: sessionPin || '-'
+        });
+        
+        // Rafı güncelle
+        const shelvesCollection = collection(db, "shelves");
+        await updateDoc(doc(shelvesCollection, shelfName), {
+          orderQuantities: orderQuantities,
+          assignedOrders: assignedOrders,
+          updated: serverTimestamp()
+        });
+        
+        // Siparişi güncelle
+        const ordersCollection = collection(db, "excelOrders");
+        await updateDoc(doc(ordersCollection, orderId), {
+          status: 'preparing',
+          assignedShelf: shelfName,
+          assignedProductCode: productCode,
+          assignedAt: serverTimestamp(),
+          assignedBy: sessionPin || '-',
+          updatedAt: serverTimestamp()
+        });
+        
+        // Cache'i güncelle
+        const orderIndex = ordersCache.findIndex(o => o.id === orderId);
+        if(orderIndex !== -1) {
+          ordersCache[orderIndex].status = 'preparing';
+          ordersCache[orderIndex].assignedShelf = shelfName;
+        }
+        
+        // Log yaz
+        await writeLog({
+          action: "ORDER_ASSIGN",
+          shelf: shelfName,
+          product: productCode,
+          qty: qtyToAssign,
+          detail: `Sipariş ${siparisNo} için ${productCode} ürünü ${shelfName} rafından ayrıldı`
+        });
+        
+        updateOrderSummary();
+        renderOrders();
+        
+        alert(`✅ Sipariş başarıyla ayrıldı!\n\nSipariş: ${siparisNo}\nÜrün: ${productCode}\nRaf: ${shelfName}`);
+        
+      } catch(err) {
+        console.error('Sipariş ayırma hatası:', err);
+        alert('Hata: ' + err.message);
+      }
+    }
+    window.assignOrderToStock = assignOrderToStock;
+    window.findProductInShelves = findProductInShelves;
+    
+    // Sipariş atamasını kaldır
+    async function removeOrderAssignment(orderId, shelfName, productCode) {
+      if(!confirm('Bu siparişin raf atamasını kaldırmak istediğinize emin misiniz?')) return;
       
-      renderMakeOrders(filtered);
+      try {
+        // 1. excelOrders'dan assignedShelf bilgisini kaldır
+        await updateDoc(doc(db, "excelOrders", orderId), {
+          assignedShelf: deleteField(),
+          assignedProductCode: deleteField(),
+          status: 'pending',
+          updated: serverTimestamp()
+        });
+        
+        // 2. Eğer raf ve ürün kodu varsa, o raftaki assignedOrders ve orderQuantities'i güncelle
+        if(shelfName && productCode) {
+          const shelfData = window.shelvesCache?.[shelfName];
+          if(shelfData) {
+            const orderQuantities = { ...(shelfData.orderQuantities || {}) };
+            const assignedOrders = { ...(shelfData.assignedOrders || {}) };
+            
+            // assignedOrders'dan bu siparişi kaldır
+            if(assignedOrders[productCode]) {
+              assignedOrders[productCode] = assignedOrders[productCode].filter(a => a.orderId !== orderId);
+              if(assignedOrders[productCode].length === 0) {
+                delete assignedOrders[productCode];
+              }
+            }
+            
+            // orderQuantities'i güncelle
+            if(orderQuantities[productCode] && orderQuantities[productCode] > 0) {
+              orderQuantities[productCode] = Math.max(0, orderQuantities[productCode] - 1);
+              if(orderQuantities[productCode] === 0) {
+                delete orderQuantities[productCode];
+              }
+            }
+            
+            await updateDoc(doc(db, "shelves", shelfName), {
+              orderQuantities,
+              assignedOrders,
+              updated: serverTimestamp()
+            });
+          }
+        }
+        
+        // 3. Log
+        await addDoc(collection(db, "logs"), {
+          action: "ORDER_UNASSIGN",
+          orderId,
+          shelf: shelfName,
+          product: productCode,
+          detail: `Sipariş ataması kaldırıldı`,
+          ts: serverTimestamp(),
+          role: window.__SESSION?.role || "-",
+          pin: window.__SESSION?.pin || "-"
+        });
+        
+        // 4. Listeyi yenile
+        renderOrders();
+        
+      } catch(err) {
+        console.error('Atama kaldırma hatası:', err);
+        alert('Hata: ' + err.message);
+      }
     }
-    
-    function refreshMakeOrders() {
-      loadMakeOrders();
-    }
-    
-    window.loadMakeOrders = loadMakeOrders;
-    window.filterMakeOrders = filterMakeOrders;
-    window.refreshMakeOrders = refreshMakeOrders;
+    window.removeOrderAssignment = removeOrderAssignment;
 
     async function loadCargoRequests() {
       const listContainer = document.getElementById("cargoRequestsList");
