@@ -3787,6 +3787,7 @@
                 </select>
                 <input id="orderSearchInput" type="text" placeholder="🔍 Sipariş No, Müşteri, Ürün..." style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;width:220px;" oninput="searchOrders(this.value)" />
                 <button onclick="refreshOrders()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;">🔄</button>
+                <button onclick="deleteAllOrders()" style="padding:8px 14px;border-radius:8px;border:none;background:#ef4444;color:white;cursor:pointer;font-size:13px;font-weight:600;">🗑️ Tümünü Sil</button>
               </div>
             </div>
             
@@ -15085,6 +15086,12 @@
               );
               mapped[fieldName] = key ? row[key] : '';
             }
+            
+            // URUN BAŞLIĞI "-" ise URUN ADI'nı kullan
+            if(mapped.urunBasligi && mapped.urunBasligi.toString().trim() === '-' && mapped.urunAdi) {
+              mapped.urunBasligi = mapped.urunAdi;
+            }
+            
             mapped.status = 'pending'; // Varsayılan durum
             mapped.createdAt = new Date();
             return mapped;
@@ -15410,17 +15417,72 @@
     }
     
     function getPlatformBadge(platform) {
-      const p = (platform || '').toLowerCase();
-      const colors = {
-        'etsy': { bg: '#f97316', text: '#fff' },
-        'amazon': { bg: '#ff9900', text: '#000' },
-        'shopify': { bg: '#96bf48', text: '#fff' },
-        'trendyol': { bg: '#f27a1a', text: '#fff' },
-        'hepsiburada': { bg: '#ff6000', text: '#fff' },
-        'n11': { bg: '#7b2cbf', text: '#fff' }
-      };
-      const color = colors[p] || { bg: '#64748b', text: '#fff' };
-      return `<span style="background:${color.bg};color:${color.text};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;">${(platform || '-').toUpperCase()}</span>`;
+      const p = (platform || '').toLowerCase().trim();
+      
+      // Platform türünü belirle
+      let platformType = 'etsy'; // varsayılan
+      
+      // Trendyol platformları
+      if (p.includes('trendyol') || p === 'elf metal' || p === 'grandmix' || p === 'emre trendyol') {
+        platformType = 'trendyol';
+      }
+      // Amazon platformları (wita ile başlayanlar)
+      else if (p.includes('wita') || p === 'amazon') {
+        platformType = 'amazon';
+      }
+      // Shopify platformları (vita ile başlayanlar)
+      else if (p.includes('vita') || p === 'shopify') {
+        platformType = 'shopify';
+      }
+      // Hepsiburada platformları
+      else if (p.includes('hepsi') || p === 'hepsiburada') {
+        platformType = 'hepsiburada';
+      }
+      
+      let logoHtml = '';
+      const platformName = (platform || '-').toUpperCase();
+      
+      if (platformType === 'trendyol') {
+        // Trendyol logosu (turuncu daire içinde "trendyol" yazısı)
+        logoHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <span style="background:#f27a1a;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:6px;font-weight:700;">trendyol</span>
+          </span>
+          <span style="font-weight:700;font-size:10px;color:#1e293b;">${platformName}</span>
+        </div>`;
+      } else if (platformType === 'amazon') {
+        // Amazon logosu (resmi logo - beyaz daire içinde a ve smile)
+        logoHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <span style="background:#fff;border:1px solid #e5e7eb;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg" alt="Amazon" style="width:24px;height:24px;" onerror="this.outerHTML='<span style=\\'color:#232f3e;font-size:16px;font-weight:400;font-family:serif;font-style:italic;\\'>a</span>'">
+          </span>
+          <span style="font-weight:700;font-size:10px;color:#1e293b;">${platformName}</span>
+        </div>`;
+      } else if (platformType === 'shopify') {
+        // Shopify logosu (resmi logo)
+        logoHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <img src="https://cdn.shopify.com/shopifycloud/brochure/assets/brand-assets/shopify-logo-shopping-bag-full-color-66166b2e55d67988b56b4bd28b63c271e2b9713358cb723070a92bde17ad7571.svg" alt="Shopify" style="width:32px;height:32px;" onerror="this.outerHTML='<span style=\\'background:#96bf48;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;\\'><span style=\\'color:#fff;font-size:14px;font-weight:700;\\'>S</span></span>'">
+          <span style="font-weight:700;font-size:10px;color:#1e293b;">${platformName}</span>
+        </div>`;
+      } else if (platformType === 'hepsiburada') {
+        // Hepsiburada logosu (turuncu "hb")
+        logoHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <span style="background:#ff6000;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:12px;font-weight:700;">hb</span>
+          </span>
+          <span style="font-weight:700;font-size:10px;color:#1e293b;">${platformName}</span>
+        </div>`;
+      } else {
+        // Varsayılan: Etsy logosu (turuncu daire içinde beyaz "E")
+        logoHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <span style="background:#f97316;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:16px;font-weight:700;font-family:serif;">E</span>
+          </span>
+          <span style="font-weight:700;font-size:10px;color:#1e293b;">${platformName}</span>
+        </div>`;
+      }
+      
+      return logoHtml;
     }
     
     async function updateOrderStatus(orderId, newStatus) {
@@ -15551,6 +15613,39 @@
       loadOrders();
     }
     
+    // Tüm siparişleri sil
+    async function deleteAllOrders() {
+      try {
+        const ordersCol = window.collection(window.db, "excelOrders");
+        const snapshot = await window.getDocs(ordersCol);
+        const orderCount = snapshot.docs.length;
+        
+        if(orderCount === 0) {
+          alert('Silinecek sipariş bulunamadı.');
+          return;
+        }
+        
+        const confirmation = confirm(`⚠️ DİKKAT!\n\nToplam ${orderCount} sipariş kalıcı olarak silinecek.\n\nBu işlem geri alınamaz!\n\nDevam etmek istiyor musunuz?`);
+        if(!confirmation) return;
+        
+        // İkinci onay
+        const secondConfirm = confirm(`Son kez onaylayın:\n\n${orderCount} siparişin tamamı silinecek.\n\nEmin misiniz?`);
+        if(!secondConfirm) return;
+        
+        let deletedCount = 0;
+        for(const docSnap of snapshot.docs) {
+          await window.deleteDoc(window.doc(window.db, "excelOrders", docSnap.id));
+          deletedCount++;
+        }
+        
+        alert(`✅ ${deletedCount} sipariş başarıyla silindi.`);
+        loadOrders();
+      } catch(err) {
+        console.error('Sipariş silme hatası:', err);
+        alert('Hata oluştu: ' + err.message);
+      }
+    }
+    
     // Eski fonksiyon adıyla uyumluluk
     function loadMakeOrders() {
       loadOrders();
@@ -15570,6 +15665,7 @@
     window.filterOrdersByPlatform = filterOrdersByPlatform;
     window.searchOrders = searchOrders;
     window.refreshOrders = refreshOrders;
+    window.deleteAllOrders = deleteAllOrders;
     
     // Siparişi stoktan ayır
     async function assignOrderToStock(orderId, shelfName, productCode, siparisNo) {
