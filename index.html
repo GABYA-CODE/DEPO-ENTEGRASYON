@@ -3425,7 +3425,7 @@
             <p style="font-size:13px;color:var(--muted);margin:-8px 0 12px;">Sipariş numarasını girin, sistem paketçi ve ürün bilgisini otomatik bulacak. (-1: hafif hata, -10: ciddi hata)</p>
             
             <label class="fieldLabel">Sipariş Numarası</label>
-            <input id="penaltyOrderNo" class="input" placeholder="Örn: VİTA3456" style="text-transform:uppercase;" />
+            <input id="penaltyOrderNo" class="input" placeholder="Örn: VİTA3456" style="text-transform:uppercase;" oninput="formatPenaltyOrderNo(this)" />
             
             <!-- Otomatik Bulunan Bilgiler -->
             <div id="penaltyAutoInfo" style="display:none;margin-top:12px;padding:14px;border-radius:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);">
@@ -3467,6 +3467,18 @@
 
             <label class="fieldLabel" style="margin-top:12px;">Açıklama (Opsiyonel)</label>
             <input id="penaltyNote" class="input" placeholder="Hata hakkında detay..." />
+
+            <label class="fieldLabel" style="margin-top:12px;">Hata Fotoğrafı (Opsiyonel)</label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="file" id="penaltyPhoto" accept="image/*" style="display:none;" onchange="previewPenaltyPhoto(this)" />
+              <button type="button" onclick="document.getElementById('penaltyPhoto').click()" style="padding:10px 16px;border:2px dashed var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;">
+                📷 Fotoğraf Ekle
+              </button>
+              <div id="penaltyPhotoPreview" style="display:none;">
+                <img id="penaltyPhotoImg" src="" style="max-width:100px;max-height:100px;border-radius:8px;border:1px solid var(--border);" />
+                <button type="button" onclick="clearPenaltyPhoto()" style="margin-left:6px;padding:4px 8px;border:none;background:#ef4444;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
+              </div>
+            </div>
 
             <button id="btnSavePenalty" class="actionBtn red" style="margin-top:14px;font-size:16px;">
               ⚠️ Ceza Puanı Kaydet
@@ -12758,7 +12770,9 @@
               html += `<a href="${data.dxfDriveLink}" target="_blank" class="co-btn-upload" style="background:#10b981;text-decoration:none;display:inline-block;">📁 DXF DRIVE</a>`;
             }
             if(data.dxfFile) {
-              html += `<button class="co-btn-upload" style="background:#10b981;" onclick="downloadDxfFile('${orderId}', '${data.orderNo}')">⬇️ DXF İNDİR</button>`;
+              const dxfBtnColor = data.dxfDownloaded ? '#3b82f6' : '#10b981';
+              const dxfBtnText = data.dxfDownloaded ? '✅ DXF İNDİRİLDİ' : '⬇️ DXF İNDİR';
+              html += `<button class="co-btn-upload" style="background:${dxfBtnColor};" onclick="downloadDxfFile('${orderId}', '${data.orderNo}', this)">${dxfBtnText}</button>`;
             }
           }
 
@@ -13259,7 +13273,7 @@
     window.submitDxfFile = submitDxfFile;
 
     // DXF dosyasını indir
-    async function downloadDxfFile(orderId, orderNo) {
+    async function downloadDxfFile(orderId, orderNo, btnElement) {
       try {
         const orderRef = doc(db, "customOrders", orderId);
         const orderSnap = await getDoc(orderRef);
@@ -13282,6 +13296,19 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        // İndirildikten sonra butonu maviye çevir ve Firebase'e kaydet
+        if(btnElement) {
+          btnElement.style.background = '#3b82f6';
+          btnElement.innerHTML = '✅ DXF İNDİRİLDİ';
+        }
+        
+        // Firebase'e indirme durumunu kaydet
+        await updateDoc(orderRef, {
+          dxfDownloaded: true,
+          dxfDownloadedAt: new Date(),
+          dxfDownloadedBy: sessionPin || '-'
+        });
       } catch(err) {
         console.error("DXF indirme hatası:", err);
         alert("Hata: " + err.message);
@@ -19405,6 +19432,12 @@
         // Ceza kayıtlarını çek
         const penaltyQ = query(collection(db, "packerPenalties"), orderBy("createdAt", "desc"));
         const penaltySnap = await getDocs(penaltyQ);
+        
+        // Ceza kayıtlarını global değişkene kaydet (fotoğraf görüntüleme için)
+        window.cachedPenalties = {};
+        penaltySnap.forEach(docSnap => {
+          window.cachedPenalties[docSnap.id] = docSnap.data();
+        });
 
         const packerCounts = {};
         const packerScores = {};
@@ -19488,6 +19521,8 @@
             totalPenalty += Math.abs(sc);
             packerPenalties[d.packer] = (packerPenalties[d.packer] || 0) + Math.abs(sc);
 
+            const photoBtn = d.photo ? `<button onclick="showPenaltyPhoto('${d._id}')" style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;">📷</button>` : '';
+
             const tr = document.createElement("tr");
             tr.style.background = 'rgba(239,68,68,0.05)';
             tr.innerHTML = `
@@ -19497,7 +19532,7 @@
               <td title="${d.note || ''}" style="font-size:12px;color:#ef4444;">${d.penaltyType || 'Ceza'}</td>
               <td><span style="display:inline-block;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">⚠️ ${sc}</span></td>
               <td>${d.createdByName || d.createdBy || "-"}</td>
-              <td>${canDeletePacker ? `<button onclick="deletePenaltyRecord('${d._id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
+              <td>${photoBtn}${canDeletePacker ? `<button onclick="deletePenaltyRecord('${d._id}')" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>` : ''}</td>
             `;
             tbody.appendChild(tr);
           }
@@ -19623,6 +19658,53 @@
     
     // Sipariş numarası input değiştiğinde otomatik ara
     let penaltySearchTimeout = null;
+    
+    // Sipariş numarasını formatla: VITA8128 -> VİTA08128
+    function formatPenaltyOrderNo(input) {
+      let val = input.value.toUpperCase();
+      
+      // I harflerini İ'ye çevir (Türkçe)
+      val = val.replace(/I/g, 'İ');
+      
+      // Prefix ve sayıyı ayır (VİTA, WITA, GRANDMIX vs.)
+      const match = val.match(/^([A-ZİĞÜŞÖÇ\s]+)(\d+)$/);
+      if(match) {
+        const prefix = match[1];
+        let num = match[2];
+        // Sayı 5 haneden küçükse başına 0 ekle
+        if(num.length < 5 && num.length > 0) {
+          num = num.padStart(5, '0');
+        }
+        val = prefix + num;
+      }
+      
+      input.value = val;
+    }
+    window.formatPenaltyOrderNo = formatPenaltyOrderNo;
+    
+    // Fotoğraf önizleme
+    function previewPenaltyPhoto(input) {
+      const preview = document.getElementById('penaltyPhotoPreview');
+      const img = document.getElementById('penaltyPhotoImg');
+      
+      if(input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          img.src = e.target.result;
+          preview.style.display = 'flex';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    window.previewPenaltyPhoto = previewPenaltyPhoto;
+    
+    function clearPenaltyPhoto() {
+      document.getElementById('penaltyPhoto').value = '';
+      document.getElementById('penaltyPhotoPreview').style.display = 'none';
+      document.getElementById('penaltyPhotoImg').src = '';
+    }
+    window.clearPenaltyPhoto = clearPenaltyPhoto;
+    
     function onPenaltyOrderNoInput() {
       const orderNoInput = document.getElementById("penaltyOrderNo");
       const autoInfoEl = document.getElementById("penaltyAutoInfo");
@@ -19672,6 +19754,7 @@
       const productValueEl = document.getElementById("penaltyProductValue");
       const penaltyType = document.getElementById("penaltyType");
       const penaltyNote = document.getElementById("penaltyNote");
+      const penaltyPhoto = document.getElementById("penaltyPhoto");
       const statusEl = document.getElementById("statusPenalty");
 
       const packer = packerValueEl?.value;
@@ -19689,22 +19772,50 @@
       try {
         statusEl.textContent = "Kaydediliyor..."; statusEl.className = "note";
 
-        await addDoc(collection(db, "packerPenalties"), {
+        // Fotoğraf varsa sıkıştır ve base64'e çevir
+        let photoBase64 = "";
+        if(penaltyPhoto.files && penaltyPhoto.files[0]) {
+          const file = penaltyPhoto.files[0];
+          photoBase64 = await compressImageToBase64(file, 800, 0.7);
+        }
+
+        // Aynı sipariş numarasıyla kayıt var mı kontrol et
+        const existingQuery = query(
+          collection(db, "packerPenalties"),
+          where("orderNo", "==", orderNo)
+        );
+        const existingSnap = await getDocs(existingQuery);
+        
+        const penaltyData = {
           packer: packer,
           orderNo: orderNo,
           productCode: productCode,
-          score: penaltyScore, // negatif değer
+          score: penaltyScore,
           note: note,
+          photo: photoBase64,
           penaltyType: penaltyType.options[penaltyType.selectedIndex].text,
-          createdAt: serverTimestamp(),
-          createdBy: sessionPin || "-",
-          createdByName: getNameByPin(sessionPin) || "-"
-        });
-
-        statusEl.textContent = "✅ Ceza puanı başarıyla kaydedildi!"; statusEl.className = "note ok";
+          updatedAt: serverTimestamp(),
+          updatedBy: sessionPin || "-",
+          updatedByName: getNameByPin(sessionPin) || "-"
+        };
+        
+        if(!existingSnap.empty) {
+          // Mevcut kaydı güncelle
+          const existingDoc = existingSnap.docs[0];
+          await updateDoc(doc(db, "packerPenalties", existingDoc.id), penaltyData);
+          statusEl.textContent = "✅ Ceza puanı güncellendi!"; statusEl.className = "note ok";
+        } else {
+          // Yeni kayıt oluştur
+          penaltyData.createdAt = serverTimestamp();
+          penaltyData.createdBy = sessionPin || "-";
+          penaltyData.createdByName = getNameByPin(sessionPin) || "-";
+          await addDoc(collection(db, "packerPenalties"), penaltyData);
+          statusEl.textContent = "✅ Ceza puanı başarıyla kaydedildi!"; statusEl.className = "note ok";
+        }
         orderNoInput.value = "";
         penaltyType.selectedIndex = 0;
         penaltyNote.value = "";
+        clearPenaltyPhoto();
         document.getElementById("penaltyAutoInfo").style.display = "none";
         document.getElementById("penaltyPackerValue").value = "";
         document.getElementById("penaltyProductValue").value = "";
@@ -19715,6 +19826,36 @@
       }
     }
     window.savePenaltyRecord = savePenaltyRecord;
+    
+    // Fotoğraf sıkıştırma fonksiyonu
+    function compressImageToBase64(file, maxWidth, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            if(width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
 
     async function deletePenaltyRecord(docId) {
       if(!confirm("Bu ceza kaydını silmek istediğinize emin misiniz?")) return;
@@ -19727,6 +19868,42 @@
       }
     }
     window.deletePenaltyRecord = deletePenaltyRecord;
+    
+    // Ceza fotoğrafını görüntüle
+    function showPenaltyPhoto(penaltyId) {
+      const penalty = window.cachedPenalties?.[penaltyId];
+      if(!penalty || !penalty.photo) {
+        alert("Fotoğraf bulunamadı!");
+        return;
+      }
+      
+      // Modal oluştur
+      const modal = document.createElement('div');
+      modal.id = 'penaltyPhotoModal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      modal.onclick = () => modal.remove();
+      
+      const content = document.createElement('div');
+      content.style.cssText = 'background:white;border-radius:12px;padding:20px;max-width:90vw;max-height:90vh;overflow:auto;text-align:center;';
+      content.onclick = (e) => e.stopPropagation();
+      
+      content.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 style="margin:0;color:#dc2626;">📷 Hata Fotoğrafı</h3>
+          <button onclick="document.getElementById('penaltyPhotoModal').remove()" style="border:none;background:#ef4444;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;">✕ Kapat</button>
+        </div>
+        <div style="margin-bottom:12px;text-align:left;font-size:13px;color:#666;">
+          <strong>Sipariş:</strong> ${penalty.orderNo || '-'}<br>
+          <strong>Hata:</strong> ${penalty.penaltyType || '-'}<br>
+          <strong>Not:</strong> ${penalty.note || '-'}
+        </div>
+        <img src="${penalty.photo}" style="max-width:100%;max-height:70vh;border-radius:8px;border:1px solid #ddd;" />
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+    }
+    window.showPenaltyPhoto = showPenaltyPhoto;
 
     // Hızlı Filtre Fonksiyonu
     function applyQuickFilter(filterType) {
