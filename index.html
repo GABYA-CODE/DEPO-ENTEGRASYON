@@ -3574,7 +3574,7 @@
                     <th>Ürün Kodu</th>
                     <th>Puan</th>
                     <th>Kaydeden</th>
-                    <th>Sil</th>
+                    <th style="min-width:90px;">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody id="packerRecordsBody"></tbody>
@@ -3763,7 +3763,7 @@
           </div>
           
           <!-- Özet Kartları -->
-          <div id="orderSummaryCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
+          <div id="orderSummaryCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px;">
             <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:12px;padding:16px;color:white;text-align:center;">
               <div style="font-size:12px;opacity:0.85;">Toplam Sipariş</div>
               <div style="font-size:28px;font-weight:700;" id="orderTotalCount">0</div>
@@ -3779,6 +3779,30 @@
             <div style="background:linear-gradient(135deg,#22c55e,#15803d);border-radius:12px;padding:16px;color:white;text-align:center;">
               <div style="font-size:12px;opacity:0.85;">Kargoya Verildi</div>
               <div style="font-size:28px;font-weight:700;" id="orderShippedCount">0</div>
+            </div>
+          </div>
+          
+          <!-- Ürün Bazlı İstatistikler -->
+          <div id="productStatsCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+            <div style="background:#fff;border:2px solid #6366f1;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:#6366f1;font-weight:600;">📦 Toplam Ürün</div>
+              <div style="font-size:22px;font-weight:700;color:#6366f1;" id="productTotalCount">0</div>
+            </div>
+            <div style="background:#fff;border:2px solid #8b5cf6;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:#8b5cf6;font-weight:600;">⚡ Lazer Kesim</div>
+              <div style="font-size:22px;font-weight:700;color:#8b5cf6;" id="productLazerCount">0</div>
+            </div>
+            <div style="background:#fff;border:2px solid #f97316;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:#f97316;font-weight:600;">🔥 Kaynaklı Üretim</div>
+              <div style="font-size:22px;font-weight:700;color:#f97316;" id="productKaynakCount">0</div>
+            </div>
+            <div style="background:#fff;border:2px solid #22c55e;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:#22c55e;font-weight:600;">✓ Stokta Mevcut</div>
+              <div style="font-size:22px;font-weight:700;color:#22c55e;" id="productStockCount">0</div>
+            </div>
+            <div style="background:#fff;border:2px solid #ef4444;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:#ef4444;font-weight:600;">⚠️ Üretim Bekliyor</div>
+              <div style="font-size:22px;font-weight:700;color:#ef4444;" id="productNoStockCount">0</div>
             </div>
           </div>
           
@@ -15052,30 +15076,47 @@
     let currentPlatformFilter = 'all';
     let currentSearchText = '';
     
-    // Excel sütun eşleştirme
+    // Excel sütun eşleştirme - Türkçe karakter varyasyonları dahil
     const EXCEL_COLUMN_MAP = {
       'SIPARIS NO': 'siparisNo',
+      'SİPARİŞ NO': 'siparisNo',
       'ETIKET NO': 'etiketNo',
+      'ETİKET NO': 'etiketNo',
       'URUN BAŞLIĞI': 'urunBasligi',
+      'ÜRÜN BAŞLIĞI': 'urunBasligi',
+      'URUN BASLIGI': 'urunBasligi',
+      'ÜRÜN BASLIGI': 'urunBasligi',
       'URUN ADI': 'urunAdi',
+      'ÜRÜN ADI': 'urunAdi',
       'PLATFORM': 'platform',
       'SIPARIS TARIHI': 'siparisTarihi',
+      'SİPARİŞ TARİHİ': 'siparisTarihi',
       'GONDERIM TARIHI': 'gonderimTarihi',
+      'GÖNDERİM TARİHİ': 'gonderimTarihi',
       'KALAN GUN': 'kalanGun',
+      'KALAN GÜN': 'kalanGun',
       'ALICI ADI': 'aliciAdi',
+      'ALICI': 'aliciAdi',
       'E-MAIL': 'email',
       'ADRES': 'adres',
       'ÜLKE': 'ulke',
+      'ULKE': 'ulke',
       'URUN ID': 'urunId',
+      'ÜRÜN ID': 'urunId',
       'URUN KODU': 'urunKodu',
+      'ÜRÜN KODU': 'urunKodu',
       'SKU': 'sku',
       'VARYANT': 'varyant',
       'ADET': 'adet',
       'MUSTERI NOTU': 'musteriNotu',
+      'MÜŞTERİ NOTU': 'musteriNotu',
       'URUN ACIKLAMALARI': 'urunAciklamalari',
+      'ÜRÜN AÇIKLAMALARI': 'urunAciklamalari',
       'HEDİYE NOTU': 'hediyeNotu',
+      'HEDIYE NOTU': 'hediyeNotu',
       'KULLANICI NOTU': 'kullaniciNotu',
-      'KİŞİSELLEŞTİRME NOTU': 'kisisellestirmeNotu'
+      'KİŞİSELLEŞTİRME NOTU': 'kisisellestirmeNotu',
+      'KISISELLESTIRME NOTU': 'kisisellestirmeNotu'
     };
     
     // Excel dosyası yükleme
@@ -15102,32 +15143,141 @@
             return;
           }
           
+          // Türkçe karakterleri normalize et
+          function normalizeTurkish(str) {
+            return (str || '').toUpperCase().trim()
+              .replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G')
+              .replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+          }
+          
           // Sütunları eşleştir
-          pendingExcelOrders = jsonData.map(row => {
+          const allOrders = jsonData.map(row => {
             const mapped = {};
             for(const [excelCol, fieldName] of Object.entries(EXCEL_COLUMN_MAP)) {
-              // Sütun adı tam eşleşme veya benzer olabilir
-              const key = Object.keys(row).find(k => 
-                k.toUpperCase().trim() === excelCol || 
-                k.toUpperCase().trim().includes(excelCol.split(' ')[0])
-              );
+              // Sütun adı eşleştirme (Türkçe karakter normalize)
+              const normalizedExcelCol = normalizeTurkish(excelCol);
+              const key = Object.keys(row).find(k => {
+                const normalizedKey = normalizeTurkish(k);
+                return normalizedKey === normalizedExcelCol || 
+                       normalizedKey.includes(normalizedExcelCol.split(' ')[0]);
+              });
               mapped[fieldName] = key ? row[key] : '';
             }
             
-            // URUN BAŞLIĞI "-" ise URUN ADI'nı kullan
-            if(mapped.urunBasligi && mapped.urunBasligi.toString().trim() === '-' && mapped.urunAdi) {
-              mapped.urunBasligi = mapped.urunAdi;
-            }
+            // Debug: Tüm satır verilerini de sakla
+            mapped._rawRow = row;
             
-            mapped.status = 'pending'; // Varsayılan durum
+            mapped.status = 'pending';
             mapped.createdAt = new Date();
             return mapped;
           });
           
+          // Ürün gösterimi için en iyi değeri bul
+          function getProductDisplay(order) {
+            // 1. urunBasligi varsa ve "-" değilse kullan
+            const urunBasligi = (order.urunBasligi || '').toString().trim();
+            if(urunBasligi && urunBasligi !== '-') {
+              return urunBasligi;
+            }
+            
+            // 2. urunAdi varsa kullan
+            const urunAdi = (order.urunAdi || '').toString().trim();
+            if(urunAdi && urunAdi !== '-') {
+              return urunAdi;
+            }
+            
+            // 3. Raw row'dan doğrudan bulmaya çalış (Türkçe/İngilizce varyasyonlar)
+            if(order._rawRow) {
+              const raw = order._rawRow;
+              // ÜRÜN BAŞLIĞI varyasyonları
+              for(const key of Object.keys(raw)) {
+                const upperKey = key.toUpperCase().trim();
+                if(upperKey.includes('BAŞL') || upperKey.includes('BASL')) {
+                  const val = (raw[key] || '').toString().trim();
+                  if(val && val !== '-') return val;
+                }
+              }
+              // ÜRÜN ADI varyasyonları
+              for(const key of Object.keys(raw)) {
+                const upperKey = key.toUpperCase().trim();
+                if((upperKey.includes('URUN') || upperKey.includes('ÜRÜN')) && upperKey.includes('AD')) {
+                  const val = (raw[key] || '').toString().trim();
+                  if(val && val !== '-') return val;
+                }
+              }
+            }
+            
+            return '-';
+          }
+          
+          // Aynı sipariş numarasına ait ürünleri birleştir
+          const groupedOrders = new Map();
+          let mergedCount = 0;
+          allOrders.forEach(order => {
+            const orderNo = String(order.siparisNo || '').trim();
+            if(!orderNo) return;
+            
+            // Ürün gösterimini belirle
+            const urunGosterim = getProductDisplay(order);
+            const urunAdiValue = (order.urunAdi || '').toString().trim();
+            
+            if(groupedOrders.has(orderNo)) {
+              // Mevcut siparişe ürün ekle
+              const existing = groupedOrders.get(orderNo);
+              
+              // Her ürünü ekle (duplicate kontrolü YAPMA, çünkü aynı ürün olsa bile farklı kalem olabilir)
+              existing.urunlerListesi.push(urunGosterim || '-');
+              
+              // Ürün adlarını da birleştir (fallback için)
+              existing.urunAdiListesi.push(urunAdiValue || '-');
+              
+              // Adeti güncelle (ürün sayısı kadar)
+              mergedCount++;
+            } else {
+              // Yeni sipariş
+              order.urunlerListesi = [urunGosterim || '-'];
+              order.urunAdiListesi = [urunAdiValue || '-'];
+              groupedOrders.set(orderNo, order);
+            }
+          });
+          
+          // Birleştirilmiş ürün listesini string'e çevir ve adeti ayarla
+          groupedOrders.forEach(order => {
+            // Ürün kodlarını/gösterimlerini birleştir
+            if(order.urunlerListesi && order.urunlerListesi.length > 0) {
+              order.urunKodu = order.urunlerListesi.join(' | ');
+              order.etiketNo = order.urunlerListesi.join(' | ');
+            }
+            // Ürün adlarını da birleştir (fallback için)
+            if(order.urunAdiListesi && order.urunAdiListesi.length > 0) {
+              order.urunAdi = order.urunAdiListesi.join(' | ');
+            }
+            order.adet = order.urunlerListesi ? order.urunlerListesi.length : 1;
+            
+            // _rawRow'u sil (Firebase'e kaydedilmemeli)
+            delete order._rawRow;
+            delete order.urunlerListesi;
+            delete order.urunAdiListesi;
+          });
+          
+          // Debug: İlk siparişin verilerini console'a yaz
+          if(groupedOrders.size > 0) {
+            const firstOrder = Array.from(groupedOrders.values())[0];
+            console.log('İlk sipariş örneği:', {
+              siparisNo: firstOrder.siparisNo,
+              urunKodu: firstOrder.urunKodu,
+              urunAdi: firstOrder.urunAdi,
+              adet: firstOrder.adet
+            });
+          }
+          
+          pendingExcelOrders = Array.from(groupedOrders.values());
+          
           // Önizleme göster
           showOrderPreview(pendingExcelOrders);
           statusDiv.className = 'note ok';
-          statusDiv.textContent = `${pendingExcelOrders.length} sipariş başarıyla okundu. Kaydetmek için "Kaydet" butonuna tıklayın.`;
+          const mergeMsg = mergedCount > 0 ? ` (${mergedCount} ürün aynı siparişe birleştirildi)` : '';
+          statusDiv.textContent = `${pendingExcelOrders.length} sipariş başarıyla okundu.${mergeMsg} Kaydetmek için "Kaydet" butonuna tıklayın.`;
           
         } catch(err) {
           console.error('Excel okuma hatası:', err);
@@ -15196,21 +15346,32 @@
       
       try {
         const ordersCollection = collection(db, "excelOrders");
+        
+        // Önce tüm mevcut sipariş numaralarını tek seferde çek (race condition önleme)
+        const existingSnap = await getDocs(ordersCollection);
+        const existingOrderNos = new Set();
+        existingSnap.forEach(doc => {
+          const data = doc.data();
+          if(data.siparisNo) {
+            existingOrderNos.add(String(data.siparisNo).trim());
+          }
+        });
+        
         let savedCount = 0;
         let skippedCount = 0;
         
         for(const order of pendingExcelOrders) {
-          // Aynı sipariş no ile kayıt var mı kontrol et
-          const existingQuery = query(ordersCollection, where("siparisNo", "==", order.siparisNo), limit(1));
-          const existingSnap = await getDocs(existingQuery);
+          const orderNo = String(order.siparisNo || '').trim();
           
-          if(existingSnap.empty) {
+          // Hem mevcut kayıtlarda hem de bu batch'te kaydettiğimizde kontrol et
+          if(!existingOrderNos.has(orderNo)) {
             await addDoc(ordersCollection, {
               ...order,
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
               createdBy: sessionPin || '-'
             });
+            existingOrderNos.add(orderNo); // Bu batch'te tekrar eklenmemesi için
             savedCount++;
           } else {
             skippedCount++;
@@ -15286,6 +15447,60 @@
       document.getElementById('orderPendingCount').textContent = pending;
       document.getElementById('orderPreparingCount').textContent = preparing;
       document.getElementById('orderShippedCount').textContent = shipped;
+      
+      // Ürün bazlı istatistikler
+      let productTotal = 0;
+      let productLazer = 0;
+      let productKaynak = 0;
+      let productStock = 0;
+      let productNoStock = 0;
+      
+      ordersCache.forEach(order => {
+        // Sadece beklemedeki siparişleri say
+        if(order.status !== 'pending') return;
+        
+        const urunKod = order.urunKodu || order.etiketNo || order.sku || '';
+        const orderAdet = parseInt(order.adet) || 1;
+        
+        // Sadece adet > 1 ise "|" ile bölme yap (tek ürün açıklamalarında | olabilir)
+        let urunList;
+        if(orderAdet > 1 && urunKod.includes('|')) {
+          urunList = urunKod.split('|').map(u => u.trim());
+        } else {
+          urunList = [urunKod];
+        }
+        
+        urunList.forEach(urun => {
+          if(!urun || urun === '-') return;
+          productTotal++;
+          
+          const kodNumara = parseInt((urun || '').toString().split('-')[0]) || 0;
+          
+          // Lazer Kesim (1000-1999)
+          if(kodNumara >= 1000 && kodNumara <= 1999) {
+            productLazer++;
+          }
+          
+          // Kaynaklı Üretim (7000-7999 ve 8000-8999)
+          if((kodNumara >= 7000 && kodNumara <= 7999) || (kodNumara >= 8000 && kodNumara <= 8999)) {
+            productKaynak++;
+          }
+          
+          // Stok kontrolü
+          const shelfInfo = findProductInShelves(urun);
+          if(shelfInfo) {
+            productStock++;
+          } else {
+            productNoStock++;
+          }
+        });
+      });
+      
+      document.getElementById('productTotalCount').textContent = productTotal;
+      document.getElementById('productLazerCount').textContent = productLazer;
+      document.getElementById('productKaynakCount').textContent = productKaynak;
+      document.getElementById('productStockCount').textContent = productStock;
+      document.getElementById('productNoStockCount').textContent = productNoStock;
     }
     
     // Ürün kodunu karşılaştırma için normalize et
@@ -15385,36 +15600,95 @@
         const kalanGun = order.kalanGun || '-';
         const kalanGunStyle = parseInt(kalanGun) <= 2 ? 'color:#ef4444;font-weight:700;' : (parseInt(kalanGun) <= 5 ? 'color:#f59e0b;font-weight:600;' : '');
         
-        // Ürün kodu/sku belirleme
-        const urunKod = order.urunKodu || order.sku || '';
-        const urunDisplay = urunKod || order.urunAdi || order.urunBasligi || '-';
-        // 1000-1999 arası kodlar lazer kesim (ör: 1005, 1013, 1234 vb.)
-        const kodNumara = parseInt(urunKod.split('-')[0]) || 0;
-        const isLazerKesim = kodNumara >= 1000 && kodNumara <= 1999;
-        const lazerBadge = isLazerKesim ? ' <span style="background:#8b5cf6;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;">Lazer Kesim</span>' : '';
+        // Ürün kodu/etiket belirleme - çoklu ürün desteği
+        // Sadece adet > 1 ise "|" ile bölme yap (Excel'deki tek ürün açıklamalarında | olabilir)
+        const urunKod = order.urunKodu || order.etiketNo || order.sku || '';
+        const orderAdet = parseInt(order.adet) || 1;
+        let urunList;
         
-        // Rafta stok kontrolü
-        const shelfInfo = findProductInShelves(urunKod);
-        let shelfBadge = '';
-        let assignBtn = '';
-        if(shelfInfo && order.status === 'pending') {
-          shelfBadge = `<span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;" title="Stokta ${shelfInfo.stockQty} adet var">📦 ${shelfInfo.shelfName}</span>`;
-          assignBtn = `<button onclick="assignOrderToStock('${order.id}', '${shelfInfo.shelfName}', '${shelfInfo.code}', '${order.siparisNo}')" style="padding:3px 8px;border:none;border-radius:4px;background:#22c55e;color:#fff;cursor:pointer;font-size:10px;font-weight:600;margin-left:4px;" title="Bu siparişi stoktan ayır">Ayır</button>`;
-        } else if(order.assignedShelf) {
-          shelfBadge = `<span style="background:#3b82f6;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px;">✓ ${order.assignedShelf}</span>`;
-          assignBtn = `<button onclick="removeOrderAssignment('${order.id}', '${order.assignedShelf}', '${order.assignedProductCode || ''}')" style="padding:2px 6px;border:none;border-radius:4px;background:#ef4444;color:#fff;cursor:pointer;font-size:9px;margin-left:2px;" title="Atamayı kaldır">✕</button>`;
+        if(orderAdet > 1 && urunKod.includes('|')) {
+          // Birden fazla ürün var, | ile böl
+          urunList = urunKod.split('|').map(u => u.trim());
+        } else {
+          // Tek ürün, bölme yapma
+          urunList = [urunKod];
         }
         
+        // Her ürün için "-" kontrolü yap, "-" ise ürün adını kullan
+        urunList = urunList.map((u, idx) => {
+          if(u === '-' || u === '' || !u) {
+            const urunAdiList = (order.urunAdi || '').split('|').map(a => a.trim());
+            return urunAdiList[idx] || order.urunAdi || '-';
+          }
+          return u;
+        });
+        
+        const hasMultipleProducts = urunList.length > 1;
+        const multiProductBadge = hasMultipleProducts ? `<span style="background:#6366f1;color:#fff;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-left:6px;">${urunList.length} Ürün</span>` : '';
+        
+        // Her ürün için badge ve buton oluştur
+        function getProductBadges(urunKodu, idx) {
+          let badges = '';
+          const kodNumara = parseInt((urunKodu || '').toString().split('-')[0]) || 0;
+          
+          // Lazer Kesim kontrolü (1000-1999)
+          if(kodNumara >= 1000 && kodNumara <= 1999) {
+            badges += '<span style="background:#8b5cf6;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;margin-left:3px;">Lazer</span>';
+          }
+          
+          // Kaynaklı Üretim kontrolü (7000-7999 ve 8000-8999)
+          if((kodNumara >= 7000 && kodNumara <= 7999) || (kodNumara >= 8000 && kodNumara <= 8999)) {
+            badges += '<span style="background:#f97316;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;margin-left:3px;">Kaynaklı Üretim</span>';
+          }
+          
+          // Stok kontrolü
+          const shelfInfo = findProductInShelves(urunKodu);
+          if(shelfInfo && order.status === 'pending') {
+            badges += `<span style="background:#22c55e;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;margin-left:3px;" title="Stokta ${shelfInfo.stockQty} adet">📦 ${shelfInfo.shelfName}</span>`;
+            badges += `<button onclick="assignOrderToStock('${order.id}', '${shelfInfo.shelfName}', '${shelfInfo.code}', '${order.siparisNo}')" style="padding:1px 5px;border:none;border-radius:3px;background:#22c55e;color:#fff;cursor:pointer;font-size:8px;font-weight:600;margin-left:2px;">Ayır</button>`;
+          }
+          
+          return badges;
+        }
+        
+        // Çoklu ürün gösterimi - her ürünün yanında kendi badge'leri
+        let urunDisplay = '';
+        if(hasMultipleProducts) {
+          urunDisplay = `<div style="display:flex;flex-direction:column;gap:3px;">
+            ${urunList.map((u, i) => `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
+              <span style="font-size:11px;color:#374151;background:#f3f4f6;padding:2px 6px;border-radius:3px;font-weight:500;">${i+1}. ${u}</span>
+              ${getProductBadges(u, i)}
+            </div>`).join('')}
+          </div>`;
+        } else {
+          const singleBadges = getProductBadges(urunList[0], 0);
+          urunDisplay = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
+            <span>${urunList[0] || '-'}</span>
+            ${singleBadges}
+          </div>`;
+        }
+        
+        // Atanmış raf gösterimi (tüm sipariş için)
+        let assignedBadge = '';
+        if(order.assignedShelf) {
+          assignedBadge = `<div style="margin-top:4px;"><span style="background:#3b82f6;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;">✓ ${order.assignedShelf}</span>
+          <button onclick="removeOrderAssignment('${order.id}', '${order.assignedShelf}', '${order.assignedProductCode || ''}')" style="padding:1px 4px;border:none;border-radius:3px;background:#ef4444;color:#fff;cursor:pointer;font-size:8px;margin-left:2px;">✕</button></div>`;
+        }
+        
+        // Stokta olan ürün var mı kontrolü (arka plan rengi için)
+        const hasStockMatch = urunList.some(u => findProductInShelves(u) && order.status === 'pending');
+        
         return `
-          <tr style="border-bottom:1px solid var(--border);${shelfInfo && order.status === 'pending' ? 'background:rgba(34,197,94,0.05);' : ''}">
+          <tr style="border-bottom:1px solid var(--border);${hasStockMatch ? 'background:rgba(34,197,94,0.05);' : ''}${hasMultipleProducts ? 'background:rgba(99,102,241,0.05);' : ''}">
             <td style="padding:10px 8px;font-weight:700;color:#3b82f6;white-space:nowrap;">${order.siparisNo || '-'}</td>
             <td style="padding:10px 8px;">${platformBadge}</td>
-            <td style="padding:10px 8px;font-weight:500;">${order.aliciAdi || '-'}</td>
-            <td style="padding:10px 8px;max-width:300px;" title="${order.urunAdi || order.urunBasligi || ''}">
-              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
-                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${urunDisplay}</span>
-                ${lazerBadge}${shelfBadge}${assignBtn}
+            <td style="padding:10px 8px;font-weight:500;">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;">
+                ${order.aliciAdi || '-'}${multiProductBadge}
               </div>
+            </td>
+            <td style="padding:10px 8px;">
+              ${urunDisplay}${assignedBadge}
             </td>
             <td style="padding:10px 8px;text-align:center;font-weight:700;">${order.adet || 1}</td>
             <td style="padding:10px 8px;${kalanGunStyle}">${kalanGun}</td>
@@ -15453,8 +15727,8 @@
       if (p.includes('trendyol') || p === 'elf metal' || p === 'grandmix' || p === 'emre trendyol') {
         platformType = 'trendyol';
       }
-      // Amazon platformları (wita ile başlayanlar)
-      else if (p.includes('wita') || p === 'amazon') {
+      // Amazon platformları (wita ile başlayanlar ve gabya)
+      else if (p.includes('wita') || p.includes('gabya') || p === 'amazon') {
         platformType = 'amazon';
       }
       // Shopify platformları (vita ile başlayanlar)
@@ -19521,7 +19795,11 @@
             totalPenalty += Math.abs(sc);
             packerPenalties[d.packer] = (packerPenalties[d.packer] || 0) + Math.abs(sc);
 
-            const photoBtn = d.photo ? `<button onclick="showPenaltyPhoto('${d._id}')" style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;">📷</button>` : '';
+            // Fotoğraf butonu - fotoğraf varsa mavi, yoksa gri
+            const hasPhoto = d.photo && d.photo.length > 100;
+            const photoBtn = hasPhoto 
+              ? `<button onclick="showPenaltyPhoto('${d._id}')" style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;" title="Fotoğrafı görüntüle">📷</button>` 
+              : `<span style="color:#ccc;font-size:11px;margin-right:4px;" title="Fotoğraf eklenmemiş">📷</span>`;
 
             const tr = document.createElement("tr");
             tr.style.background = 'rgba(239,68,68,0.05)';
@@ -19792,12 +20070,16 @@
           productCode: productCode,
           score: penaltyScore,
           note: note,
-          photo: photoBase64,
           penaltyType: penaltyType.options[penaltyType.selectedIndex].text,
           updatedAt: serverTimestamp(),
           updatedBy: sessionPin || "-",
           updatedByName: getNameByPin(sessionPin) || "-"
         };
+        
+        // Fotoğraf varsa ekle (yoksa güncelleme sırasında eski fotoğrafı korur)
+        if(photoBase64) {
+          penaltyData.photo = photoBase64;
+        }
         
         if(!existingSnap.empty) {
           // Mevcut kaydı güncelle
